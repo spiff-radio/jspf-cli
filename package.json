@@ -2,26 +2,26 @@
   "name": "jspf-playlist",
   "version": "1.0.0",
   "description": "The Node.js tool to handle JSPF Playlists",
-  "main": "index.js",
+  "main": "jspf-playlist.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start:dev": "npx nodemon",
-    "build": "rimraf ./build && tsc",
-    "start": "npm run build && node build/index.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spiff-radio/jspf-playlist.git"
+  },
+  "keywords": [
+    "jspf",
+    "playlist",
+    "json"
+  ],
+  "author": "spiff-radio",
   "license": "ISC",
-  "dependencies": {
-    "merge-options": "^3.0.4",
-    "xml2js": "^0.4.23",
-    "zod": "^3.21.4"
+  "bugs": {
+    "url": "https://github.com/spiff-radio/jspf-playlist/issues"
   },
-  "devDependencies": {
-    "@types/node": "^18.15.10",
-    "nodemon": "^2.0.22",
-    "rimraf": "^4.4.1",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.0.2"
+  "homepage": "https://github.com/spiff-radio/jspf-playlist#readme",
+  "dependencies": {
+    "objectmodel": "^4.4.4"
   }
 }
