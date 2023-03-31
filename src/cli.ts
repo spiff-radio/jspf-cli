@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import {JspfPlaylist} from "./interfaces";
+import {JSPFPlaylist,JSPFTrack,NonNegativeInteger,JSPFMetaCollection,JSPFMeta} from "./interfaces";
 
 const dataValid = {
    "playlist" : {
@@ -58,7 +58,22 @@ const dataValid = {
    }
  }
 
- console.log("test");
+console.log("test");
+
+const testTrack: JSPFTrack = {
+  title         : "Track title",
+  creator       : "Artist name",
+  trackNum: -12
+};
+
+
+const testMeta:JSPFMeta = {
+  'http://example.com/rel/1/': 'my meta 14'
+}
+
+const testMetaCollection:JSPFMetaCollection = [testMeta]
+
+console.log(testMetaCollection)
 
 /*
 const chalk = require('chalk');
@@ -72,3 +87,6 @@ console.log(
   )
 );
 */
+
+
+console.log("END");
