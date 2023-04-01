@@ -30,12 +30,10 @@
   },
   "homepage": "https://github.com/spiff-radio/jspf-playlist#readme",
   "dependencies": {
-    "chalk": "^4",
-    "class-transformer": "0.5.1",
-    "reflect-metadata": "^0.1.13",
+    "class-transformer": "^0.5.1",
     "clear": "^0.1.0",
     "figlet": "^1.5.2",
-    "objectmodel": "^4.4.4"
+    "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",

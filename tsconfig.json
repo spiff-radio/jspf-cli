@@ -11,6 +11,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "strictPropertyInitialization": false,
-    "declaration": true
+    "declaration": true,
+    "experimentalDecorators": true
   }
 }
