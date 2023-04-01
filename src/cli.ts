@@ -1,8 +1,9 @@
 #!/usr/bin/env node
+const clear = require('clear');
+const figlet = require('figlet');
+import {JSPFConverter} from "./types";
 
-import {JSPFPlaylist,JSPFTrack,NonNegativeInteger,JSPFMetaCollection,JSPFMeta} from "./interfaces";
-
-const dataValid = {
+const jspf = {
    "playlist" : {
      "title"         : "JSPF example",
      "creator"       : "Name of playlist author",
@@ -58,35 +59,26 @@ const dataValid = {
    }
  }
 
-console.log("test");
-
-const testTrack: JSPFTrack = {
+/*
+const JSONTrackObj = JSON.stringify({
   title         : "Track title",
   creator       : "Artist name",
+  zob           : "zub",
   trackNum: -12
-};
+});
 
-
-const testMeta:JSPFMeta = {
-  'http://example.com/rel/1/': 'my meta 14'
-}
-
-const testMetaCollection:JSPFMetaCollection = [testMeta]
-
-console.log(testMetaCollection)
-
-/*
-const chalk = require('chalk');
-const clear = require('clear');
-const figlet = require('figlet');
+const track = JSPFConverter.trackFromJSON(JSONTrackObj);
+*/
 
 clear();
 console.log(
-  chalk.red(
-    figlet.textSync('pizza-cli', { horizontalLayout: 'full' })
-  )
+  figlet.textSync('JSPF', { horizontalLayout: 'full' })
 );
-*/
+
+const jspfObject = JSPFConverter.objectFromJSON(JSON.stringify(jspf));
+const playlist = jspfObject.playlist;
+console.log(playlist);
+
 
 
 console.log("END");
