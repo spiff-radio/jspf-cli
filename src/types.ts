@@ -90,9 +90,8 @@ export class JSPFTrack{
   @Expose()
   extension: JSPFExtensionT;
 
-  constructor(partial: Partial<JSPFTrack>) {
-    console.log("ZOB")
-    Object.assign(this, partial);
+  constructor(data: Partial<JSPFTrack>) {
+    Object.assign(this, data);
   }
 
   hello(){
@@ -100,6 +99,8 @@ export class JSPFTrack{
   }
 
 }
+
+
 
 export class JSPFPlaylist {
   @Expose()
@@ -146,17 +147,20 @@ export class JSPFPlaylist {
   @Expose()
   track: JSPFTrack[];
 
-  constructor(partial: Partial<JSPFPlaylist>) {
-    Object.assign(this, partial);
+  constructor(data: Partial<JSPFPlaylist>) {
+    Object.assign(this, data);
   }
 
-  public addTracks(tracks:JSPFTrack[]) {
+  public addTracks(tracks:JSPFTrack[],index:number|undefined): void => {
   }
-  public removeTracks(tracks:JSPFTrack[]) {
+
+  public moveTracks(tracks:JSPFTrack[],index:number): void => {
   }
-  public reindexTracks(tracks:JSPFTrack[],startNum:number) {
+  public removeTracks(tracks:JSPFTrack[]): void => {
   }
-  public clearTracks(){
+  public reindexTracks(tracks:JSPFTrack[],startNum:number): void => {
+  }
+  public clearTracks(): void => {
   }
   public hello():string {
     return 'hello ' + this.title;
