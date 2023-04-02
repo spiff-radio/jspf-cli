@@ -3,19 +3,20 @@ const clear = require('clear');
 const figlet = require('figlet');
 
 import 'reflect-metadata';
-import { plainToClass } from 'class-transformer';
-import {JSPFPlaylist} from "./types";
+import { plainToClass,classToPlain,serialize } from 'class-transformer';
+import { validateSync } from 'class-validator';
+import {Playlist,Track} from "./types";
 
 const jspf = {
    playlist : {
-     title         : "JSPF example"
-     ,
+     title         : "JSPF example",
      creator       : "Name of playlist author",
      annotation    : "Super playlist",
      info          : "http://example.com/",
      location      : "http://example.com/",
      identifier    : "http://example.com/",
      image         : "http://example.com/",
+     date          : "2005-01-08T17:10:47-05:00",
      license       : "http://example.com/",
      attribution   : [
        {identifier   : "http://example.com/"},
@@ -68,10 +69,54 @@ console.log(
 );
 //const playlist = new JSPFPlaylist(jspf.playlist);
 
-const playlist = plainToClass(JSPFPlaylist, jspf.playlist, { excludeExtraneousValues: true })
+
+const playlist = plainToClass(Playlist,jspf.playlist);
+const playlistErrors = validateSync(playlist);
+
+/*
+if (playlistErrors.length > 0) {
+  console.log('PLAYLIST VALIDATION ERROR:', playlistErrors);
+}else{
+  console.log("CLASS PLAYLIST",playlist);
+}
+*/
+
+const track = plainToClass(Track,jspf.playlist.track[0]);
+const trackErrors = validateSync(track);
+
+if (trackErrors.length > 0) {
+  console.log('TRACK VALIDATION ERROR:', trackErrors);
+
+  // Find the validation error for the 'link' property
+  const linkError = trackErrors.find(error => error.property === 'link');
+
+  // Access the error message(s) for the 'link' property
+  if (linkError) {
+    console.log("LINK ERROR",linkError?.children);
+
+    if (linkError?.children){
+      console.log("LINK ERROR",linkError?.children[0]);
+    }
+
+    const values =  linkError?.constraints ? Object.values(linkError?.constraints) : [];
+    const errorMessages = Object.values(values);
+    console.log(errorMessages);
+  }
 
 
-console.log(playlist);
-console.log(playlist.track[0].hello());
+}else{
+  console.log("CLASS TRACK",track);
+}
+
+/*
+const track = plainToClass(Track,jspf.playlist.track[0]);
+console.log("TOTO",track);
+const errors = validateSync(track);
+if (errors.length > 0) {
+  console.log('Validation errors:', errors);
+} else {
+  console.log('Track:', track);
+}
+*/
 
 console.log("END");
