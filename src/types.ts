@@ -1,58 +1,8 @@
-import { IsDefined, IsUrl, IsNotEmptyObject, IsArray, IsOptional, IsString, IsDate, IsNotEmpty, ValidateNested, IsObject, IsDateString, IsInt, Min } from 'class-validator';
+import { validate,validateSync, IsDefined, IsUrl, IsNotEmptyObject, IsArray, IsOptional, IsString, IsDate, IsNotEmpty, ValidateNested, IsObject, IsDateString, IsInt, Min } from 'class-validator';
 import { Type,Transform, TransformFnParams, plainToClass } from 'class-transformer';
-import { validate,validateSync } from 'class-validator';
+import {IsUri} from './isUri'
+import {IsSinglePropertyObject} from './isSinglePropertyObject'
 
-interface RawPlaylist {
-  title: string;
-  creator: string;
-  date: string;
-  tracks: RawTrack[];
-  attribution?: { [key: string]: string };
-}
-
-interface RawTrack {
-  title: string;
-  creator?: string;
-  info?: string;
-  location?: string | string[];
-  identifier?: string;
-  image?: string;
-  album?: string;
-  duration?: number;
-  attribution?: { [key: string]: string };
-  license?: string;
-}
-
-class Attribution {
-  [key: string]: any;
-
-  @IsUrl()
-  value: string;
-}
-
-function TransformDate() {
-  const toPlain = Transform(({ value }) => value.toISOString(), { toPlainOnly: true });
-  const toClass = Transform(({ value }) => new Date(value), { toClassOnly: true });
-
-  return function (target: any, key: string) {
-    toPlain(target, key);
-    toClass(target, key);
-  };
-}
-
-/*
-function TransformDate(): PropertyDecorator {
-  const toPlain = Transform(({ value }) => value.toISOString(), { toPlainOnly: true });
-  const toClass = Transform(({ value }) => new Date(value), { toClassOnly: true });
-  const isUrl = IsUrl();
-
-  return (target: Record<string, any>, propertyKey: string | symbol) => {
-    isUrl(target, propertyKey);
-    toClass(target, propertyKey);
-    toPlain(target, propertyKey);
-  };
-}
-*/
 /*
 function TransformURI(){
   const toPlain = Transform(({ value }) => value.toString(), { toPlainOnly: true });
@@ -66,47 +16,148 @@ function TransformURI(){
 }
 */
 
-function TransformURI(): PropertyDecorator {
-  const toClass = Transform(({ value }) => new URL(value), { toClassOnly: true });
-  const toPlain = Transform(({ value }) => value.toString(), { toPlainOnly: true });
-  const isUrl = IsUrl();
+type TransformUriOptions = {
+  each?: boolean
+}
 
-  return (target: Record<string, any>, propertyKey: string | symbol) => {
-    isUrl(target, propertyKey);
-    toClass(target, propertyKey);
+
+type TransformPairsOptions = {
+  each?: boolean
+}
+
+export const TransformUri = (options: TransformUriOptions = { each: false }): PropertyDecorator => {
+
+  const toPlain = Transform(({ value }) => {
+
+    if(!options.each){
+      return value.toString();
+    }else{
+
+      return value.map((item:any) => item.toString());
+    }
+
+  }, { toPlainOnly: true });
+
+  const toClass = Transform(({ value }) => {
+    if(!options.each){
+      return new URL(value);
+    }else{
+      return value.map((item:any) => new URL(item));
+    }
+  }, { toClassOnly: true });
+
+  return (target: Object, propertyKey: string | symbol) => {
     toPlain(target, propertyKey);
+    toClass(target, propertyKey);
   };
+
+
+
+}
+
+export const TransformDate: PropertyDecorator = (target: Object, propertyKey: string | symbol) => {
+  const toPlain = Transform(({ value }) => value.toISOString(), { toPlainOnly: true })
+  const toClass = Transform(({ value }) => new Date(value), { toClassOnly: true })
+
+  toPlain(target, propertyKey)
+  toClass(target, propertyKey)
 }
 
 /*
-class TrackLink {
-  @IsString()
-  key: string;
-
-  @IsUrl()
-  @TransformURI()
-  value: URL;
-}
+Some JSPF datas (metas, attribution, links...) are arrays of key-value pairs.
+It's difficult to handle them since the name of the properties are unknown.
+So convert them to an object with a 'name' and 'data' property.
 */
 
-class TrackLink {
-  @IsString()
-  key: string;
+class SinglePair {
+  @TransformUri()
+  rel: string;
+  content: any;
 
-  @IsString()
-  value: string;
+  constructor(data:any){
+    console.log("SINGLEPAIR CONSTRUCTOR",data);
+  }
+
 }
 
+export class Meta extends SinglePair{
+}
+
+export class Link extends SinglePair{
+}
+
+export class Attribution extends SinglePair{
+}
+
+export class Extension extends SinglePair{
+}
+
+
+
+//convert key-value pairs to an object extending SinglePair
+function pairToSingle(pair: { [key: string]: any }): any {
+  const name: string = Object.keys(pair)[0];
+  const data: any = pair[name];
+  return {rel:name,content:data};
+}
+
+//converts an array of SinglePair objects to build an object of key-value pairs from
+function SingleToPair(instance: any): { [key: string]: any } {
+  const hash: { [key: string]: string } = {};
+  hash[instance.rel] = instance.content;
+  return hash;
+}
+
+export const TransformPair = (options: TransformPairsOptions = { each: false }): PropertyDecorator => {
+
+  const toPlain = Transform(({ value }) => {
+
+    if(!options.each){
+      return SingleToPair(value);
+    }else{
+
+      return value.map((item:any) => SingleToPair(item));
+    }
+
+  }, { toPlainOnly: true });
+
+  const toClass = Transform(({ value }) => {
+    if(!options.each){
+    }else{
+      return value.map((item:any) => pairToSingle(item));
+    }
+  }, { toClassOnly: true });
+
+  return (target: Object, propertyKey: string | symbol) => {
+    toPlain(target, propertyKey);
+    toClass(target, propertyKey);
+  };
+}
+
+
 export class Track {
-  @IsOptional()
-  @IsArray()
-  @IsUrl({}, { each: true })
-  location?: string[];
+
+/*
+@IsOptional()
+@IsArray()
+@TransformUri({each:true})
+@IsUri(,{})
+location?: URL[];
+*/
+
 
   @IsOptional()
   @IsArray()
-  @IsUrl({}, { each: true })
-  identifier?: string[];
+  @TransformUri({each:true})
+  @IsUri({},{each:true})
+  location?: URL[];
+
+
+  @IsOptional()
+  @IsArray()
+  @TransformUri({each:true})
+  @IsUri({},{each:true})
+  identifier?: URL[];
 
   @IsOptional()
   @IsDefined()
@@ -122,34 +173,17 @@ export class Track {
   annotation?: string;
 
   @IsOptional()
-  @IsUrl()
-  info?: string;
+  @IsUri()
+  @TransformUri()
+  info?: URL;
 
   @IsOptional()
-  @IsUrl()
-  image?: string;
+  @IsUri()
+  @TransformUri()
+  image?: URL;
 
   @IsOptional()
-  @IsUrl()
-  license?: string;
-
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => Attribution)
-  attribution?: Attribution[];
-
-  @IsDefined({ message: 'links should not be null or undefined' })
-  @IsArray({ message: 'links must be an array' })
-  @ValidateNested({ each: true })
-  @Type(() => TrackLink)
-  links: TrackLink[];
-
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => Object)
-  meta?: Object[];
+  album?: string;
 
   @IsOptional()
   @IsInt()
@@ -162,14 +196,28 @@ export class Track {
   duration?: number;
 
   @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => Object)
-  extension?: Object;
+  @IsArray()
+  @ValidateNested({each:true})
+  @TransformPair({each:true})
+  @Type(() => Link)
+  link?: Link[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({each:true})
+  @TransformPair({each:true})
+  @Type(() => Meta)
+  meta?: Meta[];
+
+  @IsOptional()
+  @TransformPair()
+  @ValidateNested()
+  extension?: Extension;
+
 }
 
 export class Playlist {
   @IsOptional()
-  @IsDefined()
   @IsString()
   title?: string;
 
@@ -182,56 +230,64 @@ export class Playlist {
   annotation?: string;
 
   @IsOptional()
-  @IsUrl()
-  info?: string;
+  @IsUri()
+  @TransformUri()
+  info?: URL;
 
   @IsOptional()
-  @IsUrl()
-  location?: string;
+  @IsUri()
+  @TransformUri()
+  location?: URL;
 
   @IsOptional()
-  @IsUrl()
-  identifier?: string;
+  @IsUri()
+  @TransformUri()
+  identifier?: URL;
 
   @IsOptional()
-  @IsUrl()
-  image?: string;
+  @IsUri()
+  @TransformUri()
+  image?: URL;
 
   @IsOptional()
   @IsDate()
-  @TransformDate()
+  @TransformDate
   date?: Date;
 
   @IsOptional()
-  @IsUrl()
-  license?: string;
+  @IsUri()
+  @TransformUri()
+  license?: URL;
 
   @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
+  @TransformPair({each:true})
+  @ValidateNested()
   @Type(() => Attribution)
   attribution?: Attribution[];
 
   @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => Object)
-  link?: Object[];
+  @ValidateNested({each:true})
+  @TransformPair({each:true})
+  @Type(() => Link)
+  link?: Link[];
 
   @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => Object)
-  meta?: Object[];
+  @ValidateNested({each:true})
+  @TransformPair({each:true})
+  @Type(() => Meta)
+  meta?: Meta[];
 
   @IsOptional()
+  @TransformPair()
   @ValidateNested()
-  @Type(() => Object)
-  extension?: Object;
+  extension?: Extension;
 
   @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
+  @ValidateNested()
   @Type(() => Track)
   track?: Track[];
 }

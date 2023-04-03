@@ -73,50 +73,11 @@ console.log(
 const playlist = plainToClass(Playlist,jspf.playlist);
 const playlistErrors = validateSync(playlist);
 
-/*
 if (playlistErrors.length > 0) {
   console.log('PLAYLIST VALIDATION ERROR:', playlistErrors);
 }else{
   console.log("CLASS PLAYLIST",playlist);
 }
-*/
 
-const track = plainToClass(Track,jspf.playlist.track[0]);
-const trackErrors = validateSync(track);
-
-if (trackErrors.length > 0) {
-  console.log('TRACK VALIDATION ERROR:', trackErrors);
-
-  // Find the validation error for the 'link' property
-  const linkError = trackErrors.find(error => error.property === 'link');
-
-  // Access the error message(s) for the 'link' property
-  if (linkError) {
-    console.log("LINK ERROR",linkError?.children);
-
-    if (linkError?.children){
-      console.log("LINK ERROR",linkError?.children[0]);
-    }
-
-    const values =  linkError?.constraints ? Object.values(linkError?.constraints) : [];
-    const errorMessages = Object.values(values);
-    console.log(errorMessages);
-  }
-
-
-}else{
-  console.log("CLASS TRACK",track);
-}
-
-/*
-const track = plainToClass(Track,jspf.playlist.track[0]);
-console.log("TOTO",track);
-const errors = validateSync(track);
-if (errors.length > 0) {
-  console.log('Validation errors:', errors);
-} else {
-  console.log('Track:', track);
-}
-*/
 
 console.log("END");
