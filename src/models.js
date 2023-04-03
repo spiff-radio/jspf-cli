@@ -68,7 +68,7 @@ export const MetaCollection = ArrayModel(MetaObject);
 export const ExtensionCollection = ObjectModel(ExtensionObject);
 export const UriCollection = ArrayModel(UriString);
 
-export const TrackModel = new ObjectModel({
+export const Track = new ObjectModel({
 	location: [UriCollection],
 	identifier: [UriCollection],
 	title: [TrimmedString],
@@ -84,9 +84,9 @@ export const TrackModel = new ObjectModel({
 	extension: [ExtensionCollection]
 });
 
-export const TrackCollection = ArrayModel(TrackModel);
+export const TrackCollection = ArrayModel(Track);
 
-export const PlaylistModel = new ObjectModel({
+export const Playlist = new ObjectModel({
 	title: [TrimmedString],
 	creator: [TrimmedString],
 	annotation: [TrimmedString],
