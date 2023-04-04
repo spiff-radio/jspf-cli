@@ -7,10 +7,13 @@ import { plainToClass,classToPlain,serialize } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { validationErrorsAsArray } from 'class-validator-flat-formatter';
 import {Playlist,Track} from "./class-validator/models";
+import jsonSchema from './jsonschema/schema.json';
+import {Validator, ValidatorResult, ValidationError, Schema as JSONSchema} from 'jsonschema';
+
 
 const jspf = {
    "playlist" : {
-     "title"         : "JSPF example",
+     "title"         : 125,
      "creator"       : "Name of playlist author",
      "annotation"    : "Super playlist",
      "info"          : "http://example.com/",
@@ -48,11 +51,10 @@ const jspf = {
          "trackNum"      : 1,
          "duration"      : 0,
          "link"          : [
-           {"http://example.com/rel/1/" : "http://example.com/body/1/"},
-           {"http://example.com/rel/2/" : "http://example.com/body/2/"}
+           {"http://example.com/rel/1/" : "http://example.com/body/1/"}
          ],
          "meta"          : [
-           {"http://example.com/rel/1/" : "my meta 14"},
+           {"INVALID" : "my meta 14"},
            {"http://example.com/rel/2/" : "345"}
          ],
          "extension"     : {
@@ -70,8 +72,8 @@ console.log(
   figlet.textSync('JSPF', { horizontalLayout: 'full' })
 );
 
+/*
 const playlist = new Playlist(jspf.playlist);
-
 const playlistErrors = validateSync(playlist);
 
 if (playlistErrors.length > 0) {
@@ -86,8 +88,70 @@ if (playlist?.track) {
   console.log("TRACK")
   console.log(playlist?.track[0])
 }
+*/
 
 
 
+
+export class JSPFValidator{
+  data:object;
+  schema:object;
+  validator;
+  validation;
+  errors:ValidationError[];
+  constructor(jspf:object,schema:object){
+    this.data = jspf;
+    this.schema = schema;
+    this.validator = new Validator();
+    this.validation = this.validator.validate(this.data,this.schema);
+    this.errors = this.validation.errors;
+  }
+
+  getValidData(){
+    return this.removeInvalidValues();
+  }
+
+  private removeInvalidValues():object {
+    const data = JSON.parse(JSON.stringify(this.data));//make copy
+    this.validation.errors.forEach(error => this.removeValueForError(data,error));
+    return data;
+  }
+
+  private removeValueForError(data: object, error: ValidationError): object {
+    const errorPath = error.property.replace(/\[(\w+)\]/g, '.$1').split('.');
+    let currentNode: { [key: string]: any } = data;
+    for (let i = 0; i < errorPath.length; i++) {
+      const key = errorPath[i];
+      if (i === errorPath.length - 1) {
+        delete currentNode[key];
+      } else {
+        if (!currentNode.hasOwnProperty(key)) {
+          // Property is not defined in the data, maybe already deleted, move on to next error
+          continue;
+        }
+        currentNode = currentNode[key];
+      }
+    }
+    return data;
+  }
+
+}
+
+const jspfValidator = new JSPFValidator(jspf,jsonSchema);
+let newJspf = JSON.parse(JSON.stringify(jspf));//make copy
+
+console.log("***INPUT***");
+console.log(JSON.stringify(newJspf));
+
+if (jspfValidator.validation.errors){
+
+  console.log("***ERRORS***");
+  console.log(jspfValidator.validation.errors);
+  console.log("***CLEAN***");
+  newJspf = jspfValidator.getValidData();
+  console.log(newJspf);
+}
+
+console.log(JSON.stringify(newJspf));
 
 console.log("END");
