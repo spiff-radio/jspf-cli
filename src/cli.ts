@@ -154,10 +154,10 @@ async function cli(){
   getCliHeaders();
 
   let options = await yargs.default({
-    path_input: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.jspf',
+    path_input: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.m3u8',
     path_output: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlistOUTPUT.jspf',
     strip:true,
-    format_input:'json',
+    format_input:'m3u8',
     format_output:'xml'
   }).argv;
 

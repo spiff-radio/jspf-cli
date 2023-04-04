@@ -1,52 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <playlist version="1.0" xmlns="http://xspf.org/ns/0/">
-    <playlist>
-        <creator>Name of playlist author</creator>
-        <annotation>Super playlist</annotation>
-        <info>http://example.com/</info>
-        <location>http://example.com/</location>
-        <identifier>http://example.com/</identifier>
-        <image>http://example.com/</image>
-        <date>2005-01-08T17:10:47-05:00</date>
-        <license>http://example.com/</license>
-        <attribution/>
-        <attribution/>
-        <link rel="http://example.com/rel/1/" href="http://example.com/body/1/"/>
-        <link rel="http://example.com/rel/2/" href="http://example.com/body/2/"/>
-        <meta rel="http://example.com/rel/1/" content="my meta 14"/>
-        <track>
-            <location>http://example.com/1.ogg</location>
-            <location>http://example.com/2.mp3</location>
-            <identifier>http://example.com/1/</identifier>
-            <identifier>http://example.com/2/</identifier>
-            <creator>Artist name</creator>
-            <annotation>Some text</annotation>
-            <info>http://example.com/</info>
-            <image>http://example.com/</image>
-            <album>Album name</album>
-            <trackNum>1</trackNum>
-            <duration>0</duration>
-            <link rel="http://example.com/rel/1/" href="http://example.com/body/1/"/>
-            <meta rel="http://example.com/rel/1/" content="my meta 14"/>
-            <meta rel="http://example.com/rel/2/" content="345"/>
-        </track>
-        <track>
-            <location>http://example.com/1.ogg</location>
-            <location>http://example.com/2.mp3</location>
-            <identifier>http://example.com/1/</identifier>
-            <identifier>http://example.com/2/</identifier>
-            <title>title 2</title>
-            <creator>Artist name 2</creator>
-            <annotation>Some text</annotation>
-            <info>http://example.com/</info>
-            <image>http://example.com/</image>
-            <album>Album name</album>
-            <trackNum>1</trackNum>
-            <duration>0</duration>
-            <link rel="http://example.com/rel/1/" href="http://example.com/body/1/"/>
-            <meta rel="http://example.com/rel/1/" content="my meta 14"/>
-            <meta rel="http://example.com/rel/2/" content="345"/>
-        </track>
-    </playlist>
+    <title/>
+    <creator/>
+    <tracks>
+        <trackNum>1</trackNum>
+        <creator>Bauhaus</creator>
+        <title>Bela Lugosi’s Dead</title>
+        <location>Bauhaus - Bela Lugosi’s Dead.mp3</location>
+        <duration>579</duration>
+    </tracks>
+    <tracks>
+        <trackNum>2</trackNum>
+        <creator>Anna Calvi</creator>
+        <title>Love Won't Be Leaving</title>
+        <location>Anna Calvi - Love Won't Be Leaving.mp3</location>
+        <duration>337</duration>
+    </tracks>
+    <tracks>
+        <trackNum>3</trackNum>
+        <creator>Curtis Mayfield</creator>
+        <title>Tripping Ou</title>
+        <location>Curtis Mayfield - Tripping Out - Remastered.mp3</location>
+        <duration>234</duration>
+    </tracks>
+    <tracks>
+        <trackNum>4</trackNum>
+        <creator>Jehro</creator>
+        <title>The Passers-By (Les Passantes)</title>
+        <location>Jehro - The Passers-By (Les Passantes).mp3</location>
+        <duration>298</duration>
+    </tracks>
     <trackList/>
 </playlist>

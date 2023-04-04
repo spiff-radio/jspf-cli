@@ -2,6 +2,8 @@ import {FileFormat} from './constants';
 import {classToPlain} from 'class-transformer';
 import {JSPF_VERSION,XSPF_VERSION,XSPF_XMLNS} from './constants';
 import { json2xml } from 'xml-js';
+const m3u8Parser = require('m3u8-parser');
+
 
 
 export default class FormatConverter{
@@ -22,17 +24,48 @@ export default class FormatConverter{
 
   }
 
-  private import_json(data_input:any){
+  private import_json(data:any){
     try{
-      return JSON.parse(data_input);
+      return JSON.parse(data);
     }catch(e){
       console.error('Unable to parse JSON.');
       throw e;
     }
   }
 
-  private import_m3u8(data_input:any){
-    console.log("INPUT",data_input);
+  private import_m3u8(data: any) {
+    const parser = new m3u8Parser.Parser();
+    parser.push(data);
+    parser.end();
+
+    const parsedManifest = parser.manifest;
+    const playlistTitle = parsedManifest?.playlists?.[0]?.attributes?.['NAME'] || '';
+    const playlistAuthor = parsedManifest?.playlists?.[0]?.attributes?.['CREATOR'] || '';
+    const tracks: any[] = [];
+
+    parsedManifest.segments.forEach((segment: any, index: number) => {
+      const artistTitle = segment.uri.split(' - ');
+      const artist = artistTitle[0];
+      const titleWithExtension = artistTitle[1];
+      const title = titleWithExtension.slice(0, titleWithExtension.lastIndexOf('.'));
+      tracks.push({
+        trackNum: index + 1,
+        creator: artist,
+        title: title,
+        location: [segment.uri],
+        duration: segment.duration,
+      });
+    });
+
+    const dto = {
+      title: playlistTitle,
+      creator: playlistAuthor,
+      tracks: tracks,
+    };
+
+    console.log("M3U8", dto);
+
+    return dto;
   }
 
   public export(playlist:any,format:FileFormat){
