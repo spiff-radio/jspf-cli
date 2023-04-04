@@ -57,15 +57,12 @@ export default class FormatConverter{
       });
     });
 
-    const dto = {
+    return{
       title: playlistTitle,
       creator: playlistAuthor,
       tracks: tracks,
     };
 
-    console.log("M3U8", dto);
-
-    return dto;
   }
 
   public export(playlist:any,format:FileFormat){
