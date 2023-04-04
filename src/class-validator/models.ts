@@ -2,6 +2,8 @@ import { validate,validateSync, IsDefined, IsUrl, IsNotEmptyObject, IsArray, IsO
 import { Type,Transform, TransformFnParams, plainToClass, plainToClassFromExist } from 'class-transformer';
 import {IsSinglePropertyObject} from './validation-custom';
 import {TransformDate,TransformPair} from './transform-custom';
+import {XSPF_VERSION} from './../constants';
+
 
 export class SinglePair {
   rel: string;

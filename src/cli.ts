@@ -6,7 +6,7 @@ import 'reflect-metadata';
 import { plainToClass,classToPlain,serialize } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { validationErrorsAsArray } from 'class-validator-flat-formatter';
-import {Playlist,Track} from "./models";
+import {Playlist,Track} from "./class-validator/models";
 
 const jspf = {
    "playlist" : {
