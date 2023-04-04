@@ -1,20 +1,21 @@
 //http://objectmodel.js.org/#doc-set-models
 //TOUFIX use Sets instead of array when possible
 
-import { BasicModel,ArrayModel,ObjectModel } from "objectmodel"
+import { BasicModel,ArrayModel,ObjectModel,Model } from "objectmodel"
 
 function isTrimmedString(str){
-	return str.trim() === str
+  return str.trim() === str;
 }
 
 function isUriString(str){
-	try {
-		new URL(str);
-		return true;
-	} catch (err) {
-		return false;
-	}
+  try {
+    new URL(str);
+    return true;
+  } catch (err) {
+    return false;
+  }
 }
+
 
 function isPositiveNumber(n){
 	return n >= 0
@@ -40,10 +41,22 @@ function isArrayValuesObject(obj){
 	return Object.values(obj).every(v => Array.isArray(v));
 }
 
-export const TrimmedString = BasicModel(String).assert(isTrimmedString);
+function parseDateString(value){
+  // parse the string into a date object
+  const date = new Date(value);
+
+  // if the parsing failed or the resulting date is invalid, throw an error
+  if (isNaN(date.getTime())) {
+    throw new Error(`Invalid date string: ${value}`);
+  }
+
+  // return the date object
+  return date;
+}
+
+export const TrimmedString = BasicModel(String).assert(isTrimmedString).as("TrimmedString");
 export const UriString = TrimmedString.extend().assert(isUriString);
 export const PositiveNumber = BasicModel(Number).assert(isPositiveNumber);
-export const DateTimeIso8601String = BasicModel(Date);
 
 export const AttributionObject = ObjectModel({})
 .assert(isSinglePropObject,"should have maximum one property")
@@ -68,7 +81,23 @@ export const MetaCollection = ArrayModel(MetaObject);
 export const ExtensionCollection = ObjectModel(ExtensionObject);
 export const UriCollection = ArrayModel(UriString);
 
-export const TrackModel = new ObjectModel({
+function parseDateString(value){
+  // parse the string into a date object
+  const date = new Date(value);
+
+  // if the parsing failed or the resulting date is invalid, throw an error
+  if (isNaN(date.getTime())) {
+    throw new Error(`Invalid date string: ${value}`);
+  }
+
+  // return the date object
+  return date;
+}
+
+export const DateStringModel = BasicModel(String).assert(parseDateString);
+
+
+export const Track = new ObjectModel({
 	location: [UriCollection],
 	identifier: [UriCollection],
 	title: [TrimmedString],
@@ -84,9 +113,9 @@ export const TrackModel = new ObjectModel({
 	extension: [ExtensionCollection]
 });
 
-export const TrackCollection = ArrayModel(TrackModel);
+export const TrackCollection = ArrayModel(Track);
 
-export const PlaylistModel = new ObjectModel({
+export const Playlist = new ObjectModel({
 	title: [TrimmedString],
 	creator: [TrimmedString],
 	annotation: [TrimmedString],
@@ -94,7 +123,7 @@ export const PlaylistModel = new ObjectModel({
 	location: [UriString],
 	identifier: [UriString],
 	image: [UriString],
-	date: [DateTimeIso8601String],
+	date: [DateStringModel],
 	license: [UriString],
 	attribution: [AttributionCollection],
 	link: [LinkCollection],

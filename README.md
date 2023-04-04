@@ -6,3 +6,7 @@ JSPF Playlist
 JSPF Playlist is a Node.js module used to create, edit and export playlists in [JSPF](https://www.xspf.org/jspf), the JSON Shareable Playlist Format, created by Xiph OSC.
 It has been developed as a module for our music website, Spiff Radio, which uses JSPF has a "backbone".
 More tools and modules are available on [our Github profile](https://github.com/spiff-radio) !
+
+Usage
+
+jspf --input="path-to-input-file.jspf" --output="path-to-output-file.jspf"
