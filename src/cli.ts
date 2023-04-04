@@ -1,14 +1,20 @@
 #!/usr/bin/env node
+const fs = require('fs');
+import yargs from 'yargs';
 const clear = require('clear');
 const figlet = require('figlet');
+var jsonPackage = require('../package.json');
+
+import {REPO_URL,ISSUES_URL,XSPF_URL,JSPF_VERSION,FileFormat} from './constants';
 
 import 'reflect-metadata';
 import { plainToClass,classToPlain,serialize } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { validationErrorsAsArray } from 'class-validator-flat-formatter';
-import {Playlist,Track} from "./class-validator/models";
-import jsonSchema from './jsonschema/schema.json';
-import {Validator, ValidatorResult, ValidationError, Schema as JSONSchema} from 'jsonschema';
+
+
+import JSPFSchemaValidator from "./schema-validator";
+import {Playlist} from "./class-validator/models";
 
 
 const jspf = {
@@ -32,17 +38,17 @@ const jspf = {
      ],
      "meta"          : [
        {"http://example.com/rel/1/" : "my meta 14"},
-       {"http://example.com/rel/2/" : "345"}
+       {INVALID : "345"}
      ],
      "extension"     : {
-       "http://example.com/app/1/" : ['ARBITRARY_EXTENSION_BODY', 'ARBITRARY_EXTENSION_BODY'],
-       "http://example.com/app/2/" : ['ARBITRARY_EXTENSION_BODY']
+       "http://example.com/app/1/" : ["ARBITRARY_EXTENSION_BODY", "ARBITRARY_EXTENSION_BODY"],
+       "http://example.com/app/2/" : ["ARBITRARY_EXTENSION_BODY"]
      },
      "track"         : [
        {
          "location"      : ["http://example.com/1.ogg", "http://example.com/2.mp3"],
          "identifier"    : ["http://example.com/1/", "http://example.com/2/"],
-         "title"         : "Track title",
+         "title"         : 125,
          "creator"       : "Artist name",
          "annotation"    : "Some text",
          "info"          : "http://example.com/",
@@ -54,12 +60,12 @@ const jspf = {
            {"http://example.com/rel/1/" : "http://example.com/body/1/"}
          ],
          "meta"          : [
-           {"INVALID" : "my meta 14"},
+           {"http://example.com/rel/1/" : "my meta 14"},
            {"http://example.com/rel/2/" : "345"}
          ],
          "extension"     : {
-           "http://example.com/app/1/" : ['ARBITRARY_EXTENSION_BODY', 'ARBITRARY_EXTENSION_BODY'],
-           "http://example.com/app/2/" : ['ARBITRARY_EXTENSION_BODY']
+           "http://example.com/app/1/" : ["ARBITRARY_EXTENSION_BODY", "ARBITRARY_EXTENSION_BODY"],
+           "http://example.com/app/2/" : ["ARBITRARY_EXTENSION_BODY"]
          }
        }
      ]
@@ -67,10 +73,7 @@ const jspf = {
  }
 
 
-clear();
-console.log(
-  figlet.textSync('JSPF', { horizontalLayout: 'full' })
-);
+
 
 /*
 const playlist = new Playlist(jspf.playlist);
@@ -91,62 +94,17 @@ if (playlist?.track) {
 */
 
 
-
-
-export class JSPFValidator{
-  data:object;
-  schema:object;
-  validator;
-  validation;
-  errors:ValidationError[];
-  constructor(jspf:object,schema:object){
-    this.data = jspf;
-    this.schema = schema;
-    this.validator = new Validator();
-    this.validation = this.validator.validate(this.data,this.schema);
-    this.errors = this.validation.errors;
-  }
-
-  getValidData(){
-    return this.removeInvalidValues();
-  }
-
-  private removeInvalidValues():object {
-    const data = JSON.parse(JSON.stringify(this.data));//make copy
-    this.validation.errors.forEach(error => this.removeValueForError(data,error));
-    return data;
-  }
-
-  private removeValueForError(data: object, error: ValidationError): object {
-    const errorPath = error.property.replace(/\[(\w+)\]/g, '.$1').split('.');
-    let currentNode: { [key: string]: any } = data;
-    for (let i = 0; i < errorPath.length; i++) {
-      const key = errorPath[i];
-      if (i === errorPath.length - 1) {
-        delete currentNode[key];
-      } else {
-        if (!currentNode.hasOwnProperty(key)) {
-          // Property is not defined in the data, maybe already deleted, move on to next error
-          continue;
-        }
-        currentNode = currentNode[key];
-      }
-    }
-    return data;
-  }
-
-}
-
+/*
 const jspfValidator = new JSPFValidator(jspf,jsonSchema);
 let newJspf = JSON.parse(JSON.stringify(jspf));//make copy
 
 console.log("***INPUT***");
 console.log(JSON.stringify(newJspf));
 
-if (jspfValidator.validation.errors){
+if (jspfValidator.errors){
 
   console.log("***ERRORS***");
-  console.log(jspfValidator.validation.errors);
+  console.log(jspfValidator.errors);
   console.log("***CLEAN***");
   newJspf = jspfValidator.getValidData();
   console.log(newJspf);
@@ -155,3 +113,113 @@ if (jspfValidator.validation.errors){
 console.log(JSON.stringify(newJspf));
 
 console.log("END");
+*/
+
+async function readFile(path: string): Promise<string> {
+  try {
+    const data = await fs.promises.readFile(path, 'utf8');
+    return data;
+  } catch (error) {
+    console.error('Failed to read input file.');
+    throw error;
+  }
+}
+
+async function writeFile(path: string, fileData: any): Promise<void> {
+  try {
+    await fs.promises.writeFile(path, fileData);
+  } catch (error) {
+    console.error('Failed to write output file.');
+    throw error;
+  }
+}
+
+function getCliHeaders(){
+  console.log(
+    figlet.textSync('JSPF', { horizontalLayout: 'full' })
+  );
+  console.info(`PACKAGE VERSION: ${jsonPackage.version}`);
+  console.info(REPO_URL);
+  console.log();
+  console.info(`JSPF VERSION: ${JSPF_VERSION}`);
+  console.info(XSPF_URL);
+  console.log();
+  console.log();
+}
+
+
+async function cli(){
+  clear();
+  getCliHeaders();
+
+  let options = await yargs.default({
+    input: '/home/gordie/Bureau/test.jspf',
+    output: '/home/gordie/Bureau/testFIX.jspf',
+    strip:true,
+    format:'xml'
+  }).argv;
+
+  if (!options?.input){
+    console.log("❌ Please set a value for --input.");
+
+  }
+
+  if (!options?.output){
+    console.log("❌ Please set a value for --output.");
+
+  }
+
+  if (!options?.input || !options?.output){
+    process.exit();
+  }
+
+  const input_data:string = await readFile(options.input);
+  let json:object = {};
+  let output_data:any = undefined;
+
+  try{
+    json = JSON.parse(input_data);
+  }catch(e){
+    console.error('Unable to parse JSON.');
+    throw e;
+  }
+
+  const jspfValidator = new JSPFSchemaValidator(json);
+
+  if (!options.strip){
+    if (jspfValidator.errors){
+      console.error("Your JSPF is not valid.  Either correct the input file (eg. on https://jsonlint.com/), or use argument ''--strip=true' to strip non-valid values.");
+      process.exit();
+    }
+  }else{
+    json = jspfValidator.getValidData();
+  }
+
+  const playlist = new Playlist(json);
+
+  switch (options.format as FileFormat) {
+    case 'xml':
+      output_data = playlist.toXML(json);
+      break;
+    case 'json':
+    default:
+      output_data = JSON.stringify(json);
+      break;
+  }
+
+  await writeFile(options.output,output_data);
+
+  console.log("🗸 SUCCESSFULLY CREATED FILE!");
+  console.log(options.output);
+  console.log();
+  process.exit();
+
+}
+
+cli().catch((e) => {
+  console.error("❌ ERROR");
+  console.error(e);
+  console.log();
+  console.info(`👹 That was a bug. Report it at ${ISSUES_URL}`);
+  process.exit();
+});

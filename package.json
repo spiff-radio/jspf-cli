@@ -35,10 +35,15 @@
     "class-validator-flat-formatter": "^3.0.1",
     "clear": "^0.1.0",
     "figlet": "^1.5.2",
-    "reflect-metadata": "^0.1.13"
+    "jsonschema": "^1.4.1",
+    "objectmodel": "^4.4.4",
+    "reflect-metadata": "^0.1.13",
+    "xml-js": "^1.6.11",
+    "yargs": "^17.7.1"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
+    "@types/yargs": "^17.0.24",
     "nodemon": "^2.0.22",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.3"
