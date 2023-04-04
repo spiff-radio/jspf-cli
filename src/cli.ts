@@ -12,109 +12,27 @@ import { plainToClass,classToPlain,serialize } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { validationErrorsAsArray } from 'class-validator-flat-formatter';
 
-
-import JSPFSchemaValidator from "./schema-validator";
 import FormatConverter from "./format-converter";
 import {Playlist} from "./class-validator/models";
+import {DTOPlaylistI} from "./dto/interfaces";
+import {DTOPlaylist} from "./dto/models";
 
-
-const jspf = {
-   "playlist" : {
-     "title"         : 125,
-     "creator"       : "Name of playlist author",
-     "annotation"    : "Super playlist",
-     "info"          : "http://example.com/",
-     "location"      : "http://example.com/",
-     "identifier"    : "http://example.com/",
-     "image"         : "http://example.com/",
-     "date"          : "2005-01-08T17:10:47-05:00",
-     "license"       : "http://example.com/",
-     "attribution"   : [
-       {"identifier"   : "http://example.com/"},
-       {"location"     : "http://example.com/"}
-     ],
-     "link"          : [
-       {"http://example.com/rel/1/" : "http://example.com/body/1/"},
-       {"http://example.com/rel/2/" : "http://example.com/body/2/"}
-     ],
-     "meta"          : [
-       {"http://example.com/rel/1/" : "my meta 14"},
-       {INVALID : "345"}
-     ],
-     "extension"     : {
-       "http://example.com/app/1/" : ["ARBITRARY_EXTENSION_BODY", "ARBITRARY_EXTENSION_BODY"],
-       "http://example.com/app/2/" : ["ARBITRARY_EXTENSION_BODY"]
-     },
-     "track"         : [
-       {
-         "location"      : ["http://example.com/1.ogg", "http://example.com/2.mp3"],
-         "identifier"    : ["http://example.com/1/", "http://example.com/2/"],
-         "title"         : 125,
-         "creator"       : "Artist name",
-         "annotation"    : "Some text",
-         "info"          : "http://example.com/",
-         "image"         : "http://example.com/",
-         "album"         : "Album name",
-         "trackNum"      : 1,
-         "duration"      : 0,
-         "link"          : [
-           {"http://example.com/rel/1/" : "http://example.com/body/1/"}
-         ],
-         "meta"          : [
-           {"http://example.com/rel/1/" : "my meta 14"},
-           {"http://example.com/rel/2/" : "345"}
-         ],
-         "extension"     : {
-           "http://example.com/app/1/" : ["ARBITRARY_EXTENSION_BODY", "ARBITRARY_EXTENSION_BODY"],
-           "http://example.com/app/2/" : ["ARBITRARY_EXTENSION_BODY"]
-         }
-       }
-     ]
-   }
- }
-
-
-
-
-/*
-const playlist = new Playlist(jspf.playlist);
-const playlistErrors = validateSync(playlist);
-
-if (playlistErrors.length > 0) {
-  //console.log('PLAYLIST VALIDATION ERROR:', playlistErrors);
-  console.log('PLAYLIST VALIDATION ERROR:', validationErrorsAsArray(playlistErrors));
-}else{
-  console.log("CLASS PLAYLIST",playlist);
+type cliOptions = {
+  path_input:string,
+  path_output:string,
+  format_input:FileFormat,
+  format_output:FileFormat
+  strip?:boolean,
 }
 
+const defaultCliOptions:cliOptions = {
+  path_input: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.m3u8',
+  path_output: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlistOUTPUT.jspf',
+  strip:true,
+  format_input:'m3u8',
+  format_output:'xml'
+};
 
-if (playlist?.track) {
-  console.log("TRACK")
-  console.log(playlist?.track[0])
-}
-*/
-
-
-/*
-const jspfValidator = new JSPFValidator(jspf,jsonSchema);
-let newJspf = JSON.parse(JSON.stringify(jspf));//make copy
-
-console.log("***INPUT***");
-console.log(JSON.stringify(newJspf));
-
-if (jspfValidator.errors){
-
-  console.log("***ERRORS***");
-  console.log(jspfValidator.errors);
-  console.log("***CLEAN***");
-  newJspf = jspfValidator.getValidData();
-  console.log(newJspf);
-}
-
-console.log(JSON.stringify(newJspf));
-
-console.log("END");
-*/
 
 async function readFile(path: string): Promise<string> {
   try {
@@ -153,13 +71,7 @@ async function cli(){
   clear();
   getCliHeaders();
 
-  let options = await yargs.default({
-    path_input: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.m3u8',
-    path_output: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlistOUTPUT.jspf',
-    strip:true,
-    format_input:'m3u8',
-    format_output:'xml'
-  }).argv;
+  let options = await yargs.default(defaultCliOptions).argv;
 
   if (!options?.path_input){
     console.log("❌ Please set a value for --path_input.");
@@ -191,28 +103,30 @@ async function cli(){
   let output_data:any = undefined;
 
   const converter = new FormatConverter();
-  input_data = converter.import(input_data,options.format_input as FileFormat);
 
-  //validation
-
-  const jspfValidator = new JSPFSchemaValidator(input_data);
-
-  if (!options.strip){
-    if (jspfValidator.errors){
-      console.error("Your JSPF is not valid.  Either correct the input file (eg. on https://jsonlint.com/), or use argument ''--strip=true' to strip non-valid values.");
-      process.exit();
-    }
-  }else{
-    input_data = jspfValidator.getValidData();
+  try{
+    input_data = converter.import(input_data,options.format_input as FileFormat) as DTOPlaylistI;
+  }catch(e){
+    console.error('Unable to load data.');
+    throw e;
   }
 
-  const playlist = new Playlist(input_data);
+  //DTO model
+  const playlist_dto = new DTOPlaylist(input_data);
+  input_data = classToPlain(playlist_dto);
+
+  if (!options.strip && !playlist_dto.is_valid() ){
+    console.info(playlist_dto.errors);
+    console.log();
+    console.error("Your JSPF is not valid.  Either correct the input file (eg. on https://jsonlint.com/), or use argument ''--strip=true' to strip non-valid values.");
+    process.exit();
+  }
 
   //output
-  output_data = converter.export(playlist,options.format_output as FileFormat);
+  output_data = converter.export(input_data,options.format_output as FileFormat);
   await writeFile(options.path_output,output_data);
 
-  console.log("🗸 SUCCESSFULLY CREATED FILE!");
+  console.log(`🗸 SUCCESSFULLY CREATED FILE! ( ${options.format_input} > ${options.format_output})`);
   console.log(options.path_output);
   console.log();
   process.exit();

@@ -1,20 +1,20 @@
-export interface AttributionInterface {
+export interface DTOAttributionI {
   [key: string]: string;
 }
 
-export interface LinkInterface {
+export interface DTOLinkI {
   [key: string]: string;
 }
 
-export interface MetaInterface {
+export interface DTOMetaI {
   [key: string]: string;
 }
 
-export interface ExtensionInterface {
+export interface DTOExtensionI {
   [key: string]: string[];
 }
 
-export interface TrackInterface {
+export interface DTOTrackI {
   location?: string[];
   identifier?: string[];
   title?: string;
@@ -25,12 +25,12 @@ export interface TrackInterface {
   album?: string;
   trackNum?: number;
   duration?: number;
-  link?: LinkInterface[];
-  meta?: MetaInterface[];
-  extension?: ExtensionInterface;
+  link?: DTOLinkI[];
+  meta?: DTOMetaI[];
+  extension?: DTOExtensionI;
 }
 
-export interface PlaylistInterface {
+export interface DTOPlaylistI {
   title?: string;
   creator?: string;
   annotation?: string;
@@ -40,9 +40,9 @@ export interface PlaylistInterface {
   image?: string;
   date?: string;
   license?: string;
-  attribution?: AttributionInterface[];
-  link?: LinkInterface[];
-  meta?: MetaInterface[];
-  extension?: ExtensionInterface;
-  track?: TrackInterface[];
+  attribution?: DTOAttributionI[];
+  link?: DTOLinkI[];
+  meta?: DTOMetaI[];
+  extension?: DTOExtensionI;
+  track?: DTOTrackI[];
 }

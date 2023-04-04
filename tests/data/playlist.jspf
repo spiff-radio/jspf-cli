@@ -1,6 +1,6 @@
 {
 	"playlist": {
-		"title": 125,
+		"title": "test playlist",
 		"creator": "Name of playlist author",
 		"annotation": "Super playlist",
 		"info": "http://example.com/",
@@ -27,7 +27,7 @@
 				"http://example.com/rel/1/": "my meta 14"
 			},
 			{
-				"INVALID": "345"
+				"http://example.com/rel/2/": "345"
 			}
 		],
 		"extension": {
@@ -37,7 +37,7 @@
 		"track": [{
 			"location": ["http://example.com/1.ogg", "http://example.com/2.mp3"],
 			"identifier": ["http://example.com/1/", "http://example.com/2/"],
-			"title": 125,
+			"title": "coucou",
 			"creator": "Artist name",
 			"annotation": "Some text",
 			"info": "http://example.com/",

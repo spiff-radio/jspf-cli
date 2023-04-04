@@ -2,6 +2,7 @@ import {FileFormat} from './constants';
 import {classToPlain} from 'class-transformer';
 import {JSPF_VERSION,XSPF_VERSION,XSPF_XMLNS} from './constants';
 import { json2xml } from 'xml-js';
+import {DTOPlaylistI} from "./dto/interfaces";
 const m3u8Parser = require('m3u8-parser');
 
 
@@ -33,8 +34,9 @@ export default class FormatConverter{
     }
   }
 
-  private import_m3u8(data: any) {
+  private import_m3u8(data: any){
     const parser = new m3u8Parser.Parser();
+    let dto:DTOPlaylistI = {};
     parser.push(data);
     parser.end();
 
@@ -57,11 +59,14 @@ export default class FormatConverter{
       });
     });
 
-    return{
+    dto = {
+      ...dto,
       title: playlistTitle,
       creator: playlistAuthor,
-      tracks: tracks,
-    };
+      track: tracks
+    }
+
+    return dto;
 
   }
 
