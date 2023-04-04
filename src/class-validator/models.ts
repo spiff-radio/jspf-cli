@@ -2,8 +2,7 @@ import { validate,validateSync, IsDefined, IsUrl, IsNotEmptyObject, IsArray, IsO
 import { Type,Transform, TransformFnParams, plainToClass, plainToClassFromExist,classToPlain,instanceToInstance } from 'class-transformer';
 import {IsSinglePropertyObject} from './validation-custom';
 import {TransformDate,TransformPair} from './transform-custom';
-import {JSPF_VERSION,XSPF_VERSION,XSPF_XMLNS} from './../constants';
-import { json2xml } from 'xml-js';
+
 
 
 export class SinglePair {
@@ -185,115 +184,6 @@ export class Playlist {
 
   constructor(data?: any,options: PlaylistOptions = { strip: false }) {
     plainToClassFromExist(this, data);
-  }
-
-  public toXML(data:any){
-    const playlist = new Playlist(data);
-    const playlistXML = new PlaylistXML(playlist);
-    data = classToPlain(playlistXML);
-
-    //add XML declaration
-
-    //add playlist attributes
-    data.playlist = {
-      ...data.playlist,
-      _attributes: {
-        version: XSPF_VERSION,
-        xmlns: XSPF_XMLNS
-      }
-    };
-
-
-    const xml = json2xml(JSON.stringify(data), { compact: true, spaces: 4 });
-    return xml;
-  }
-
-}
-
-export class PlaylistXML{
-  _declaration:object = {
-    _attributes:{
-      version:"1.0",
-      encoding:"utf-8"
-    }
-  }
-  playlist:any;
-
-  constructor(playlist?: any) {
-
-    this.playlist = classToPlain(playlist).playlist;
-
-    //move tracks within a trackList node
-    this.playlist.trackList = {track:this.playlist.track};
-    delete this.playlist.track;
-
-    //update some of the single nodes recursively
-    this.updateNodes(this.playlist);
-
-  }
-
-  //TOUFIX. This should be better coded if it was within a transform function used with class-transform.
-  updateNodes(data: any) {
-
-    const updateSingle = (data:any,type:string) => {
-      const prop_name:string = Object.keys(data)[0];
-      const prop_value:any = data[prop_name];
-
-      switch(type){
-        case 'link':
-
-          return {
-            _attributes: {
-              rel:prop_name,
-              href:prop_value
-            }
-          }
-
-        break;
-        case 'meta':
-
-          return {
-            _attributes: {
-              rel:prop_name,
-              content:prop_value
-            }
-          }
-
-        break;
-        case 'extension':
-          //TOUFIX
-        break;
-        case 'attribution':
-          //TOUFIX
-        break;
-        default:
-          return data;
-      }
-
-    }
-
-    if (Array.isArray(data)) {
-      for (let i = 0; i < data.length; i++) {
-        this.updateNodes(data[i]);
-      }
-    } else if (typeof data === 'object') {
-      for (let key in data) {
-
-        //process the content of those nodes
-        if (['link', 'meta', 'extension', 'attribution'].includes(key)) {
-
-          if ( Array.isArray(data[key]) ){
-            data[key] = data[key].map((item:any) => {return updateSingle(item,key)});
-          }else{
-            data[key] = updateSingle(data[key],key);
-          }
-
-        }
-
-        this.updateNodes(data[key]);
-
-      }
-    }
   }
 
 }

@@ -14,6 +14,7 @@ import { validationErrorsAsArray } from 'class-validator-flat-formatter';
 
 
 import JSPFSchemaValidator from "./schema-validator";
+import FormatConverter from "./format-converter";
 import {Playlist} from "./class-validator/models";
 
 
@@ -153,38 +154,48 @@ async function cli(){
   getCliHeaders();
 
   let options = await yargs.default({
-    input: '/home/gordie/Bureau/test.jspf',
-    output: '/home/gordie/Bureau/testFIX.jspf',
+    path_input: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.jspf',
+    path_output: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlistOUTPUT.jspf',
     strip:true,
-    format:'xml'
+    format_input:'json',
+    format_output:'xml'
   }).argv;
 
-  if (!options?.input){
-    console.log("❌ Please set a value for --input.");
+  if (!options?.path_input){
+    console.log("❌ Please set a value for --path_input.");
 
   }
 
-  if (!options?.output){
-    console.log("❌ Please set a value for --output.");
+  if (!options?.format_input){
+    console.log("❌ Please set a value for --format_input.");
 
   }
 
-  if (!options?.input || !options?.output){
+  if (!options?.path_output){
+    console.log("❌ Please set a value for --path_output.");
+
+  }
+
+  if (!options?.format_output){
+    console.log("❌ Please set a value for --format_input.");
+
+  }
+
+  if (!options?.path_input || !options?.path_output || !options?.format_input || !options?.format_output){
     process.exit();
   }
 
-  const input_data:string = await readFile(options.input);
-  let json:object = {};
+  //input file
+
+  let input_data:any = await readFile(options.path_input);
   let output_data:any = undefined;
 
-  try{
-    json = JSON.parse(input_data);
-  }catch(e){
-    console.error('Unable to parse JSON.');
-    throw e;
-  }
+  const converter = new FormatConverter();
+  input_data = converter.import(input_data,options.format_input as FileFormat);
 
-  const jspfValidator = new JSPFSchemaValidator(json);
+  //validation
+
+  const jspfValidator = new JSPFSchemaValidator(input_data);
 
   if (!options.strip){
     if (jspfValidator.errors){
@@ -192,25 +203,17 @@ async function cli(){
       process.exit();
     }
   }else{
-    json = jspfValidator.getValidData();
+    input_data = jspfValidator.getValidData();
   }
 
-  const playlist = new Playlist(json);
+  const playlist = new Playlist(input_data);
 
-  switch (options.format as FileFormat) {
-    case 'xml':
-      output_data = playlist.toXML(json);
-      break;
-    case 'json':
-    default:
-      output_data = JSON.stringify(json);
-      break;
-  }
-
-  await writeFile(options.output,output_data);
+  //output
+  output_data = converter.export(playlist,options.format_output as FileFormat);
+  await writeFile(options.path_output,output_data);
 
   console.log("🗸 SUCCESSFULLY CREATED FILE!");
-  console.log(options.output);
+  console.log(options.path_output);
   console.log();
   process.exit();
 
