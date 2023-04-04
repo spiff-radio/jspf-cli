@@ -4,7 +4,7 @@ JSPF Playlist
 > *The Node.js tool to handle JSPF Playlists *
 
 JSPF Playlist is a command line utility to validate and convert music playlist files.
-It's based on [JSPF](https://www.xspf.org/jspf), the JSON Shareable Playlist Format, created by Xiph OSC.
+It's based on [JSPF](https://www.xspf.org/jspf), the JSON Shareable Playlist Format, created by [Xiph](https://xiph.org/).
 
 It has been developed as a module for our music website, Spiff Radio, which uses JSPF has a "backbone".
 
