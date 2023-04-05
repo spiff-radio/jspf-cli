@@ -5,32 +5,31 @@ const clear = require('clear');
 const figlet = require('figlet');
 var jsonPackage = require('../package.json');
 
-import {REPO_URL,ISSUES_URL,XSPF_URL,JSPF_VERSION,FileFormat} from './constants';
+import {REPO_URL,ISSUES_URL,XSPF_URL,JSPF_VERSION} from './constants';
 
 import 'reflect-metadata';
 import { plainToClass,classToPlain,serialize } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { validationErrorsAsArray } from 'class-validator-flat-formatter';
 
-import FormatConverter from "./format-converter";
-import {Playlist} from "./class-validator/models";
+import {convertPlaylist,getConverterTypes} from "./dto/converters-list";
 import {DTOPlaylistI} from "./dto/interfaces";
 import {DTOPlaylist} from "./dto/models";
 
 type cliOptions = {
-  path_input:string,
-  path_output:string,
-  format_input:FileFormat,
-  format_output:FileFormat
-  strip?:boolean,
+  path_in:string,
+  path_out:string,
+  format_in:string,
+  format_out:string,
+  strip?:boolean
 }
 
-const defaultCliOptions:cliOptions = {
-  path_input: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.m3u8',
-  path_output: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlistOUTPUT.jspf',
-  strip:true,
-  format_input:'m3u8',
-  format_output:'xml'
+const defaultCliOptions:Record<string, any> = {
+  //path_in: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.m3u8',
+  //path_out: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlistOUTPUT.jspf',
+  strip:true
+  //format_in:'m3u8',
+  //format_out:'jspf'
 };
 
 
@@ -54,67 +53,118 @@ async function writeFile(path: string, fileData: any): Promise<void> {
 }
 
 function getCliHeaders(){
-  console.log(
-    figlet.textSync('JSPF', { horizontalLayout: 'full' })
-  );
-  console.info(`PACKAGE VERSION: ${jsonPackage.version}`);
-  console.info(REPO_URL);
-  console.log();
-  console.info(`JSPF VERSION: ${JSPF_VERSION}`);
-  console.info(XSPF_URL);
-  console.log();
+
+  console.info(`Package version: ${jsonPackage.version} - ${REPO_URL}`);
+  console.info(`JSPF version: ${JSPF_VERSION} - ${XSPF_URL}`);
+  console.log('---');
   console.log();
 }
 
 
 async function cli(){
+
+  const allowedTypes = getConverterTypes();
+
   clear();
-  getCliHeaders();
 
-  let options = await yargs.default(defaultCliOptions).argv;
+  console.log(
+    figlet.textSync('JSPF', { horizontalLayout: 'full' })
+  );
 
-  if (!options?.path_input){
-    console.log("❌ Please set a value for --path_input.");
+  let options = await yargs
+  .default(defaultCliOptions)
+  .option('path_in', {
+    describe: 'The input file path',
+    type: 'string',
+    demandOption: true
+  })
+  .option('path_out', {
+    describe: 'The output file path',
+    type: 'string',
+    demandOption: true
+  })
+  .option('format_in', {
+    describe: `The input format`,
+    choices:allowedTypes,
+    type: 'string',
+    demandOption: true
+  })
+  .option('format_out', {
+    describe: 'The output format',
+    choices:allowedTypes,
+    type: 'string',
+    demandOption: true
+  })
+  .option('strip', {
+    describe: 'Remove values that do not conform to the JSPF specifications',
+    type: 'string',
+    demandOption: true
+  })
+  .help('h')
+  .alias('h', 'help')
+  .epilogue(`JSPF version: ${JSPF_VERSION} - ${XSPF_URL}`)
+  .epilogue(`for more information or issues, reach out ${REPO_URL}`)
+  .argv;
+
+
+
+
+  const validateOptionFormat = (optionName: string, optionValue: string|undefined): string => {
+
+    const options = allowedTypes;
+
+    if (!optionValue) {
+      throw new Error(`❌ Please set a value for ${optionName}.`);
+    }
+    if (!options.includes(optionValue)) {
+      throw new Error(`❌ Invalid value '${optionValue}' for '${optionName}'. Available formats: ${options.join(', ')}.`);
+    }
+    return optionValue;
+  }
+
+  //Check file paths
+  if (!options?.path_in){
+    console.log("❌ Please set a value for --path_in.");
 
   }
 
-  if (!options?.format_input){
-    console.log("❌ Please set a value for --format_input.");
+  if (!options?.path_out){
+    console.log("❌ Please set a value for --path_out.");
 
   }
 
-  if (!options?.path_output){
-    console.log("❌ Please set a value for --path_output.");
-
+  //check file formats
+  try{
+    options.format_in = validateOptionFormat('--format_in',options?.format_in);
+  }catch(e){
+    console.log(e);
   }
 
-  if (!options?.format_output){
-    console.log("❌ Please set a value for --format_input.");
-
+  try{
+    options.format_out = validateOptionFormat('--format_out',options?.format_out);
+  }catch(e){
+    console.log(e);
   }
 
-  if (!options?.path_input || !options?.path_output || !options?.format_input || !options?.format_output){
+  if (!options?.path_in || !options?.path_out || !options?.format_in || !options?.format_out){
     process.exit();
   }
 
-  //input file
-
-  let input_data:any = await readFile(options.path_input);
-  let output_data:any = undefined;
-
-  const converter = new FormatConverter();
+  //conversion IN
+  const input_data:any = await readFile(options.path_in);
+  let jspf_string:string;
 
   try{
-    input_data = converter.import(input_data,options.format_input as FileFormat) as DTOPlaylistI;
+    jspf_string = convertPlaylist(input_data,{format_in:options.format_in,format_out:'jspf'});
   }catch(e){
     console.error('Unable to load data.');
     throw e;
   }
 
-  //DTO model
-  const playlist_dto = new DTOPlaylist(input_data);
-  input_data = classToPlain(playlist_dto);
+  //DTO
+  const playlist_dto = new DTOPlaylist(JSON.parse(jspf_string));
 
+  //validation
   if (!options.strip && !playlist_dto.is_valid() ){
     console.info(playlist_dto.errors);
     console.log();
@@ -122,14 +172,25 @@ async function cli(){
     process.exit();
   }
 
-  //output
-  output_data = converter.export(input_data,options.format_output as FileFormat);
-  await writeFile(options.path_output,output_data);
+  //conversion OUT
 
-  console.log(`🗸 SUCCESSFULLY CREATED FILE! ( ${options.format_input} > ${options.format_output})`);
-  console.log(options.path_output);
+  let output_data:any = undefined;
+  try{
+    output_data = convertPlaylist(playlist_dto.toString(),{format_in:'jspf',format_out:options.format_out});
+  }catch(e){
+    console.error('Unable to convert data.');
+    throw e;
+  }
+
+  //output
+  await writeFile(options.path_out,output_data);
+
+  console.log(`🗸 SUCCESSFULLY CONVERTED FILE! ( ${options.format_in} > ${options.format_out})`);
+  console.log();
+  console.log(options.path_out);
   console.log();
   process.exit();
+
 
 }
 

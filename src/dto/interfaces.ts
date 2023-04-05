@@ -46,3 +46,13 @@ export interface DTOPlaylistI {
   extension?: DTOExtensionI;
   track?: DTOTrackI[];
 }
+
+export interface DTOConverterI{
+  set(data: DTOPlaylistI):string,
+  get(data: DTOPlaylistI):DTOPlaylistI
+}
+
+export interface ConvertOptionsI {
+  format_in: string;
+  format_out: string;
+}

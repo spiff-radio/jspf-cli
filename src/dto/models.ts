@@ -1,7 +1,8 @@
 import { plainToClass, plainToClassFromExist,classToPlain, Exclude } from 'class-transformer';
 import {Validator, ValidatorResult, ValidationError, Schema as JSONSchema} from 'jsonschema';
 import jsonSchema from './jspf-schema.json';
-import {DTOPlaylistI,DTOTrackI,DTOAttributionI,DTOMetaI,DTOLinkI,DTOExtensionI} from './interfaces';
+import {DTOPlaylistI,DTOTrackI,DTOAttributionI,DTOMetaI,DTOLinkI,DTOExtensionI,DTOConverterI} from './interfaces';
+import {removeEmptyAndUndefined} from '../utils';
 
 type PlaylistOptions = {
   notValidError?: boolean,
@@ -140,4 +141,26 @@ export class DTOPlaylist implements DTOPlaylistI{
     return dto;
   }
 
+  //export to JSON - override built-in class function
+  toJSON():object{
+    let obj = classToPlain(this);
+    obj = removeEmptyAndUndefined(obj);
+    return obj;
+  }
+
+  //export to string - override built-in class function
+  toString():string{
+    return JSON.stringify(this.toJSON(), null, 4);
+  }
+
+}
+
+export abstract class DTOConverter implements DTOConverterI {
+  public static readonly types: string[] = [];
+
+  //get DTO playlist from data
+  public abstract get(data: any): DTOPlaylistI;
+
+  //converts DTO playlist to data
+  public abstract set(dto: DTOPlaylistI): any;
 }

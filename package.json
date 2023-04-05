@@ -36,6 +36,7 @@
     "clear": "^0.1.0",
     "figlet": "^1.5.2",
     "jsonschema": "^1.4.1",
+    "lodash": "^4.17.21",
     "m3u8-parser": "^6.0.0",
     "objectmodel": "^4.4.4",
     "reflect-metadata": "^0.1.13",
@@ -43,6 +44,7 @@
     "yargs": "^17.7.1"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.192",
     "@types/node": "^18.15.11",
     "@types/yargs": "^17.0.24",
     "nodemon": "^2.0.22",

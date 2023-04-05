@@ -19,7 +19,7 @@ $ [sudo] npm install -g jspf
 ## Usage
 
 ```sh
-jspf --path_input="path-to-input-file.xspf" --format_input="xspf" --path_output="path-to-output-file.jspf" --format_output="jspf"
+jspf --path_in="path-to-input-file.xspf" --format_in="xspf" --path_out="path-to-output-file.jspf" --format_out="jspf"
 ```
 
 See [https://github.com/spiff-radio/jspf-playlist](https://github.com/spiff-radio/jspf-playlist) for more
