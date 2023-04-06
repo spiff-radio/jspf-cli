@@ -10,7 +10,6 @@ import {REPO_URL,ISSUES_URL,XSPF_URL,JSPF_VERSION} from './constants';
 import 'reflect-metadata';
 import { plainToClass,classToPlain,serialize } from 'class-transformer';
 import { validateSync } from 'class-validator';
-import { validationErrorsAsArray } from 'class-validator-flat-formatter';
 
 import {convertPlaylist,getConverterTypes} from "./dto/converters-list";
 import {DTOPlaylistI} from "./dto/interfaces";
