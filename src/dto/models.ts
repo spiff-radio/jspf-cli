@@ -1,6 +1,6 @@
 import { plainToClass, plainToClassFromExist,classToPlain, Exclude, Type } from 'class-transformer';
 import {Validator, ValidatorResult, ValidationError, Schema as JSONSchema} from 'jsonschema';
-import jsonSchema from './jspf-schema.json';
+import defaultJsonSchema from './jspf-schema.json';
 import {JSPFDataI,PlaylistDataI,TrackDataI,AttributionDataI,MetaDataI,LinkDataI,ExtensionDataI,DataConverterI} from './interfaces';
 import {removeEmptyAndUndefined} from '../utils';
 
@@ -82,34 +82,30 @@ export class PlaylistData extends BaseData implements PlaylistDataI{
   track: TrackData[];
 
   @Exclude()
-  private validator;
+  validator:any;//FIX type
 
   @Exclude()
-  private validation;
+  validation:any;//FIX type
 
   constructor(data?: any, options: PlaylistOptions = defaultPlaylistOptions) {
 
     super(data);
 
     this.validator = new Validator();
-    this.validation = this.validator.validate(data,jsonSchema);
 
     //clean input data
     if (options.stripNotValid){
-      data = PlaylistData.removeValuesWithErrors(data,this.errors);
+      const valid = this.is_valid(); //populate validation errors
+      data = PlaylistData.removeValuesWithErrors(data,this.validation.errors);
     }
 
     plainToClassFromExist(this, data);
 
   }
 
-  public is_valid(){
+  public is_valid(jsonSchema = defaultJsonSchema):boolean{
+    this.validation = this.validator.validate(this.toJSON(),defaultJsonSchema);
     return (!this.validation.errors.length);
-  }
-
-  public get errors():ValidationError[] | undefined{
-    if (!this.validation.errors.length) return undefined;
-    return this.validation.errors;
   }
 
   private static removeValuesWithErrors(dto:PlaylistDataI,errors:ValidationError[] | undefined):PlaylistDataI {

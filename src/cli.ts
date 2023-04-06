@@ -26,10 +26,10 @@ type cliOptions = {
 
 const defaultCliOptions:Record<string, any> = {
   //path_in: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.m3u8',
-  path_in:"/mnt/c/Users/gordiePC/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.jspf",
+  //path_in:"/mnt/c/Users/gordiePC/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.jspf",
   //path_out: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlistOUTPUT.jspf',
-  path_out:"/mnt/c/Users/gordiePC/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.m3u8",
-  strip:true
+  //path_out:"/mnt/c/Users/gordiePC/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlistTEST.m3u8",
+  //strip:true
   //format_in:'m3u8',
   //format_out:'jspf'
 };
@@ -162,32 +162,36 @@ async function cli(){
     console.log(e);
   }
 
+  if (options.format_in === options.format_out){
+    console.log(`❌ Both input and output formats are set to ${options.format_in}!  Don't you want to convert the data ?`);
+    options.format_in = undefined;
+    options.format_out = undefined;
+  }
+
   if (!options?.path_in || !options?.path_out || !options?.format_in || !options?.format_out){
     process.exit();
   }
 
   //conversion IN
   const input_data:any = await readFile(options.path_in);
-  let jspf_string:string;
+  let playlistJSON:object;
 
   try{
-    jspf_string = convertPlaylist(input_data,{format_in:options.format_in,format_out:'jspf'});
+    const jspfString = convertPlaylist(input_data,{format_in:options.format_in,format_out:'jspf'});
+    const jspfJSON = JSON.parse(jspfString);
+    playlistJSON = jspfJSON.playlist;
   }catch(e){
     console.error('Unable to load data.');
     throw e;
   }
 
   //DTO
-  const jspf = new Jspf(JSON.parse(jspf_string));
-  const playlist = jspf.playlist;
-
-  console.log("DTO");
-  console.log(playlist.hello());
-  console.log();
+  const jspf = new Jspf();
+  jspf.playlist = new Playlist(playlistJSON);
 
   //validation
-  if (!options.strip && !playlist.is_valid() ){
-    console.info(playlist.errors);
+  if (!options.strip && !jspf.playlist.is_valid() ){
+    console.info(jspf.playlist.validation.errors);
     console.log();
     console.error("Your JSPF is not valid.  Either correct the input file (eg. on https://jsonlint.com/), or use argument ''--strip=true' to strip non-valid values.");
     process.exit();
@@ -196,16 +200,13 @@ async function cli(){
   //conversion OUT
 
   let output_data:any = undefined;
+
   try{
-    output_data = convertPlaylist(playlist.toString(),{format_in:'jspf',format_out:options.format_out});
+    output_data = convertPlaylist(jspf.toString(),{format_in:'jspf',format_out:options.format_out});
   }catch(e){
     console.error('Unable to convert data.');
     throw e;
   }
-
-  console.log("OUTPUT");
-  console.log(output_data);
-  console.log();
 
   //output
   await writeFile(options.path_out,output_data);

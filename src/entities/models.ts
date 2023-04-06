@@ -52,6 +52,7 @@ export class Playlist extends PlaylistData{
   extension: Extension;
   @Type(() => Track)
   track: Track[];
+
   hello(){
     console.log("hello");
   }

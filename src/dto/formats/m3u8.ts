@@ -1,14 +1,17 @@
 const m3u8Parser = require('m3u8-parser');
 import { PlaylistDataI, DataConverterI } from '../interfaces';
 import { DataConverter } from '../models';
+import { Playlist } from '../../entities/models';
 
 export default class M3u8Converter extends DataConverter {
   public static readonly types = ['m3u8'];
 
-  public get(data: PlaylistDataI):PlaylistDataI{
+  public get(filedata:string):PlaylistDataI{
+
+    let rawData:object = {};
+
     const parser = new m3u8Parser.Parser();
-    let dto:PlaylistDataI = {};
-    parser.push(data);
+    parser.push(filedata);
     parser.end();
 
     const parsedManifest = parser.manifest;
@@ -30,14 +33,14 @@ export default class M3u8Converter extends DataConverter {
       });
     });
 
-    dto = {
-      ...dto,
+    rawData = {
+      ...rawData,
       title: playlistTitle,
       creator: playlistAuthor,
       track: tracks
     }
 
-    return dto;
+    return new Playlist(rawData);
 
   }
 

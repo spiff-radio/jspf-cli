@@ -1,5 +1,6 @@
 import { PlaylistDataI, DataConverterI } from '../interfaces';
-import { DataConverter,JSPFData,PlaylistData } from '../models';
+import { DataConverter } from '../models';
+import { Jspf,Playlist } from '../../entities/models';
 import { classToPlain } from 'class-transformer';
 
 export default class JspfConverter extends DataConverter {
@@ -7,18 +8,21 @@ export default class JspfConverter extends DataConverter {
 
   public get(data:string):PlaylistDataI{
     try{
-      const jspfData = JSON.parse(data);
-      const jspf = new JSPFData(jspfData);
-      return jspf.toJSON();
+      data = JSON.parse(data);
     }catch(e){
       console.error('Unable to parse JSON.');
       throw e;
     }
+
+    const jspf = new Jspf(data);
+    const json = jspf.toJSON();
+    return json.playlist;
   }
 
-  public set(dto_data: PlaylistDataI):string{
-    const dto_playlist = new PlaylistData(dto_data);
-    return dto_playlist.toString();
+  public set(playlistData: PlaylistDataI):string{
+    const jspf = new Jspf();
+    jspf.playlist = new Playlist(playlistData);
+    return jspf.toString();
   }
 
 

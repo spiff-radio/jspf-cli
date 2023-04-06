@@ -1,4 +1,0 @@
-#EXTM3U
-#EXTINF:-1,t=JSPF example a=Name of playlist author
-#EXTINF:-1,t=Track title a=Artist name
-http://example.com/1.ogg
