@@ -10,3 +10,12 @@ export function removeEmptyAndUndefined(obj: Record<string, any>): Record<string
     return obj;
   }
 }
+
+//get extension out of a file path
+export function extractPathExtension(filePath: string): string | null {
+  const match = /[^/.]\.([^/.]+)$/.exec(filePath);
+  if (match) {
+    return match[1].toLowerCase();
+  }
+  return null;
+}

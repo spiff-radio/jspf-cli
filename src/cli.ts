@@ -6,26 +6,29 @@ const figlet = require('figlet');
 var jsonPackage = require('../package.json');
 
 import {REPO_URL,ISSUES_URL,XSPF_URL,JSPF_VERSION} from './constants';
+import {extractPathExtension} from './utils';
 
 import 'reflect-metadata';
 import { plainToClass,classToPlain,serialize } from 'class-transformer';
 import { validateSync } from 'class-validator';
 
 import {convertPlaylist,getConverterTypes} from "./dto/converters-list";
-import {DTOPlaylistI} from "./dto/interfaces";
-import {DTOPlaylist} from "./dto/models";
+import {Jspf,Playlist} from "./entities/models";
+//import {} from "./entities/models";
 
 type cliOptions = {
   path_in:string,
   path_out:string,
-  format_in:string,
-  format_out:string,
+  format_in?:string,
+  format_out?:string,
   strip?:boolean
 }
 
 const defaultCliOptions:Record<string, any> = {
   //path_in: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.m3u8',
+  path_in:"/mnt/c/Users/gordiePC/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.jspf",
   //path_out: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlistOUTPUT.jspf',
+  path_out:"/mnt/c/Users/gordiePC/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.m3u8",
   strip:true
   //format_in:'m3u8',
   //format_out:'jspf'
@@ -73,31 +76,28 @@ async function cli(){
   let options = await yargs
   .default(defaultCliOptions)
   .option('path_in', {
-    describe: 'The input file path',
+    describe: `The input file path.`,
     type: 'string',
     demandOption: true
   })
   .option('path_out', {
-    describe: 'The output file path',
+    describe: 'The output file path.',
     type: 'string',
     demandOption: true
   })
   .option('format_in', {
-    describe: `The input format`,
+    describe: `The input format for conversion.  If '--path_in' has an extension, this can be omitted.`,
     choices:allowedTypes,
-    type: 'string',
-    demandOption: true
+    type: 'string'
   })
   .option('format_out', {
-    describe: 'The output format',
+    describe: `The output format for conversion.  If '--path_out' has an extension, this can be omitted.`,
     choices:allowedTypes,
-    type: 'string',
-    demandOption: true
+    type: 'string'
   })
   .option('strip', {
     describe: 'Remove values that do not conform to the JSPF specifications',
-    type: 'string',
-    demandOption: true
+    type: 'string'
   })
   .help('h')
   .alias('h', 'help')
@@ -105,42 +105,59 @@ async function cli(){
   .epilogue(`for more information or issues, reach out ${REPO_URL}`)
   .argv;
 
+  const validateOptionPath = (name: string, value: string | null | undefined,existsCheck:boolean=false): string|undefined => {
 
+    if (!value) {
+      throw new Error(`❌ Please set a value for --${name}.`);
+    }
 
+    if (existsCheck && !fs.existsSync(value)) {
+      throw new Error(`❌ The path '${value}' specified in '--${name}' does not exist.`);
+    }
 
-  const validateOptionFormat = (optionName: string, optionValue: string|undefined): string => {
+    return value;
+  }
+
+  const validateOptionFormat = (name: string, value: string | null | undefined, path: string|undefined): string => {
 
     const options = allowedTypes;
 
-    if (!optionValue) {
-      throw new Error(`❌ Please set a value for ${optionName}.`);
+    //if value is not set, try to get it from the file path extension
+    if (!value && path){
+      value = extractPathExtension(path);
     }
-    if (!options.includes(optionValue)) {
-      throw new Error(`❌ Invalid value '${optionValue}' for '${optionName}'. Available formats: ${options.join(', ')}.`);
+
+    if (!value) {
+      throw new Error(`❌ Please set a value for --${name}.`);
     }
-    return optionValue;
+    if (!options.includes(value)) {
+      throw new Error(`❌ Invalid value '${value}' for '--${name}'. Available formats: ${options.join(', ')}.`);
+    }
+    return value;
   }
 
   //Check file paths
-  if (!options?.path_in){
-    console.log("❌ Please set a value for --path_in.");
-
-  }
-
-  if (!options?.path_out){
-    console.log("❌ Please set a value for --path_out.");
-
-  }
-
-  //check file formats
   try{
-    options.format_in = validateOptionFormat('--format_in',options?.format_in);
+    options.path_in = validateOptionPath('path_in',options?.path_in,true);
   }catch(e){
     console.log(e);
   }
 
   try{
-    options.format_out = validateOptionFormat('--format_out',options?.format_out);
+    options.path_out = validateOptionPath('path_out',options?.path_out);
+  }catch(e){
+    console.log(e);
+  }
+
+  //check file formats
+  try{
+    options.format_in = validateOptionFormat('format_in',options?.format_in,options.path_in);
+  }catch(e){
+    console.log(e);
+  }
+
+  try{
+    options.format_out = validateOptionFormat('format_out',options?.format_out,options.path_out);
   }catch(e){
     console.log(e);
   }
@@ -161,11 +178,16 @@ async function cli(){
   }
 
   //DTO
-  const playlist_dto = new DTOPlaylist(JSON.parse(jspf_string));
+  const jspf = new Jspf(JSON.parse(jspf_string));
+  const playlist = jspf.playlist;
+
+  console.log("DTO");
+  console.log(playlist.hello());
+  console.log();
 
   //validation
-  if (!options.strip && !playlist_dto.is_valid() ){
-    console.info(playlist_dto.errors);
+  if (!options.strip && !playlist.is_valid() ){
+    console.info(playlist.errors);
     console.log();
     console.error("Your JSPF is not valid.  Either correct the input file (eg. on https://jsonlint.com/), or use argument ''--strip=true' to strip non-valid values.");
     process.exit();
@@ -175,11 +197,15 @@ async function cli(){
 
   let output_data:any = undefined;
   try{
-    output_data = convertPlaylist(playlist_dto.toString(),{format_in:'jspf',format_out:options.format_out});
+    output_data = convertPlaylist(playlist.toString(),{format_in:'jspf',format_out:options.format_out});
   }catch(e){
     console.error('Unable to convert data.');
     throw e;
   }
+
+  console.log("OUTPUT");
+  console.log(output_data);
+  console.log();
 
   //output
   await writeFile(options.path_out,output_data);

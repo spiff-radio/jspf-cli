@@ -42,7 +42,27 @@ export default class M3u8Converter extends DTOConverter {
   }
 
   public set(dto: DTOPlaylistI):string{
-    throw new Error('Export to M3U8 not yet implemented.');
+    let output = "#EXTM3U\n";
+
+    // Add playlist information
+    output += `#EXTINF:-1,t=${dto.title} a=${dto.creator}\n`;
+
+    // Add tracks to the playlist
+    const tracks = dto.track ?? [];
+    tracks.forEach((track) => {
+
+      output += `#EXTINF:-1,t=${track.title} a=${track.creator}\n`;
+
+      // We can only keep the first link. //TOUFIX this should be done within a Model
+      const track_location = track.location && track.location[0] ? track.location[0] : undefined;
+
+      if (track.location && track.location.length > 0) {
+        output += `${track.location[0]}\n`;
+      }
+
+    });
+
+    return output;
   }
 
 }

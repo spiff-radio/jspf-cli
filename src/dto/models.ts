@@ -1,7 +1,7 @@
-import { plainToClass, plainToClassFromExist,classToPlain, Exclude } from 'class-transformer';
+import { plainToClass, plainToClassFromExist,classToPlain, Exclude, Type } from 'class-transformer';
 import {Validator, ValidatorResult, ValidationError, Schema as JSONSchema} from 'jsonschema';
 import jsonSchema from './jspf-schema.json';
-import {DTOPlaylistI,DTOTrackI,DTOAttributionI,DTOMetaI,DTOLinkI,DTOExtensionI,DTOConverterI} from './interfaces';
+import {DTOJspfI,DTOPlaylistI,DTOTrackI,DTOAttributionI,DTOMetaI,DTOLinkI,DTOExtensionI,DTOConverterI} from './interfaces';
 import {removeEmptyAndUndefined} from '../utils';
 
 type PlaylistOptions = {
@@ -14,72 +14,72 @@ const defaultPlaylistOptions: PlaylistOptions = {
   stripNotValid: true
 };
 
-export class DTOAttribution implements DTOAttributionI{
-  [key: string]: string;
+export class DTOBase{
   constructor(data?: any) {
     plainToClassFromExist(this, data);
   }
-}
 
-export class DTOMeta implements DTOMetaI{
-  [key: string]: string;
-  constructor(data?: any) {
-    plainToClassFromExist(this, data);
+  /*
+  //export to JSON - override built-in class function
+
+  toJSON():Record<string, any>{
+
   }
-}
 
-export class DTOLink implements DTOLinkI{
-  [key: string]: string;
-  constructor(data?: any) {
-    plainToClassFromExist(this, data);
+  //export to string - override built-in class function
+  toString():any{
   }
+  */
+
 }
 
-export class DTOExtension implements DTOExtensionI{
+export class DTOAttribution extends DTOBase implements DTOAttributionI{
+  [key: string]: string;
+}
+
+export class DTOMeta extends DTOBase implements DTOMetaI{
+  [key: string]: string;
+}
+
+export class DTOLink extends DTOBase implements DTOLinkI{
+  [key: string]: string;
+}
+
+export class DTOExtension extends DTOBase implements DTOExtensionI{
   [key: string]: string[];
-  constructor(data?: any) {
-    plainToClassFromExist(this, data);
-  }
 }
 
-export class DTOTrack implements DTOTrackI{
-  location?: string[];
-  identifier?: string[];
-  title?: string;
-  creator?: string;
-  annotation?: string;
-  info?: string;
-  image?: string;
-  album?: string;
-  trackNum?: number;
-  duration?: number;
-  link?: DTOLink[];
-  meta?: DTOMeta[];
-  extension?: DTOExtension;
-
-
-
-  constructor(data?: any) {
-    plainToClassFromExist(this, data);
-  }
-
+export class DTOTrack extends DTOBase implements DTOTrackI{
+  location: string[];
+  identifier: string[];
+  title: string;
+  creator: string;
+  annotation: string;
+  info: string;
+  image: string;
+  album: string;
+  trackNum: number;
+  duration: number;
+  link: DTOLink[];
+  meta: DTOMeta[];
+  extension: DTOExtension;
 }
 
-export class DTOPlaylist implements DTOPlaylistI{
-  title?: string;
-  creator?: string;
-  annotation?: string;
-  info?: string;
-  location?: string;
-  identifier?: string;
-  image?: string;
-  date?: string;
-  license?: string;
-  attribution?: DTOAttribution[];
-  link?: DTOLink[];
-  meta?: DTOMeta[];
-  extension?: DTOExtension;
-  track?: DTOTrack[];
+export class DTOPlaylist extends DTOBase implements DTOPlaylistI{
+  title: string;
+  creator: string;
+  annotation: string;
+  info: string;
+  location: string;
+  identifier: string;
+  image: string;
+  date: string;
+  license: string;
+  attribution: DTOAttribution[];
+  link: DTOLink[];
+  meta: DTOMeta[];
+  extension: DTOExtension;
+  track: DTOTrack[];
 
   @Exclude()
   private validator;
@@ -88,6 +88,8 @@ export class DTOPlaylist implements DTOPlaylistI{
   private validation;
 
   constructor(data?: any, options: PlaylistOptions = defaultPlaylistOptions) {
+
+    super(data);
 
     this.validator = new Validator();
     this.validation = this.validator.validate(data,jsonSchema);
@@ -141,15 +143,39 @@ export class DTOPlaylist implements DTOPlaylistI{
     return dto;
   }
 
+
   //export to JSON - override built-in class function
-  toJSON():object{
+  //TOUFIX should be within class DTOBase ?
+  public toJSON():Record<string, any>{
+    let obj = classToPlain(this);
+    obj = removeEmptyAndUndefined(obj);
+    return obj;
+  }
+
+
+  //export to string - override built-in class function
+  //TOUFIX should be within class DTOBase ?
+  public toString():string{
+    return JSON.stringify(this.toJSON(), null, 4);
+  }
+
+}
+
+export class DTOJspf extends DTOBase implements DTOJspfI {
+  @Type(() => DTOPlaylist)
+  playlist:DTOPlaylist
+
+  //export to JSON - override built-in class function
+  //TOUFIX should be within class DTOBase ?
+  public toJSON():Record<string, any>{
     let obj = classToPlain(this);
     obj = removeEmptyAndUndefined(obj);
     return obj;
   }
 
   //export to string - override built-in class function
-  toString():string{
+  //TOUFIX should be within class DTOBase ?
+  public toString():string{
     return JSON.stringify(this.toJSON(), null, 4);
   }
 

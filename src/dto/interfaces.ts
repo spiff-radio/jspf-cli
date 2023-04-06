@@ -47,6 +47,10 @@ export interface DTOPlaylistI {
   track?: DTOTrackI[];
 }
 
+export interface DTOJspfI {
+  playlist:Record<string, any>
+}
+
 export interface DTOConverterI{
   set(data: DTOPlaylistI):string,
   get(data: DTOPlaylistI):DTOPlaylistI

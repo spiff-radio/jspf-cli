@@ -1,5 +1,5 @@
 import { DTOPlaylistI, DTOConverterI } from '../interfaces';
-import { DTOConverter,DTOPlaylist } from '../models';
+import { DTOConverter,DTOJspf,DTOPlaylist } from '../models';
 import { classToPlain } from 'class-transformer';
 
 export default class JspfConverter extends DTOConverter {
@@ -7,7 +7,9 @@ export default class JspfConverter extends DTOConverter {
 
   public get(data:string):DTOPlaylistI{
     try{
-      return JSON.parse(data);
+      const jspfData = JSON.parse(data);
+      const jspf = new DTOJspf(jspfData);
+      return jspf.toJSON();
     }catch(e){
       console.error('Unable to parse JSON.');
       throw e;
