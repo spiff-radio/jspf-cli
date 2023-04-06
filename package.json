@@ -7,8 +7,8 @@
     "jspf": "./build/cli.js"
   },
   "scripts": {
-    "start": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/cli.ts",
-    "start:windows": "nodemon --watch 'src/**/*.ts' --exec \"npx ts-node\" src/cli.ts",
+    "start": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/cli/index.ts",
+    "start:windows": "nodemon --watch 'src/**/*.ts' --exec \"npx ts-node\" src/cli/index.ts",
     "create": "npm run build && npm run test",
     "build": "tsc -p .",
     "local": "sudo npm i -g && jspf",
@@ -37,7 +37,6 @@
     "jsonschema": "^1.4.1",
     "lodash": "^4.17.21",
     "m3u8-parser": "^6.0.0",
-    "objectmodel": "^4.4.4",
     "reflect-metadata": "^0.1.13",
     "xml-js": "^1.6.11",
     "yargs": "^17.7.1"
