@@ -1,20 +1,20 @@
 import { json2xml } from 'xml-js';
 import {XSPF_VERSION,XSPF_XMLNS} from '../../constants';
-import { DTOPlaylistI, DTOConverterI } from '../interfaces';
-import { DTOConverter } from '../models';
+import { PlaylistDataI, DataConverterI } from '../interfaces';
+import { DataConverter } from '../models';
 
-export default class XspfConverter extends DTOConverter {
+export default class XspfConverter extends DataConverter {
   public static readonly types = ['xspf'];
 
-  public get(data:any):DTOPlaylistI{
+  public get(data:any):PlaylistDataI{
     throw new Error('XSPF imports not yet implemented.');
   }
 
-  public set(dto: DTOPlaylistI):string{
+  public set(dto: PlaylistDataI):string{
     throw new Error('XSPF exports not yet implemented.');
   }
   /*
-  public setOLD(dto: DTOPlaylistI):string{
+  public setOLD(dto: PlaylistDataI):string{
 
     let data = dto as {}
 

@@ -1,13 +1,13 @@
 const m3u8Parser = require('m3u8-parser');
-import { DTOPlaylistI, DTOConverterI } from '../interfaces';
-import { DTOConverter } from '../models';
+import { PlaylistDataI, DataConverterI } from '../interfaces';
+import { DataConverter } from '../models';
 
-export default class M3u8Converter extends DTOConverter {
+export default class M3u8Converter extends DataConverter {
   public static readonly types = ['m3u8'];
 
-  public get(data: DTOPlaylistI):DTOPlaylistI{
+  public get(data: PlaylistDataI):PlaylistDataI{
     const parser = new m3u8Parser.Parser();
-    let dto:DTOPlaylistI = {};
+    let dto:PlaylistDataI = {};
     parser.push(data);
     parser.end();
 
@@ -41,7 +41,7 @@ export default class M3u8Converter extends DTOConverter {
 
   }
 
-  public set(dto: DTOPlaylistI):string{
+  public set(dto: PlaylistDataI):string{
     let output = "#EXTM3U\n";
 
     // Add playlist information

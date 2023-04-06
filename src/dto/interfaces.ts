@@ -1,20 +1,20 @@
-export interface DTOAttributionI {
+export interface AttributionDataI {
   [key: string]: string;
 }
 
-export interface DTOLinkI {
+export interface LinkDataI {
   [key: string]: string;
 }
 
-export interface DTOMetaI {
+export interface MetaDataI {
   [key: string]: string;
 }
 
-export interface DTOExtensionI {
+export interface ExtensionDataI {
   [key: string]: string[];
 }
 
-export interface DTOTrackI {
+export interface TrackDataI {
   location?: string[];
   identifier?: string[];
   title?: string;
@@ -25,12 +25,12 @@ export interface DTOTrackI {
   album?: string;
   trackNum?: number;
   duration?: number;
-  link?: DTOLinkI[];
-  meta?: DTOMetaI[];
-  extension?: DTOExtensionI;
+  link?: LinkDataI[];
+  meta?: MetaDataI[];
+  extension?: ExtensionDataI;
 }
 
-export interface DTOPlaylistI {
+export interface PlaylistDataI {
   title?: string;
   creator?: string;
   annotation?: string;
@@ -40,20 +40,20 @@ export interface DTOPlaylistI {
   image?: string;
   date?: string;
   license?: string;
-  attribution?: DTOAttributionI[];
-  link?: DTOLinkI[];
-  meta?: DTOMetaI[];
-  extension?: DTOExtensionI;
-  track?: DTOTrackI[];
+  attribution?: AttributionDataI[];
+  link?: LinkDataI[];
+  meta?: MetaDataI[];
+  extension?: ExtensionDataI;
+  track?: TrackDataI[];
 }
 
-export interface DTOJspfI {
+export interface JSPFDataI {
   playlist:Record<string, any>
 }
 
-export interface DTOConverterI{
-  set(data: DTOPlaylistI):string,
-  get(data: DTOPlaylistI):DTOPlaylistI
+export interface DataConverterI{
+  set(data: PlaylistDataI):string,
+  get(data: PlaylistDataI):PlaylistDataI
 }
 
 export interface ConvertOptionsI {

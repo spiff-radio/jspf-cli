@@ -1,19 +1,19 @@
 import { Type } from 'class-transformer';
-import {DTOJspf,DTOPlaylist,DTOTrack,DTOAttribution,DTOMeta,DTOLink,DTOExtension,DTOConverter} from '../dto/models';
+import {JSPFData,PlaylistData,TrackData,AttributionData,MetaData,LinkData,ExtensionData,DataConverter} from '../dto/models';
 
-export class Attribution extends DTOAttribution{
+export class Attribution extends AttributionData{
 }
 
-export class Link extends DTOLink{
+export class Link extends LinkData{
 }
 
-export class Meta extends DTOMeta{
+export class Meta extends MetaData{
 }
 
-export class Extension extends DTOExtension{
+export class Extension extends ExtensionData{
 }
 
-export class Track extends DTOTrack{
+export class Track extends TrackData{
   location: string[];
   identifier: string[];
   title: string;
@@ -32,7 +32,7 @@ export class Track extends DTOTrack{
   extension: Extension;
 }
 
-export class Playlist extends DTOPlaylist{
+export class Playlist extends PlaylistData{
   title: string;
   creator: string;
   annotation: string;
@@ -52,9 +52,12 @@ export class Playlist extends DTOPlaylist{
   extension: Extension;
   @Type(() => Track)
   track: Track[];
+  hello(){
+    console.log("hello");
+  }
 }
 
-export class Jspf extends DTOJspf{
+export class Jspf extends JSPFData{
   @Type(() => Playlist)
   playlist: Playlist;
 }

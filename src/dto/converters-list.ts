@@ -3,7 +3,7 @@ import * as path from 'path';
 import { default as _ } from 'lodash'; // Optional, for string manipulation
 import merge from 'lodash/merge';
 
-import { DTOConverterI,ConvertOptionsI } from './interfaces';
+import { DataConverterI,ConvertOptionsI } from './interfaces';
 import JspfConverter from './formats/jspf';
 import M3u8Converter from './formats/m3u8';
 import XspfConverter from './formats/xspf';
