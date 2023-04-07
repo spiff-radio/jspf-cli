@@ -6,6 +6,8 @@ JSPF CLI is a command line utility (CLI) relying on the [JSPF](https://www.xspf.
 JSPF is an open format used to describe a list of multimedia files (audio or video), created by [Xiph](https://xiph.org/).
 It is both simple and flexible, making it a good choice for programming purposes.
 
+**Supported formats:** jspf,xspf,m3u8,m3u
+
 This module was originally developed for [Spiff Radio](https://spiff-radio.org/), which uses JSPF as a fundamental part of its architecture.
 
 Validation is done using a [JSON Schema](https://json-schema.org/) based on the [XSPF specifications](https://www.xspf.org/spec).
