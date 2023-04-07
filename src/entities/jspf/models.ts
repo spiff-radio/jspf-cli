@@ -20,12 +20,18 @@ export class BaseData implements BaseDataI{
   }
 
   //export to JSON - override built-in class function
-  public toJSON():any{
+  public toJSON():object{
     let obj = classToPlain(this);
-    //obj = removeEmptyAndUndefined(obj);
     return obj;
   }
 
+  //export a DTO (data transfer object) :
+  //- strip all empty and undefined values
+  public toDTO():object{
+    let obj = this.toJSON();
+    obj = removeEmptyAndUndefined(obj);
+    return obj;
+  }
 
   //export to string - override built-in class function
   public toString():string{
@@ -45,7 +51,7 @@ export class ValidateData extends BaseData{
   //Checks if a JSPF fragment is valid against a JSON schema (defining a full JSPF).
   public isValid(schema?:Schema):boolean{
     this.validator = new Validator();
-    this.validation = this.validator.validate(this.toJSON(),schema);
+    this.validation = this.validator.validate(this.toDTO(),schema);
     return (!this.validation.errors.length);
   }
 }
