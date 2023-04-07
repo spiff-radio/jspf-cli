@@ -1,6 +1,5 @@
 import { plainToClass, plainToClassFromExist,classToPlain, Exclude, Type } from 'class-transformer';
 import {Validator, ValidatorResult, ValidationError, Schema} from 'jsonschema';
-
 import {BaseDataI,JSPFDataI,PlaylistDataI,TrackDataI,AttributionDataI,MetaDataI,LinkDataI,ExtensionDataI} from './interfaces';
 import {removeEmptyAndUndefined,getChildSchema} from '../../utils';
 
@@ -43,12 +42,12 @@ export class ValidateData extends BaseData{
   @Exclude()
   validation:any;//FIX type
 
+  //Checks if a JSPF fragment is valid against a JSON schema (defining a full JSPF).
   public isValid(schema?:Schema):boolean{
     this.validator = new Validator();
     this.validation = this.validator.validate(this.toJSON(),schema);
     return (!this.validation.errors.length);
   }
-
 }
 
 export class SingleKeyValue extends ValidateData{

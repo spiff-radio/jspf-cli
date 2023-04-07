@@ -1,36 +1,78 @@
 import yargs from 'yargs';
+import {JSPF_SPECS_URL} from '../../constants';
+import {getPathFilename} from '../../utils';
+import {Jspf,Playlist} from "../../entities/models";
+import {convertPlaylist,getConverterTypes} from "../../convert/convert-playlist";
+import {readFile,validateOptionPath,validateOptionFormat} from "../index";
 
 type ValidateCommandOptions = {
-  path:string
+  path_in:string,
+  format_in?:string
 }
 
-const defaultCliOptions:Record<string, any> = {
-  //path_in: '/home/gordie/Local Sites/newspiff/modules/jspf-cli/tests/data/playlist.m3u8',
-  //path_in:"/mnt/c/Users/gordiePC/Local Sites/newspiff/modules/jspf-cli/tests/data/playlist.jspf",
-  //path_out: '/home/gordie/Local Sites/newspiff/modules/jspf-cli/tests/data/playlistOUTPUT.jspf',
-  //path_out:"/mnt/c/Users/gordiePC/Local Sites/newspiff/modules/jspf-cli/tests/data/playlistTEST.m3u8",
-  //strip:true
-  //format_in:'m3u8',
-  //format_out:'jspf'
-};
+async function validateCommand(argv: ValidateCommandOptions ) {
+  let {
+    path_in = '',
+    format_in = ''
+  } = argv;
 
-async function validateCommand(argv: ValidateCommandOptions){
-  console.log("VALIDATE YO");
+  //Check file paths
+  try{
+    path_in = validateOptionPath('path_in',path_in,true);
+  }catch(e){
+    console.log(e);
+  }
+
+  //check file formats
+  try{
+    format_in = validateOptionFormat('format_in',format_in,path_in);
+  }catch(e){
+    console.log(e);
+  }
+
+  if (!path_in || !format_in){
+    process.exit();
+  }
+
+  //conversion IN
+  const input_data:any = await readFile(path_in);
+  let playlistJSON:object;
+
+  try{
+    const jspfString = convertPlaylist(input_data,{format_in:format_in,format_out:'jspf'});
+    const jspfJSON = JSON.parse(jspfString);
+    playlistJSON = jspfJSON.playlist;
+  }catch(e){
+    console.error('Unable to load data.');
+    throw e;
+  }
+
+  //DTO
+  const jspf = new Jspf();
+  jspf.playlist = new Playlist(playlistJSON);
+
+  //validation
+  const fileName:string = getPathFilename(path_in);
+
+  if (!jspf.isValid() ){
+    console.info(jspf.validation.errors);
+    console.log();
+    console.error(`Your playlist '${fileName}' is not valid.  Check the JSPF specs here: ${JSPF_SPECS_URL}`);
+
+  }else{
+    console.error(`Congratulations, your playlist '${fileName}' is valid!  ...Sometimes, life is beautiful!`);
+
+  }
+
+  process.exit();
+
 }
 
 module.exports = {
   command: 'validate',
-  describe: 'Validate a JSPF file',
+  describe: 'Validate a playlist file against the JSPF specifications.',
   builder: (yargs: yargs.Argv) => {
     return yargs
-      .option('path', {
-        describe: 'The file path to validate.',
-        type: 'string',
-        demandOption: true,
-        default:'',
-        //default: 'home/gordie/Local Sites/newspiff/modules/jspf-cli/tests/data/playlist.m3u8'
-      })
-      .default(defaultCliOptions);
   },
   handler: validateCommand
 };

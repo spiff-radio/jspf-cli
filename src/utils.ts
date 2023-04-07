@@ -1,6 +1,7 @@
 import {Schema} from 'jsonschema';
-import jspfSchema from './entities/jspf/jspf-schema.json';
 import merge from 'lodash/merge';
+import {DEFAULT_JSON_SCHEMA_VERSION} from './constants';
+import jspfSchema from './entities/jspf/jspf-schema.json';
 
 //Recursively removes all empty and undefined properties from a JSON object.
 export function removeEmptyAndUndefined(obj: Record<string, any>): Record<string, any> {
@@ -16,12 +17,21 @@ export function removeEmptyAndUndefined(obj: Record<string, any>): Record<string
 }
 
 //get extension out of a file path
-export function extractPathExtension(filePath: string): string | null {
+export function getPathExtension(filePath: string): string | null {
   const match = /[^/.]\.([^/.]+)$/.exec(filePath);
   if (match) {
     return match[1].toLowerCase();
   }
   return null;
+}
+
+//get filename out of a file path
+export function getPathFilename(filePath: string): string {
+  const match = filePath.match(/[/\\]([^/\\]+)$/);//both unix & windows
+  if (match) {
+    return match[1];
+  }
+  return filePath;
 }
 
 //Given a JSON schema (or using the default one) and a path, return a new schema - including local references.
@@ -121,7 +131,7 @@ export function getChildSchema(path: string, inputSchema?: Schema): Schema {
   const childReferences = getLocalReferences(path,contentSchema);
 
   //Add schema version from original vile
-  const schemaVersion = rootSchema.$schema ?? "https://json-schema.org/draft/2020-12/schema";//TOUFIX should be in constants ?
+  const schemaVersion = rootSchema.$schema ?? DEFAULT_JSON_SCHEMA_VERSION
 
   let childSchema: CustomSchemaBaseI = {
     $schema: schemaVersion

@@ -1,43 +1,12 @@
 const fs = require('fs');
 import yargs from 'yargs';
 import { plainToClass,classToPlain,serialize } from 'class-transformer';
-import {extractPathExtension} from '../../utils';
 import {convertPlaylist,getConverterTypes} from "../../convert/convert-playlist";
 import {Jspf,Playlist} from "../../entities/models";
-import {readFile,writeFile} from "../index";
+import {readFile,writeFile,validateOptionPath,validateOptionFormat} from "../index";
 
 const allowedTypes = getConverterTypes();
 
-function validateOptionPath(name:string,value:string,existsCheck:boolean=false):string{
-
-  if (!value) {
-    throw new Error(`❌ Please set a value for --${name}.`);
-  }
-
-  if (existsCheck && !fs.existsSync(value)) {
-    throw new Error(`❌ The path '${value}' specified in '--${name}' does not exist.`);
-  }
-
-  return value as string;
-}
-
-function validateOptionFormat(name: string, value: string, path: string):string{
-
-  const options = allowedTypes;
-
-  //if value is not set, try to get it from the file path extension
-  if (!value && path){
-    value = extractPathExtension(path) ?? '';
-  }
-
-  if (!value) {
-    throw new Error(`❌ Please set a value for --${name}.`);
-  }
-  if (!options.includes(value)) {
-    throw new Error(`❌ Invalid value '${value}' for '--${name}'. Available formats: ${options.join(', ')}.`);
-  }
-  return value as string;
-}
 
 type ConvertCommandOptions = {
   path_in:string,
@@ -105,14 +74,13 @@ async function convertCommand(argv: ConvertCommandOptions ) {
   jspf.playlist = new Playlist(playlistJSON);
 
   //validation
-  /*
-  if (!strip && !jspf.playlist.get_schema() ){
-    console.info(jspf.playlist.validation.errors);
+
+  if (!strip && !jspf.isValid() ){
+    console.info(jspf.validation.errors);
     console.log();
     console.error("Your JSPF is not valid.  Either correct the input file (eg. on https://jsonlint.com/), or use argument ''--strip=true' to strip non-valid values.");
     process.exit();
   }
-  */
 
   //conversion OUT
 
@@ -138,18 +106,13 @@ async function convertCommand(argv: ConvertCommandOptions ) {
 
 module.exports = {
   command: 'convert',
-  describe: 'Convert a playlist file to another format',
+  describe: 'Convert a playlist file to another format.',
   builder: (yargs: yargs.Argv) => {
     return yargs
       .option('path_out', {
         describe: 'Path to the output file',
         type: 'string',
         alias: 'o'
-      })
-      .option('format_in', {
-        describe: `The input format for conversion. If '--path_in' has an extension, this can be omitted.`,
-        choices: allowedTypes,
-        type: 'string'
       })
       .option('format_out', {
         describe: `The output format for conversion. If '--path_out' has an extension, this can be omitted.`,

@@ -6,9 +6,10 @@ const clear = require('clear');
 const figlet = require('figlet');
 
 
-import {REPO_URL,ISSUES_URL,XSPF_URL,JSPF_VERSION} from '../constants';
+import {REPO_URL,XSPF_URL,JSPF_VERSION,ISSUES_URL} from '../constants';
 import {getConverterTypes} from "../convert/convert-playlist";
 import {Jspf,Playlist,Track,Link} from "../entities/models";
+import {getPathExtension} from '../utils';
 
 export async function readFile(path: string): Promise<string> {
   try {
@@ -27,6 +28,37 @@ export async function writeFile(path: string, fileData: any): Promise<void> {
     console.error('Failed to write output file.');
     throw error;
   }
+}
+
+export function validateOptionFormat(name: string, value: string, path: string):string{
+
+  const allowedTypes = getConverterTypes();
+
+  //if value is not set, try to get it from the file path extension
+  if (!value && path){
+    value = getPathExtension(path) ?? '';
+  }
+
+  if (!value) {
+    throw new Error(`❌ Please set a value for --${name}.`);
+  }
+  if (!allowedTypes.includes(value)) {
+    throw new Error(`❌ Invalid value '${value}' for '--${name}'. Available formats: ${allowedTypes.join(', ')}.`);
+  }
+  return value as string;
+}
+
+export function validateOptionPath(name:string,value:string,existsCheck:boolean=false):string{
+
+  if (!value) {
+    throw new Error(`❌ Please set a value for --${name}.`);
+  }
+
+  if (existsCheck && !fs.existsSync(value)) {
+    throw new Error(`❌ The path '${value}' specified in '--${name}' does not exist.`);
+  }
+
+  return value as string;
 }
 
 async function cli(){
@@ -50,6 +82,11 @@ async function cli(){
       type: 'string',
       alias: 'i',
       demandOption: true
+    })
+    .option('format_in', {
+      describe: `The input format for conversion. If '--path_in' has an extension, this can be omitted.`,
+      choices: allowedTypes,
+      type: 'string'
     })
     .help('h')
     .alias('h', 'help')
