@@ -29,12 +29,12 @@ jspf-cli convert [options] <path_in> <path_out>
 
 - `-i <file>`: Path to the input file [required].
 - `-o <file>`: Path to the output file [required].
-- `--format_in <format>`: The input format. If omitted, the tool will use the file extension of the input file.
-- `--format_out <format>`: The output format. If omitted, the tool will use the file extension of the output file.
+- `--format_in <format>`: The input format. If omitted, the tool will use the extension of the input file.
+- `--format_out <format>`: The output format. If omitted, the tool will use the extension of the output file.
 
 ### Example
 
-Convert a JSPF playlist to a XSPF one
+Convert a *m3u8* playlist to a *xspf* one
 
 ```sh
 jspf-cli convert -i "path-to-input-file.xspf" -o "path-to-output-file.jspf"
