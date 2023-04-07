@@ -53,8 +53,6 @@ jspf-cli validate [options] <path>
 
 ### Example
 
-Validate a playlist
-
 ```sh
 jspf-cli  validate -i "path-to-input-file.xspf"
 ```
