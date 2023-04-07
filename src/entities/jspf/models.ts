@@ -1,8 +1,8 @@
 import { plainToClass, plainToClassFromExist,classToPlain, Exclude, Type } from 'class-transformer';
-import {Validator, ValidatorResult, ValidationError, Schema as JSONSchema} from 'jsonschema';
-import defaultJsonSchema from './jspf-schema.json';
-import {JSPFDataI,PlaylistDataI,TrackDataI,AttributionDataI,MetaDataI,LinkDataI,ExtensionDataI} from './interfaces';
-import {removeEmptyAndUndefined} from '../../utils';
+import {Validator, ValidatorResult, ValidationError, Schema} from 'jsonschema';
+
+import {BaseDataI,JSPFDataI,PlaylistDataI,TrackDataI,AttributionDataI,MetaDataI,LinkDataI,ExtensionDataI} from './interfaces';
+import {removeEmptyAndUndefined,getChildSchema} from '../../utils';
 
 type PlaylistOptions = {
   notValidError?: boolean,
@@ -14,23 +14,10 @@ const defaultPlaylistOptions: PlaylistOptions = {
   stripNotValid: true
 };
 
-export class BaseData{
-
-  @Exclude()
-  validator:any;//FIX type
-
-  @Exclude()
-  validation:any;//FIX type
+export class BaseData implements BaseDataI{
 
   constructor(data?: any) {
     plainToClassFromExist(this, data);
-  }
-
-  public is_valid(jsonSchema?:JSONSchema):boolean{
-    this.validator = new Validator();
-    jsonSchema = defaultJsonSchema;
-    this.validation = this.validator.validate(this.toJSON(),jsonSchema);
-    return (!this.validation.errors.length);
   }
 
   //export to JSON - override built-in class function
@@ -49,9 +36,25 @@ export class BaseData{
 
 }
 
-export class SingleKeyValue extends BaseData{
+export class ValidateData extends BaseData{
+  @Exclude()
+  validator:any;//FIX type
+
+  @Exclude()
+  validation:any;//FIX type
+
+  public isValid(schema?:Schema):boolean{
+    this.validator = new Validator();
+    this.validation = this.validator.validate(this.toJSON(),schema);
+    return (!this.validation.errors.length);
+  }
+
+}
+
+export class SingleKeyValue extends ValidateData{
   //TOUFIX SHOULD BE THIS BUT FIRES A TS ERROR [key: string]: string;
   [key: string]: any;
+  static schemaPath:string;
   toJSON(){
     return classToPlain(this);
   }
@@ -61,20 +64,54 @@ export class SingleKeyValue extends BaseData{
 }
 
 export class AttributionData extends SingleKeyValue implements AttributionDataI{
+  public static get_schema(schema?:Schema):Schema{
+    return getChildSchema('$defs/attribution',schema);
+  }
+
+  public isValid(schema?:Schema):boolean{
+    schema = AttributionData.get_schema(schema);
+    return super.isValid(schema);
+  }
 }
 
 export class MetaData extends SingleKeyValue implements MetaDataI{
+  public static get_schema(schema?:Schema):Schema{
+    return getChildSchema('$defs/meta',schema);
+  }
+
+  public isValid(schema?:Schema):boolean{
+    schema = MetaData.get_schema(schema);
+    return super.isValid(schema);
+  }
 }
 
 export class LinkData extends SingleKeyValue implements LinkDataI{
+  public static get_schema(schema?:Schema):Schema{
+    return getChildSchema('$defs/link',schema);
+  }
+
+  public isValid(schema?:Schema):boolean{
+    schema = LinkData.get_schema(schema);
+    return super.isValid(schema);
+  }
 }
 
-export class ExtensionData extends BaseData implements ExtensionDataI{
+export class ExtensionData extends ValidateData implements ExtensionDataI{
   //TOUFIX SHOULD BE THIS BUT FIRES A TS ERROR [key: string]: string[];
   [key: string]: any;
+
+  public static get_schema(schema?:Schema):Schema{
+    return getChildSchema('$defs/extension',schema);
+  }
+
+  public isValid(schema?:Schema):boolean{
+    schema = ExtensionData.get_schema(schema);
+    return super.isValid(schema);
+  }
 }
 
-export class TrackData extends BaseData implements TrackDataI{
+export class TrackData extends ValidateData implements TrackDataI{
+
   location: string[];
   identifier: string[];
   title: string;
@@ -88,9 +125,20 @@ export class TrackData extends BaseData implements TrackDataI{
   link: LinkData[];
   meta: MetaData[];
   extension: ExtensionData;
+
+  public static get_schema(schema?:Schema):Schema{
+    return getChildSchema('$defs/track',schema);
+  }
+
+  public isValid(schema?:Schema):boolean{
+    schema = TrackData.get_schema(schema);
+    return super.isValid(schema);
+  }
+
 }
 
-export class PlaylistData extends BaseData implements PlaylistDataI{
+export class PlaylistData extends ValidateData implements PlaylistDataI{
+
   title: string;
   creator: string;
   annotation: string;
@@ -105,6 +153,15 @@ export class PlaylistData extends BaseData implements PlaylistDataI{
   meta: MetaData[];
   extension: ExtensionData;
   track: TrackData[];
+
+  public static get_schema(schema?:Schema):Schema{
+    return getChildSchema('properties/playlist',schema);
+  }
+
+  public isValid(schema?:Schema):boolean{
+    schema = PlaylistData.get_schema(schema);
+    return super.isValid(schema);
+  }
 
   private static removeValuesWithErrors(dto:PlaylistDataI,errors:ValidationError[] | undefined):PlaylistDataI {
     errors = errors ?? [];
@@ -139,9 +196,19 @@ export class PlaylistData extends BaseData implements PlaylistDataI{
 
 }
 
-export class JSPFData extends BaseData implements JSPFDataI {
+export class JSPFData extends ValidateData implements JSPFDataI {
+
   @Type(() => PlaylistData)
   playlist:PlaylistData
+
+  public static get_schema(schema?:Schema):Schema{
+    return getChildSchema('',schema);
+  }
+
+  public isValid(schema?:Schema):boolean{
+    schema = JSPFData.get_schema(schema);
+    return super.isValid(schema);
+  }
 
   //export to JSON - override built-in class function
   //TOUFIX should be within class BaseData ?

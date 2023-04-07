@@ -8,6 +8,7 @@ const figlet = require('figlet');
 
 import {REPO_URL,ISSUES_URL,XSPF_URL,JSPF_VERSION} from '../constants';
 import {getConverterTypes} from "../convert/convert-playlist";
+import {Jspf,Playlist,Track,Link} from "../entities/models";
 
 export async function readFile(path: string): Promise<string> {
   try {

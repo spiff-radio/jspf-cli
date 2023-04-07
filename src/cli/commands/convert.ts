@@ -105,12 +105,14 @@ async function convertCommand(argv: ConvertCommandOptions ) {
   jspf.playlist = new Playlist(playlistJSON);
 
   //validation
-  if (!strip && !jspf.playlist.is_valid() ){
+  /*
+  if (!strip && !jspf.playlist.get_schema() ){
     console.info(jspf.playlist.validation.errors);
     console.log();
     console.error("Your JSPF is not valid.  Either correct the input file (eg. on https://jsonlint.com/), or use argument ''--strip=true' to strip non-valid values.");
     process.exit();
   }
+  */
 
   //conversion OUT
 

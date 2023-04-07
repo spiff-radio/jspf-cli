@@ -1,7 +1,7 @@
 {
   "name": "jspf-cli",
   "version": "1.0.3",
-  "description": "The Node.js tool to handle JSPF Playlists",
+  "description": "JSPF CLI is a command line utility (CLI) to convert and validate playlist files.",
   "main": "./build/cli/index.js",
   "bin": {
     "jspf-cli": "./build/cli/index.js"

@@ -1,7 +1,7 @@
 JSPF CLI
 ===============
 
-JSPF CLI is a command line utility (CLI) to convert music playlist files, using [JSPF](https://www.xspf.org/jspf) as an intermediary.
+JSPF CLI is a command line utility (CLI) to convert playlist files, using [JSPF](https://www.xspf.org/jspf) as an intermediary.
 
 JSPF is an open format used to describe a list of multimedia files (audio or video), created by [Xiph](https://xiph.org/).
 It is both simple and flexible, making it a good choice for programming purposes.

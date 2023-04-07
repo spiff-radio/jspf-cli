@@ -1,22 +1,26 @@
 import {Validator, ValidatorResult} from 'jsonschema';
 
-export interface AttributionDataI {
+export interface BaseDataI{
+  //toJSON():object;
+}
+
+export interface AttributionDataI extends BaseDataI {
   [key: string]: string;
 }
 
-export interface LinkDataI {
+export interface LinkDataI extends BaseDataI {
   [key: string]: string;
 }
 
-export interface MetaDataI {
+export interface MetaDataI extends BaseDataI {
   [key: string]: string;
 }
 
-export interface ExtensionDataI {
+export interface ExtensionDataI extends BaseDataI {
   [key: string]: string[];
 }
 
-export interface TrackDataI {
+export interface TrackDataI extends BaseDataI {
   location: string[];
   identifier: string[];
   title: string;
@@ -32,7 +36,7 @@ export interface TrackDataI {
   extension: ExtensionDataI;
 }
 
-export interface PlaylistDataI {
+export interface PlaylistDataI extends BaseDataI {
   title: string;
   creator: string;
   annotation: string;
@@ -47,12 +51,8 @@ export interface PlaylistDataI {
   meta: MetaDataI[];
   extension: ExtensionDataI;
   track: TrackDataI[];
-  validator:Validator;
-  validation:ValidatorResult;
-  is_valid():boolean;
-  toJSON():object;
 }
 
-export interface JSPFDataI {
+export interface JSPFDataI extends BaseDataI {
   playlist:Record<string, any>
 }
