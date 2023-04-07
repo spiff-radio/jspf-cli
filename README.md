@@ -3,14 +3,14 @@ JSPF CLI
 
 JSPF CLI is a command line utility (CLI) relying on the [JSPF](https://www.xspf.org/jspf) format to convert and validate playlist files.
 
+**Supported formats:** jspf,xspf,m3u8,m3u
+
 JSPF is an open format used to describe a list of multimedia files (audio or video), created by [Xiph](https://xiph.org/).
 It is both simple and flexible, making it a good choice for programming purposes.
 
-**Supported formats:** jspf,xspf,m3u8,m3u
-
 This module was originally developed for [Spiff Radio](https://spiff-radio.org/), which uses JSPF as a fundamental part of its architecture.
 
-Validation is done using a [JSON Schema](https://json-schema.org/) based on the [XSPF specifications](https://www.xspf.org/spec).
+Validation is done using a [JSON Schema](https://github.com/spiff-radio/jspf-cli/blob/main/src/entities/jspf/jspf-schema.json) based on the [XSPF specifications](https://www.xspf.org/spec).
 
 ## Installation
 
@@ -18,21 +18,13 @@ Validation is done using a [JSON Schema](https://json-schema.org/) based on the 
 $ npm install -g jspf-cli
 ```
 
-## Usage
-
-The tool provides two commands: **convert** and **validate**.
-
-```sh
-jspf-cli [command]
-```
-
-### Convert
+## Convert a playlist
 
 ```sh
 jspf-cli convert [options] <path_in> <path_out>
 ```
 
-#### Options
+### Options
 
 
 - `-i <file>`: Path to the input file [required].
@@ -40,7 +32,7 @@ jspf-cli convert [options] <path_in> <path_out>
 - `--format_in <format>`: The input format. If omitted, the tool will use the file extension of the input file.
 - `--format_out <format>`: The output format. If omitted, the tool will use the file extension of the output file.
 
-#### Example
+### Example
 
 Convert a JSPF playlist to a XSPF one
 
@@ -48,18 +40,18 @@ Convert a JSPF playlist to a XSPF one
 jspf-cli convert -i "path-to-input-file.xspf" -o "path-to-output-file.jspf"
 ```
 
-### Validate
+## Validate a playlist
 
 ```sh
 jspf-cli validate [options] <path>
 ```
 
-#### Options
+### Options
 
 
 - `-i <file>`: Path to the input file [required].
 
-#### Example
+### Example
 
 Validate a playlist
 
