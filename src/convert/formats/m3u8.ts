@@ -1,6 +1,7 @@
 const m3u8Parser = require('m3u8-parser');
-import { PlaylistDataI, DataConverterI } from '../interfaces';
+import { DataConverterI } from '../interfaces';
 import { DataConverter } from '../models';
+import { PlaylistDataI } from '../../entities/jspf/interfaces';
 import { Playlist } from '../../entities/models';
 
 export default class M3u8Converter extends DataConverter {

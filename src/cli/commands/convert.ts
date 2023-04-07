@@ -2,7 +2,7 @@ const fs = require('fs');
 import yargs from 'yargs';
 import { plainToClass,classToPlain,serialize } from 'class-transformer';
 import {extractPathExtension} from '../../utils';
-import {convertPlaylist,getConverterTypes} from "../../dto/converters-list";
+import {convertPlaylist,getConverterTypes} from "../../convert/convert-playlist";
 import {Jspf,Playlist} from "../../entities/models";
 import {readFile,writeFile} from "../index";
 
@@ -83,12 +83,6 @@ async function convertCommand(argv: ConvertCommandOptions ) {
     console.log(e);
   }
 
-  if (format_in === format_out){
-    console.log(`❌ Both input and output formats are set to ${format_in}!  Don't you want to convert the data ?`);
-    format_in = '';
-    format_out = '';
-  }
-
   if (!path_in || !path_out || !format_in || !format_out){
     process.exit();
   }
@@ -142,32 +136,32 @@ async function convertCommand(argv: ConvertCommandOptions ) {
 
 module.exports = {
   command: 'convert',
-  describe: 'Convert a JSPF file to another format',
+  describe: 'Convert a playlist file to another format',
   builder: (yargs: yargs.Argv) => {
     return yargs
-      .positional('path_in', {
+      .option('path_in', {
         describe: 'Path to the input file',
         type: 'string',
+        alias: 'i'
       })
-      .positional('path_out', {
+      .option('path_out', {
         describe: 'Path to the output file',
         type: 'string',
+        alias: 'o'
       })
       .option('format_in', {
         describe: `The input format for conversion. If '--path_in' has an extension, this can be omitted.`,
         choices: allowedTypes,
-        type: 'string',
-        default: ''
+        type: 'string'
       })
       .option('format_out', {
         describe: `The output format for conversion. If '--path_out' has an extension, this can be omitted.`,
         choices: allowedTypes,
-        type: 'string',
-        default: ''
+        type: 'string'
       })
       .option('strip', {
         describe: 'Remove values that do not conform to the JSPF specifications',
-        type: 'string',
+        type: 'boolean',
         default: true
       })
       /*

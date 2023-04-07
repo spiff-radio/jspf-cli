@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import {JSPFData,PlaylistData,TrackData,AttributionData,MetaData,LinkData,ExtensionData,DataConverter} from '../dto/models';
+import {JSPFData,PlaylistData,TrackData,AttributionData,MetaData,LinkData,ExtensionData} from '../entities/jspf/models';
 
 export class Attribution extends AttributionData{
 }

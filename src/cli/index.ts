@@ -7,7 +7,7 @@ const figlet = require('figlet');
 
 
 import {REPO_URL,ISSUES_URL,XSPF_URL,JSPF_VERSION} from '../constants';
-import {getConverterTypes} from "../dto/converters-list";
+import {getConverterTypes} from "../convert/convert-playlist";
 
 export async function readFile(path: string): Promise<string> {
   try {
@@ -35,11 +35,11 @@ async function cli(){
   clear();
 
   console.log(
-    figlet.textSync('JSPF', { horizontalLayout: 'full' })
+    figlet.textSync('JSPF CLI', { horizontalLayout: 'full' })
   );
 
   await yargs
-    .scriptName('jspf')
+    .scriptName('jspf-cli')
       .usage('$0 <cmd> [args]')
     .commandDir('./commands')
     .demandCommand(1, 'You need at least one command before moving on')

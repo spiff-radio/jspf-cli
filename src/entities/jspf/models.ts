@@ -1,8 +1,8 @@
 import { plainToClass, plainToClassFromExist,classToPlain, Exclude, Type } from 'class-transformer';
 import {Validator, ValidatorResult, ValidationError, Schema as JSONSchema} from 'jsonschema';
 import defaultJsonSchema from './jspf-schema.json';
-import {JSPFDataI,PlaylistDataI,TrackDataI,AttributionDataI,MetaDataI,LinkDataI,ExtensionDataI,DataConverterI} from './interfaces';
-import {removeEmptyAndUndefined} from '../utils';
+import {JSPFDataI,PlaylistDataI,TrackDataI,AttributionDataI,MetaDataI,LinkDataI,ExtensionDataI} from './interfaces';
+import {removeEmptyAndUndefined} from '../../utils';
 
 type PlaylistOptions = {
   notValidError?: boolean,
@@ -15,38 +15,63 @@ const defaultPlaylistOptions: PlaylistOptions = {
 };
 
 export class BaseData{
+
+  @Exclude()
+  validator:any;//FIX type
+
+  @Exclude()
+  validation:any;//FIX type
+
   constructor(data?: any) {
     plainToClassFromExist(this, data);
   }
 
-  /*
-  //export to JSON - override built-in class function
-
-  toJSON():Record<string, any>{
-
+  public is_valid(jsonSchema?:JSONSchema):boolean{
+    this.validator = new Validator();
+    jsonSchema = defaultJsonSchema;
+    this.validation = this.validator.validate(this.toJSON(),jsonSchema);
+    return (!this.validation.errors.length);
   }
+
+  //export to JSON - override built-in class function
+  public toJSON():any{
+    let obj = classToPlain(this);
+    //obj = removeEmptyAndUndefined(obj);
+    return obj;
+  }
+
 
   //export to string - override built-in class function
-  toString():any{
+  public toString():string{
+    return JSON.stringify(this.toJSON(), null, 4);
   }
-  */
+
 
 }
 
-export class AttributionData extends BaseData implements AttributionDataI{
-  [key: string]: string;
+export class SingleKeyValue extends BaseData{
+  //TOUFIX SHOULD BE THIS BUT FIRES A TS ERROR [key: string]: string;
+  [key: string]: any;
+  toJSON(){
+    return classToPlain(this);
+  }
+  toString(){
+    return JSON.stringify(this.toJSON());
+  }
 }
 
-export class MetaData extends BaseData implements MetaDataI{
-  [key: string]: string;
+export class AttributionData extends SingleKeyValue implements AttributionDataI{
 }
 
-export class LinkData extends BaseData implements LinkDataI{
-  [key: string]: string;
+export class MetaData extends SingleKeyValue implements MetaDataI{
+}
+
+export class LinkData extends SingleKeyValue implements LinkDataI{
 }
 
 export class ExtensionData extends BaseData implements ExtensionDataI{
-  [key: string]: string[];
+  //TOUFIX SHOULD BE THIS BUT FIRES A TS ERROR [key: string]: string[];
+  [key: string]: any;
 }
 
 export class TrackData extends BaseData implements TrackDataI{
@@ -81,33 +106,6 @@ export class PlaylistData extends BaseData implements PlaylistDataI{
   extension: ExtensionData;
   track: TrackData[];
 
-  @Exclude()
-  validator:any;//FIX type
-
-  @Exclude()
-  validation:any;//FIX type
-
-  constructor(data?: any, options: PlaylistOptions = defaultPlaylistOptions) {
-
-    super(data);
-
-    this.validator = new Validator();
-
-    //clean input data
-    if (options.stripNotValid){
-      const valid = this.is_valid(); //populate validation errors
-      data = PlaylistData.removeValuesWithErrors(data,this.validation.errors);
-    }
-
-    plainToClassFromExist(this, data);
-
-  }
-
-  public is_valid(jsonSchema = defaultJsonSchema):boolean{
-    this.validation = this.validator.validate(this.toJSON(),defaultJsonSchema);
-    return (!this.validation.errors.length);
-  }
-
   private static removeValuesWithErrors(dto:PlaylistDataI,errors:ValidationError[] | undefined):PlaylistDataI {
     errors = errors ?? [];
     errors.forEach(error => PlaylistData.removeValueForError(dto,error));
@@ -139,22 +137,6 @@ export class PlaylistData extends BaseData implements PlaylistDataI{
     return dto;
   }
 
-
-  //export to JSON - override built-in class function
-  //TOUFIX should be within class BaseData ?
-  public toJSON():Record<string, any>{
-    let obj = classToPlain(this);
-    obj = removeEmptyAndUndefined(obj);
-    return obj;
-  }
-
-
-  //export to string - override built-in class function
-  //TOUFIX should be within class BaseData ?
-  public toString():string{
-    return JSON.stringify(this.toJSON(), null, 4);
-  }
-
 }
 
 export class JSPFData extends BaseData implements JSPFDataI {
@@ -175,14 +157,4 @@ export class JSPFData extends BaseData implements JSPFDataI {
     return JSON.stringify(this.toJSON(), null, 4);
   }
 
-}
-
-export abstract class DataConverter implements DataConverterI {
-  public static readonly types: string[] = [];
-
-  //get DTO playlist from data
-  public abstract get(data: any): PlaylistDataI;
-
-  //converts DTO playlist to data
-  public abstract set(dto: PlaylistDataI): any;
 }

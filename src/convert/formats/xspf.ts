@@ -1,7 +1,9 @@
 import { json2xml } from 'xml-js';
 import {XSPF_VERSION,XSPF_XMLNS} from '../../constants';
-import { PlaylistDataI, DataConverterI } from '../interfaces';
+import { DataConverterI } from '../interfaces';
 import { DataConverter } from '../models';
+import { PlaylistDataI } from '../../entities/jspf/interfaces';
+import { Playlist } from '../../entities/models';
 
 export default class XspfConverter extends DataConverter {
   public static readonly types = ['xspf'];

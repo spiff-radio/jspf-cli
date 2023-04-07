@@ -1,28 +1,70 @@
-JSPF Playlist
+JSPF CLI
 ===============
 
-> *The Node.js tool to handle JSPF Playlists *
+JSPF CLI is a command line utility (CLI) to convert music playlist files, using [JSPF](https://www.xspf.org/jspf) as an intermediary.
 
-JSPF Playlist is a command line utility to validate and convert music playlist files.
-It's based on [JSPF](https://www.xspf.org/jspf), the JSON Shareable Playlist Format, created by [Xiph](https://xiph.org/).
+JSPF is an open format used to describe a list of multimedia files (audio or video), created by [Xiph](https://xiph.org/).
+It is both simple and flexible, making it a good choice for programming purposes.
 
-It has been developed as a module for our music website, Spiff Radio, which uses JSPF has a "backbone".
+This module was originally developed for our music website, Spiff Radio, which uses JSPF as a fundamental part of its architecture.
 
 More tools and modules are available on [our Github profile](https://github.com/spiff-radio) !
 
 ## Installation
 
 ```sh
-$ [sudo] npm install -g jspf
+$ npm install -g jspf-cli
 ```
 
 ## Usage
 
+The tool provides two commands: **convert** and **validate**.
+
 ```sh
-jspf --path_in="path-to-input-file.xspf" --format_in="xspf" --path_out="path-to-output-file.jspf" --format_out="jspf"
+jspf-cli [command]
 ```
 
-See [https://github.com/spiff-radio/jspf-playlist](https://github.com/spiff-radio/jspf-playlist) for more
-input options.
+### Convert
+
+```sh
+jspf-cli convert [options] <path_in> <path_out>
+```
+
+#### Options
+
+
+- `-i <file>`: Path to the input file [required].
+- `-o <file>`: Path to the output file [required].
+- `--format_in <format>`: The input format. If omitted, the tool will use the file extension of the input file.
+- `--format_out <format>`: The output format. If omitted, the tool will use the file extension of the output file.
+
+#### Example
+
+Convert a JSPF playlist to a XSPF one
+
+```sh
+jspf-cli convert -i "path-to-input-file.xspf" -o "path-to-output-file.jspf"
+```
+
+### Validate
+
+```sh
+jspf-cli validate [options] <path>
+```
+
+#### Options
+
+
+- `-i <file>`: Path to the input file [required].
+
+#### Example
+
+Convert a JSPF playlist to a XSPF one
+
+```sh
+jspf-cli  validate -i "path-to-input-file.xspf"
+```
 
 ## License
+
+This tool is licensed under the [GNU General Public License (GPL)](https://www.gnu.org/licenses/gpl-3.0.en.html).

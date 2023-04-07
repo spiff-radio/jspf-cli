@@ -5,10 +5,10 @@ type ValidateCommandOptions = {
 }
 
 const defaultCliOptions:Record<string, any> = {
-  //path_in: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.m3u8',
-  //path_in:"/mnt/c/Users/gordiePC/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.jspf",
-  //path_out: '/home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlistOUTPUT.jspf',
-  //path_out:"/mnt/c/Users/gordiePC/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlistTEST.m3u8",
+  //path_in: '/home/gordie/Local Sites/newspiff/modules/jspf-cli/tests/data/playlist.m3u8',
+  //path_in:"/mnt/c/Users/gordiePC/Local Sites/newspiff/modules/jspf-cli/tests/data/playlist.jspf",
+  //path_out: '/home/gordie/Local Sites/newspiff/modules/jspf-cli/tests/data/playlistOUTPUT.jspf',
+  //path_out:"/mnt/c/Users/gordiePC/Local Sites/newspiff/modules/jspf-cli/tests/data/playlistTEST.m3u8",
   //strip:true
   //format_in:'m3u8',
   //format_out:'jspf'
@@ -28,7 +28,7 @@ module.exports = {
         type: 'string',
         demandOption: true,
         default:'',
-        //default: 'home/gordie/Local Sites/newspiff/modules/jspf-playlist/tests/data/playlist.m3u8'
+        //default: 'home/gordie/Local Sites/newspiff/modules/jspf-cli/tests/data/playlist.m3u8'
       })
       .default(defaultCliOptions);
   },

@@ -1,22 +1,23 @@
 {
-  "name": "jspf-playlist",
-  "version": "1.0.0",
+  "name": "jspf-cli",
+  "version": "1.0.3",
   "description": "The Node.js tool to handle JSPF Playlists",
-  "main": "./build/cli.js",
+  "main": "./build/cli/index.js",
   "bin": {
-    "jspf": "./build/cli.js"
+    "jspf-cli": "./build/cli/index.js"
   },
   "scripts": {
     "start": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/cli/index.ts",
     "start:windows": "nodemon --watch 'src/**/*.ts' --exec \"npx ts-node\" src/cli/index.ts",
     "create": "npm run build && npm run test",
     "build": "tsc -p .",
-    "local": "sudo npm i -g && jspf",
+    "install-local": "npm i -g && jspf-cli",
+    "uninstall-local": "npm uninstall -g && jspf-cli",
     "refresh": "rm -rf ./node_modules ./package-lock.json && npm install"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/spiff-radio/jspf-playlist.git"
+    "url": "https://github.com/spiff-radio/jspf-cli.git"
   },
   "keywords": [
     "jspf",
@@ -24,11 +25,11 @@
     "json"
   ],
   "author": "spiff-radio",
-  "license": "ISC",
+  "license": "GPL",
   "bugs": {
-    "url": "https://github.com/spiff-radio/jspf-playlist/issues"
+    "url": "https://github.com/spiff-radio/jspf-cli/issues"
   },
-  "homepage": "https://github.com/spiff-radio/jspf-playlist#readme",
+  "homepage": "https://github.com/spiff-radio/jspf-cli#readme",
   "dependencies": {
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",

@@ -1,7 +1,9 @@
-import { PlaylistDataI, DataConverterI } from '../interfaces';
-import { DataConverter } from '../models';
-import { Jspf,Playlist } from '../../entities/models';
 import { classToPlain } from 'class-transformer';
+import { PlaylistDataI } from '../../entities/jspf/interfaces';
+import { Jspf,Playlist } from '../../entities/models';
+import { DataConverterI } from '../interfaces';
+import { DataConverter } from '../models';
+
 
 export default class JspfConverter extends DataConverter {
   public static readonly types = ['jspf'];
