@@ -37,7 +37,7 @@ jspf-cli convert [options] <path_in> <path_out>
 Convert a *m3u8* playlist to a *xspf* one
 
 ```sh
-jspf-cli convert -i "path-to-input-file.xspf" -o "path-to-output-file.jspf"
+jspf-cli convert -i "path-to-input-file.m3u8" -o "path-to-output-file.xspf"
 ```
 
 ## Validate a playlist
