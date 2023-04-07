@@ -141,11 +141,6 @@ module.exports = {
   describe: 'Convert a playlist file to another format',
   builder: (yargs: yargs.Argv) => {
     return yargs
-      .option('path_in', {
-        describe: 'Path to the input file',
-        type: 'string',
-        alias: 'i'
-      })
       .option('path_out', {
         describe: 'Path to the output file',
         type: 'string',

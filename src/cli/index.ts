@@ -45,6 +45,12 @@ async function cli(){
     .commandDir('./commands')
     .demandCommand(1, 'You need at least one command before moving on')
     .recommendCommands()
+    .option('path_in', {
+      describe: 'Path to the input file',
+      type: 'string',
+      alias: 'i',
+      demandOption: true
+    })
     .help('h')
     .alias('h', 'help')
     .epilogue(`JSPF version: ${JSPF_VERSION} - ${XSPF_URL}`)
