@@ -1,14 +1,14 @@
 JSPF CLI
 ===============
 
-JSPF CLI is a command line utility (CLI) to convert playlist files, using [JSPF](https://www.xspf.org/jspf) as an intermediary.
+JSPF CLI is a command line utility (CLI) relying on the [JSPF](https://www.xspf.org/jspf) format to convert and validate playlist files.
 
 JSPF is an open format used to describe a list of multimedia files (audio or video), created by [Xiph](https://xiph.org/).
 It is both simple and flexible, making it a good choice for programming purposes.
 
 This module was originally developed for our music website, Spiff Radio, which uses JSPF as a fundamental part of its architecture.
 
-More tools and modules are available on [our Github profile](https://github.com/spiff-radio) !
+Validation is done using a [JSON Schema](https://json-schema.org/) based on the [XSPF specifications](https://www.xspf.org/spec).
 
 ## Installation
 
@@ -59,7 +59,7 @@ jspf-cli validate [options] <path>
 
 #### Example
 
-Convert a JSPF playlist to a XSPF one
+Validate a playlist
 
 ```sh
 jspf-cli  validate -i "path-to-input-file.xspf"
