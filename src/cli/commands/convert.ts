@@ -2,11 +2,11 @@ const fs = require('fs');
 import yargs from 'yargs';
 import { plainToClass,classToPlain,serialize } from 'class-transformer';
 import {convertPlaylist,getConverterTypes} from "../../convert/convert-playlist";
+import {ValidationErrors} from "../../entities/jspf/models";
 import {Jspf,Playlist} from "../../entities/models";
 import {readFile,writeFile,validateOptionPath,validateOptionFormat} from "../index";
 
 const allowedTypes = getConverterTypes();
-
 
 type ConvertCommandOptions = {
   path_in:string,
@@ -59,38 +59,39 @@ async function convertCommand(argv: ConvertCommandOptions ) {
   //conversion IN
   const input_data:any = await readFile(path_in);
   let playlistJSON:object;
+  let jspfString:string;
 
   try{
-    const jspfString = convertPlaylist(input_data,{format_in:format_in,format_out:'jspf'});
-    const jspfJSON = JSON.parse(jspfString);
-    playlistJSON = jspfJSON.playlist;
+    jspfString = convertPlaylist(input_data,{
+      format_in:format_in,
+      format_out:'jspf',
+      strict:!strip
+    }
+  );
   }catch(e){
-    console.error('Unable to load data.');
-    throw e;
-  }
+    // TOUFIX TODO
+    /*
+    if (e instanceof ValidationErrors) {
+        console.info(e.validation.errors);
+        console.log();
+        console.error("The playlist is not valid, so conversion has stopped.");
+        console.error("You can either use option '--strip=true' to strip non-valid values at conversion, or run 'jspf-cli validate' to check what's wrong.");
 
-  //DTO
-  const jspf = new Jspf();
-  jspf.playlist = new Playlist(playlistJSON);
-
-  //validation
-
-  if (!strip && !jspf.isValid() ){
-    console.info(jspf.validation.errors);
-    console.log();
-    console.error("Your JSPF is not valid.  Either correct the input file (eg. on https://jsonlint.com/), or use argument ''--strip=true' to strip non-valid values.");
+    }else{
+    */
+      console.error('Unable to load playlist data.');
+    //}
     process.exit();
   }
 
   //conversion OUT
-
   let output_data:any = undefined;
 
   try{
-    output_data = convertPlaylist(jspf.toString(),{format_in:'jspf',format_out:format_out});
+    output_data = convertPlaylist(jspfString,{format_in:'jspf',format_out:format_out});
   }catch(e){
-    console.error('Unable to convert data.');
-    throw e;
+    console.error('Unable to convert playlist data.');
+    process.exit();
   }
 
   //output

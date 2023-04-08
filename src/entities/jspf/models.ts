@@ -52,7 +52,16 @@ export class ValidateData extends BaseData{
   public isValid(schema?:Schema):boolean{
     this.validator = new Validator();
     this.validation = this.validator.validate(this.toDTO(),schema);
-    return (!this.validation.errors.length);
+    if (this.validation.errors.length){
+
+      //TOUFIX SHOULD BE REMOVED WHEN WE CAN CATCH THE ERROR CORRECTLY
+      console.log("The playlist is not valid.");
+      console.log(this.validation.errors);
+
+      throw new ValidationErrors("The playlist is not valid.",this.validation);
+    }else{
+      return true;
+    }
   }
 }
 
@@ -229,4 +238,14 @@ export class JSPFData extends ValidateData implements JSPFDataI {
     return JSON.stringify(this.toJSON(), null, 4);
   }
 
+}
+
+export class ValidationErrors extends Error {
+  validation:ValidatorResult;
+  name:string;
+  constructor(message:string,validation:ValidatorResult) {
+    super(message);
+    this.validation = validation;
+    this.name = 'ValidationErrors';
+  }
 }

@@ -3,6 +3,8 @@ import * as path from 'path';
 import { default as _ } from 'lodash'; // Optional, for string manipulation
 import merge from 'lodash/merge';
 
+import {PlaylistDataI} from "../entities/jspf/interfaces";
+import {Jspf,Playlist} from "../entities/models";
 import { DataConverterI,ConvertOptionsI } from './interfaces';
 import JspfConverter from './formats/jspf';
 import M3u8Converter from './formats/m3u8';
@@ -25,19 +27,25 @@ export function getConverterByType(type: string) {
   }
 }
 
-const defaultConvertOptions: ConvertOptionsI = {
-  format_in: 'jspf',
-  format_out: 'jspf',
-};
+export function convertPlaylist(data_in: any, options: ConvertOptionsI = { format_in: 'auto', format_out: 'auto', strict: false }):string {
 
-export function convertPlaylist(data_in: any, options: ConvertOptionsI = defaultConvertOptions):string {
-
-  options = merge(defaultConvertOptions, options);
-
+  //IN
   const converterInClass = getConverterByType(options.format_in);
   const converterIn = new converterInClass();
-  const dto = converterIn.get(data_in);
 
+  //DTO
+  const dto:PlaylistDataI = converterIn.get(data_in);
+
+  const jspf = new Jspf();
+  jspf.playlist = new Playlist(dto);
+
+  if (options.strict){
+    jspf.isValid();
+  }else{
+    //TOUFIX STRIP DATAS ?
+  }
+
+  //OUT
   const converterOutClass = getConverterByType(options.format_out);
   const converterOut = new converterOutClass();
   const data_out = converterOut.set(dto);
