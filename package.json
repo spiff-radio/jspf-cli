@@ -20,9 +20,20 @@
     "url": "https://github.com/spiff-radio/jspf-cli.git"
   },
   "keywords": [
-    "jspf",
     "playlist",
-    "json"
+    "jspf",
+    "json",
+    "xspf",
+    "m3u8",
+    "m3u",
+    "convert",
+    "convertor",
+    "conversion",
+    "parse",
+    "parser",
+    "parsing",
+    "validate",
+    "validation"
   ],
   "author": "spiff-radio",
   "license": "GPL",
