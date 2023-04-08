@@ -2,8 +2,17 @@ import { json2xml } from 'xml-js';
 import {XSPF_VERSION,XSPF_XMLNS} from '../../constants';
 import { DataConverterI } from '../interfaces';
 import { DataConverter } from '../models';
-import { PlaylistDataI } from '../../entities/jspf/interfaces';
-import { Playlist } from '../../entities/models';
+import { JSPFDataI,PlaylistDataI } from '../../entities/jspf/interfaces';
+import { Jspf,Playlist } from '../../entities/models';
+
+export interface XSPFDataI extends JSPFDataI {
+  _declaration: {
+    _attributes: {
+      version: string;
+      encoding: string;
+    };
+  };
+}
 
 export default class XspfConverter extends DataConverter {
   public static readonly types = ['xspf'];
@@ -12,44 +21,41 @@ export default class XspfConverter extends DataConverter {
     throw new Error('XSPF imports not yet implemented.');
   }
 
-  public set(dto: PlaylistDataI):string{
-    throw new Error('XSPF exports not yet implemented.');
-  }
-  /*
-  public setOLD(dto: PlaylistDataI):string{
+  public set(playlistData: PlaylistDataI):string{
+    const jspf = new Jspf();
+    jspf.playlist = new Playlist(playlistData);
 
-    let data = dto as {}
-
-    //add XML declaration
-    data = {
-      _declaration:{
-        _attributes:{
-          version:"1.0",
-          encoding:"utf-8"
-        },
-        ...data
-    }
-
-    //add playlist attributes - move in PlaylistXML ?
-    data.playlist = {
-      ...data.playlist,
-      _attributes: {
-        version: XSPF_VERSION,
-        xmlns: XSPF_XMLNS
+    let xspfJSON: XSPFDataI = {
+      //add XML declaration
+      _declaration: {
+        _attributes: {
+          version: "1.0",
+          encoding: "utf-8"
+        }
+      },
+      //add playlist attributes
+      playlist: {
+        ...jspf.playlist,
+        _attributes: {
+          version: XSPF_VERSION,
+          xmlns: XSPF_XMLNS
+        }
       }
     };
 
-    //move tracks within a trackList node
-    data.playlist.trackList = {track:this.playlist.track};
-    delete data.playlist.track;
+    // Move tracks within a trackList node
+    xspfJSON.playlist.trackList = { track: xspfJSON.playlist.track };
+    delete xspfJSON.playlist.track;
 
-    //update some of the single nodes recursively
-    XspfConverter.updateNodes(data.playlist);
+    // Update some of the single nodes recursively
+    XspfConverter.updateNodes(xspfJSON.playlist);
 
-    const xml = json2xml(JSON.stringify(data), { compact: true, spaces: 4 });
+    // Use json2xml to convert JspfJson to XML
+    const xml: string = json2xml(JSON.stringify(xspfJSON), { compact: true, spaces: 4 });
     return xml;
+
   }
-  */
+
   private static updateNodes(data: any) {
 
     const updateSingle = (data:any,type:string) => {
