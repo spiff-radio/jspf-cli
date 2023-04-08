@@ -2,7 +2,7 @@ const fs = require('fs');
 import yargs from 'yargs';
 import { plainToClass,classToPlain,serialize } from 'class-transformer';
 import {convertPlaylist,getConverterTypes} from "../../convert/convert-playlist";
-import {ValidationErrors} from "../../entities/jspf/models";
+import {JSONValidationErrors} from "../../entities/jspf/models";
 import {Jspf,Playlist} from "../../entities/models";
 import {readFile,writeFile,validateOptionPath,validateOptionFormat} from "../index";
 
@@ -13,7 +13,7 @@ type ConvertCommandOptions = {
   path_out:string,
   format_in?:string,
   format_out?:string,
-  strip?:boolean
+  force?:boolean
 }
 
 async function convertCommand(argv: ConvertCommandOptions ) {
@@ -23,7 +23,7 @@ async function convertCommand(argv: ConvertCommandOptions ) {
     path_out = '',
     format_in = '',
     format_out = '',
-    strip = false,
+    force = false,
   } = argv;
 
   //Check file paths
@@ -65,22 +65,19 @@ async function convertCommand(argv: ConvertCommandOptions ) {
     jspfString = convertPlaylist(input_data,{
       format_in:format_in,
       format_out:'jspf',
-      strict:!strip
-    }
-  );
+      ignoreValidationErrors:force
+    });
   }catch(e){
-    // TOUFIX TODO
-    /*
-    if (e instanceof ValidationErrors) {
-        console.info(e.validation.errors);
+    if (e instanceof JSONValidationErrors) {
+        console.log(e.validation.errors);
         console.log();
-        console.error("The playlist is not valid, so conversion has stopped.");
-        console.error("You can either use option '--strip=true' to strip non-valid values at conversion, or run 'jspf-cli validate' to check what's wrong.");
-
+        console.error("The input playlist is not valid, conversion has been stopped.");
+        console.log();
+        console.error("You can use option '--force=true' to ignore this error.");
+        console.log();
     }else{
-    */
-      console.error('Unable to load playlist data.');
-    //}
+      throw(e);
+    }
     process.exit();
   }
 
@@ -88,9 +85,22 @@ async function convertCommand(argv: ConvertCommandOptions ) {
   let output_data:any = undefined;
 
   try{
-    output_data = convertPlaylist(jspfString,{format_in:'jspf',format_out:format_out});
+    output_data = convertPlaylist(jspfString,{
+      format_in:'jspf',
+      format_out:format_out,
+      ignoreValidationErrors:force
+    });
   }catch(e){
-    console.error('Unable to convert playlist data.');
+    if (e instanceof JSONValidationErrors) {
+      console.log(e.validation.errors);
+      console.log();
+      console.error("The output playlist is not valid, conversion has been stopped.");
+      console.log();
+      console.error("You can use option '--force=true' to ignore this error.");
+      console.log();
+    }else{
+      throw(e);
+    }
     process.exit();
   }
 
@@ -120,10 +130,10 @@ module.exports = {
         choices: allowedTypes,
         type: 'string'
       })
-      .option('strip', {
-        describe: 'Remove values that do not conform to the JSPF specifications',
+      .option('force', {
+        describe: 'Force conversion even if validation fails. It will also remove values that do not conform to the JSPF specifications',
         type: 'boolean',
-        default: true
+        default: false
       })
       /*
       .check((argv) => {

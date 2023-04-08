@@ -5,6 +5,7 @@ import merge from 'lodash/merge';
 
 import {PlaylistDataI} from "../entities/jspf/interfaces";
 import {Jspf,Playlist} from "../entities/models";
+import {JSONValidationErrors} from "../entities/jspf/models";
 import { DataConverterI,ConvertOptionsI } from './interfaces';
 import JspfConverter from './formats/jspf';
 import M3u8Converter from './formats/m3u8';
@@ -27,7 +28,7 @@ export function getConverterByType(type: string) {
   }
 }
 
-export function convertPlaylist(data_in: any, options: ConvertOptionsI = { format_in: 'auto', format_out: 'auto', strict: false }):string {
+export function convertPlaylist(data_in: any, options: ConvertOptionsI = { format_in: 'auto', format_out: 'auto', ignoreValidationErrors: false }):string {
 
   //IN
   const converterInClass = getConverterByType(options.format_in);
@@ -39,10 +40,16 @@ export function convertPlaylist(data_in: any, options: ConvertOptionsI = { forma
   const jspf = new Jspf();
   jspf.playlist = new Playlist(dto);
 
-  if (options.strict){
-    jspf.isValid();
-  }else{
-    //TOUFIX STRIP DATAS ?
+  try{
+    jspf.isValid();//will eventually throw a JSONValidationErrors
+  }catch(e){
+    if (e instanceof JSONValidationErrors) {
+      if (!options.ignoreValidationErrors){
+        throw(e);
+      }
+    }else{
+      throw(e);
+    }
   }
 
   //OUT

@@ -8,5 +8,5 @@ export interface DataConverterI{
 export interface ConvertOptionsI {
   format_in: string;
   format_out: string;
-  strict?: boolean;
+  ignoreValidationErrors?: boolean;
 }

@@ -53,12 +53,7 @@ export class ValidateData extends BaseData{
     this.validator = new Validator();
     this.validation = this.validator.validate(this.toDTO(),schema);
     if (this.validation.errors.length){
-
-      //TOUFIX SHOULD BE REMOVED WHEN WE CAN CATCH THE ERROR CORRECTLY
-      console.log("The playlist is not valid.");
-      console.log(this.validation.errors);
-
-      throw new ValidationErrors("The playlist is not valid.",this.validation);
+      throw new JSONValidationErrors("The playlist is not valid.",this.validation);
     }else{
       return true;
     }
@@ -240,12 +235,13 @@ export class JSPFData extends ValidateData implements JSPFDataI {
 
 }
 
-export class ValidationErrors extends Error {
+export class JSONValidationErrors extends Error {
   validation:ValidatorResult;
   name:string;
   constructor(message:string,validation:ValidatorResult) {
     super(message);
+    Object.setPrototypeOf(this, JSONValidationErrors.prototype);//without this, TypeScript build fails - https://www.ashsmith.io/handling-custom-error-classes-in-typescript
     this.validation = validation;
-    this.name = 'ValidationErrors';
+    this.name = 'JSONValidationErrors';
   }
 }

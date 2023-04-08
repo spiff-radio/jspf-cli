@@ -29,6 +29,7 @@ jspf-cli convert [options] <path_in> <path_out>
 
 - `-i <file>`: Path to the input file [required].
 - `-o <file>`: Path to the output file [required].
+- `--force <boolean>`: Force conversion even if the validation fails.  Invalid values will be stripped [default is false].
 - `--format_in <format>`: The input format. If omitted, the tool will use the extension of the input file.
 - `--format_out <format>`: The output format. If omitted, the tool will use the extension of the output file.
 
