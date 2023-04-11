@@ -58,6 +58,38 @@ export class ValidateData extends BaseData{
       return true;
     }
   }
+
+  private static removeValuesWithErrors(dto:PlaylistDataI,errors:ValidationError[] | undefined):PlaylistDataI {
+    errors = errors ?? [];
+    errors.forEach(error => PlaylistData.removeValueForError(dto,error));
+    return dto;
+  }
+
+  private static removeValueForError(dto:PlaylistDataI, error: ValidationError): object {
+    const errorPath = error.property.replace(/\[(\w+)\]/g, '.$1').split('.');
+    let currentNode: { [key: string]: any } = dto;
+
+    for (let i = 0; i < errorPath.length; i++) {
+      const key = errorPath[i];
+      if (i === errorPath.length - 1) {
+        if (Array.isArray(currentNode)) {
+          if (key !== null) {
+            currentNode.splice(parseInt(key, 10), 1);
+          }
+        } else if (typeof currentNode === 'object') {
+          delete currentNode[key];
+        }
+      } else {
+        if (!currentNode.hasOwnProperty(key)) {
+          // Property is not defined in the data, maybe already deleted, move on to next error
+          continue;
+        }
+        currentNode = currentNode[key];
+      }
+    }
+    return dto;
+  }
+
 }
 
 export class SingleKeyValue extends ValidateData{
@@ -131,8 +163,11 @@ export class TrackData extends ValidateData implements TrackDataI{
   album: string;
   trackNum: number;
   duration: number;
+  @Type(() => LinkData)
   link: LinkData[];
+  @Type(() => MetaData)
   meta: MetaData[];
+  @Type(() => ExtensionData)
   extension: ExtensionData;
 
   public static get_schema(schema?:Schema):Schema{
@@ -157,10 +192,15 @@ export class PlaylistData extends ValidateData implements PlaylistDataI{
   image: string;
   date: string;
   license: string;
+  @Type(() => AttributionData)
   attribution: AttributionData[];
+  @Type(() => LinkData)
   link: LinkData[];
+  @Type(() => MetaData)
   meta: MetaData[];
+  @Type(() => ExtensionData)
   extension: ExtensionData;
+  @Type(() => TrackData)
   track: TrackData[];
 
   public static get_schema(schema?:Schema):Schema{
@@ -171,38 +211,6 @@ export class PlaylistData extends ValidateData implements PlaylistDataI{
     schema = PlaylistData.get_schema(schema);
     return super.isValid(schema);
   }
-
-  private static removeValuesWithErrors(dto:PlaylistDataI,errors:ValidationError[] | undefined):PlaylistDataI {
-    errors = errors ?? [];
-    errors.forEach(error => PlaylistData.removeValueForError(dto,error));
-    return dto;
-  }
-
-  private static removeValueForError(dto:PlaylistDataI, error: ValidationError): object {
-    const errorPath = error.property.replace(/\[(\w+)\]/g, '.$1').split('.');
-    let currentNode: { [key: string]: any } = dto;
-
-    for (let i = 0; i < errorPath.length; i++) {
-      const key = errorPath[i];
-      if (i === errorPath.length - 1) {
-        if (Array.isArray(currentNode)) {
-          if (key !== null) {
-            currentNode.splice(parseInt(key, 10), 1);
-          }
-        } else if (typeof currentNode === 'object') {
-          delete currentNode[key];
-        }
-      } else {
-        if (!currentNode.hasOwnProperty(key)) {
-          // Property is not defined in the data, maybe already deleted, move on to next error
-          continue;
-        }
-        currentNode = currentNode[key];
-      }
-    }
-    return dto;
-  }
-
 }
 
 export class JSPFData extends ValidateData implements JSPFDataI {

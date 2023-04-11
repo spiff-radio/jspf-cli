@@ -4,12 +4,13 @@ import { DataConverterI } from '../interfaces';
 import { DataConverter } from '../models';
 import { JSPFDataI,PlaylistDataI } from '../../entities/jspf/interfaces';
 import { Jspf,Playlist } from '../../entities/models';
+import { parseXSPF } from './xspf-parser';
 
 export interface XSPFDataI extends JSPFDataI {
-  _declaration: {
-    _attributes: {
-      version: string;
-      encoding: string;
+  _declaration?: {
+    _attributes?: {
+      version?: string;
+      encoding?: string;
     };
   };
 }
@@ -18,7 +19,7 @@ export default class XspfConverter extends DataConverter {
   public static readonly types = ['xspf'];
 
   public get(data:any):PlaylistDataI{
-    throw new Error('XSPF imports not yet implemented.');
+    return parseXSPF(data);
   }
 
   public set(playlistData: PlaylistDataI):string{
@@ -44,8 +45,13 @@ export default class XspfConverter extends DataConverter {
     };
 
     // Move tracks within a trackList node
-    xspfJSON.playlist.trackList = { track: xspfJSON.playlist.track };
-    delete xspfJSON.playlist.track;
+    if (xspfJSON.playlist){
+      if (xspfJSON.playlist.track){
+        xspfJSON.playlist.trackList = { track: xspfJSON.playlist.track };
+        delete xspfJSON.playlist.track;
+      }
+    }
+
 
     // Update some of the single nodes recursively
     XspfConverter.updateNodes(xspfJSON.playlist);
