@@ -26,6 +26,4 @@ export default class JspfConverter extends DataConverter {
     jspf.playlist = new Playlist(playlistData);
     return jspf.toString();
   }
-
-
 }

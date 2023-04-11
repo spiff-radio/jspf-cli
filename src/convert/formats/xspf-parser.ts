@@ -1,45 +1,43 @@
+import { xml2json,ElementCompact, xml2js } from 'xml-js';
 import { BaseDataI, PlaylistDataI, TrackDataI, AttributionDataI, LinkDataI, MetaDataI,ExtensionDataI }  from '../../entities/jspf/interfaces';
-import { XSPFDataI }  from './xspf';
 import { Playlist } from '../../entities/models';
 
-import { xml2json,ElementCompact, xml2js } from 'xml-js';
+export default function parseXSPF(input: string): PlaylistDataI {
+  const data = xml2js(input, { compact: true }) as ElementCompact;
 
-export function parseXSPF(xml: string): PlaylistDataI {
-  const data = xml2js(xml, { compact: true }) as ElementCompact;
-
-  const rawData: PlaylistDataI = {};
-  rawData.title = data.playlist?.title?._text;
-  rawData.creator = data.playlist?.creator?._text;
-  rawData.annotation = data.playlist?.annotation?._text;
-  rawData.info = data.playlist?.info?._text;
-  rawData.location = data.playlist?.location?._text;
-  rawData.identifier = data.playlist?.identifier?._text;
-  rawData.image = data.playlist?.image?._text;
-  rawData.date = data.playlist?.date?._text;
-  rawData.license = data.playlist?.license?._text;
+  const dto: PlaylistDataI = {};
+  dto.title = data.playlist?.title?._text;
+  dto.creator = data.playlist?.creator?._text;
+  dto.annotation = data.playlist?.annotation?._text;
+  dto.info = data.playlist?.info?._text;
+  dto.location = data.playlist?.location?._text;
+  dto.identifier = data.playlist?.identifier?._text;
+  dto.image = data.playlist?.image?._text;
+  dto.date = data.playlist?.date?._text;
+  dto.license = data.playlist?.license?._text;
 
   if (data.playlist?.attribution) {
-    rawData.attribution = parseAttribution(data.playlist.attribution);
+    dto.attribution = parseAttribution(data.playlist.attribution);
   }
 
   if (data.playlist?.link) {
-    rawData.link = parseLinks(data.playlist.link);
+    dto.link = parseLinks(data.playlist.link);
   }
 
   if (data.playlist?.meta) {
-    rawData.meta = parseMetaDatas(data.playlist.meta);
+    dto.meta = parseMetaDatas(data.playlist.meta);
   }
 
   if (data.playlist?.extension) {
-    rawData.extension = parseExtensionCollection(data.playlist.extension);
+    dto.extension = parseExtension(data.playlist.extension);
   }
 
   if (data.playlist?.trackList?.track) {
-    rawData.track = parseTrackList(data.playlist.trackList.track);
+    dto.track = parseTrackList(data.playlist.trackList.track);
   }
 
 
-  return new Playlist(rawData);
+  return new Playlist(dto);
 }
 
 function parseAttribution(input: ElementCompact): AttributionDataI[] {
@@ -108,19 +106,7 @@ function parseMetaDatas(input: ElementCompact | ElementCompact[]): MetaDataI[] {
 
 }
 
-function parseExtension(input:ElementCompact): any[] {
-
-  //ignore '_attributes'
-  delete input._attributes;
-
-  //force array
-  const output:any[] = [input];
-
-  return output;
-
-}
-
-function parseExtensionCollection(input:ElementCompact[] | ElementCompact[]): ExtensionDataI {
+function parseExtension(input:ElementCompact): ExtensionDataI {
 
   //force array
   if (!Array.isArray(input)){
@@ -129,11 +115,10 @@ function parseExtensionCollection(input:ElementCompact[] | ElementCompact[]): Ex
 
   const output: ExtensionDataI = {};
 
-  console.log("EXT",input);
-
   input.forEach((el:ElementCompact) => {
     const key = String(el._attributes?.application);
-    const value = parseExtension(el);
+    delete el._attributes;//ignore '_attributes'
+    const value:any[] = [el];
     output[key] = value;
   })
 
@@ -193,12 +178,6 @@ function parseTrackList(tracks:ElementCompact[]): TrackDataI[] {
       t.duration = Number(track.duration._text);
     }
 
-
-      console.log("TRACK");
-      console.log(track);
-      console.log();
-
-
     if (track?.link) {
       t.link = parseLinks(track.link);
     }
@@ -208,7 +187,7 @@ function parseTrackList(tracks:ElementCompact[]): TrackDataI[] {
     }
 
     if (track?.extension) {
-      t.extension = parseExtensionCollection(track.extension);
+      t.extension = parseExtension(track.extension);
     }
 
     return t;
