@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<playlist xmlns="http://xspf.org/ns/0/" xmlns:vlc="http://www.videolan.org/vlc/playlist/ns/0/" version="1">
+  <title>My Playlist</title>
+  <creator>John Doe</creator>
+  <annotation>A playlist of my favorite songs.</annotation>
+  <info>http://example.com/playlist-info</info>
+  <location>file:///home/user/Music/my-playlist.xspf</location>
+  <identifier>urn:uuid:12345678-abcd-1234-abcd-1234567890ab</identifier>
+  <image>http://example.com/playlist-image.jpg</image>
+  <date>2023-04-06T15:32:21-07:00</date>
+  <license>https://creativecommons.org/licenses/by-nc-sa/4.0/</license>
+  <attribution>
+    <location>http://bar.com/modified/_version/_of/_original/_playlist.xspf</location>
+    <identifier>somescheme:original/_playlist.xspf</identifier>
+  </attribution>
+  <link rel="http://example.com/namespace/version1">http://example.com/namespace/version1.rdfs</link>
+  <link rel="http://example.com/namespace/version2">http://example.com/namespace/version2.rdfs</link>
+  <meta rel="http://example.org/meta/mood">happy</meta>
+  <meta rel="http://example.org/meta/genre">electro</meta>
+  <trackList>
+    <track>
+      <title>Song 1</title>
+      <creator>Artist 1</creator>
+      <album>Album 1</album>
+    </track>
+    <track>
+      <location>http://example.com/song2.mp3</location>
+      <identifier>urn:uuid:12345678-abcd-1234-abcd-1234567890ae</identifier>
+      <title>Song 2</title>
+      <creator>Artist 2</creator>
+      <annotation>A verbose track</annotation>
+      <info>http://example.com/song2-info</info>
+      <image>http://example.com/song2-image.jpg</image>
+      <album>Album 2</album>
+      <trackNum>2</trackNum>
+      <duration>240</duration>
+      <link rel="http://example.com/namespace/version1">http://example.com/namespace/version1.rdfs</link>
+      <meta rel="http://example.org/meta/mood">happy</meta>
+      <extension application="http://example.com">
+        <cl:clip start="25000" end="34500"/>
+      </extension>
+    </track>
+    <track>
+      <location>http://example.com/song3.mp3</location>
+      <location>http://example.com/song3-live.mp3</location>
+      <identifier>a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p</identifier>
+      <identifier>1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p</identifier>
+      <title>Song 3</title>
+      <creator>Artist 3</creator>
+      <annotation>A track with a multiple values for location/identifier/link/meta/extension</annotation>
+      <link rel="http://example.com/namespace/version1">http://example.com/namespace/version1.rdfs</link>
+      <link rel="http://example.com/namespace/version2">http://example.com/namespace/version2.rdfs</link>
+      <meta rel="http://example.org/meta/mood">happy</meta>
+      <meta rel="http://example.org/meta/genre">electro</meta>
+      <extension application="http://example.com">
+        <cl:clip start="25000" end="34500"/>
+      </extension>
+      <extension application="http://www.videolan.org/vlc/playlist/0">
+        <vlc:id>3</vlc:id>
+      </extension>
+    </track>
+    <track>
+      <location>http://example.com/song4.mp3</location>
+      <title xml:lang="ja">曲 3</title>
+      <creator xml:lang="ja">アーティスト3</creator>
+      <album xml:lang="ja">アルバム3</album>
+      <annotation xml:lang="ja">A track with special characters</annotation>
+    </track>
+  </trackList>
+</playlist>

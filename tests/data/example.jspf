@@ -1,0 +1,139 @@
+{
+    "playlist": {
+        "title": "My Playlist",
+        "creator": "John Doe",
+        "annotation": "A playlist of my favorite songs.",
+        "info": "http://example.com/playlist-info",
+        "location": "file:///home/user/Music/my-playlist.xspf",
+        "identifier": "urn:uuid:12345678-abcd-1234-abcd-1234567890ab",
+        "image": "http://example.com/playlist-image.jpg",
+        "date": "2023-04-06T15:32:21-07:00",
+        "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "attribution": [
+            {
+                "location": "http://bar.com/modified/_version/_of/_original/_playlist.xspf"
+            },
+            {
+                "identifier": "somescheme:original/_playlist.xspf"
+            }
+        ],
+        "link": [
+            {
+                "http://example.com/namespace/version1": "http://example.com/namespace/version1.rdfs"
+            },
+            {
+                "http://example.com/namespace/version2": "http://example.com/namespace/version2.rdfs"
+            }
+        ],
+        "meta": [
+            {
+                "http://example.org/meta/mood": "happy"
+            },
+            {
+                "http://example.org/meta/genre": "electro"
+            }
+        ],
+        "track": [
+            {
+                "title": "Song 1",
+                "creator": "Artist 1",
+                "album": "Album 1"
+            },
+            {
+                "location": [
+                    "http://example.com/song2.mp3"
+                ],
+                "identifier": [
+                    "urn:uuid:12345678-abcd-1234-abcd-1234567890ae"
+                ],
+                "title": "Song 2",
+                "creator": "Artist 2",
+                "annotation": "A verbose track",
+                "info": "http://example.com/song2-info",
+                "image": "http://example.com/song2-image.jpg",
+                "album": "Album 2",
+                "trackNum": 2,
+                "duration": 240,
+                "link": [
+                    {
+                        "http://example.com/namespace/version1": "http://example.com/namespace/version1.rdfs"
+                    }
+                ],
+                "meta": [
+                    {
+                        "http://example.org/meta/mood": "happy"
+                    }
+                ],
+                "extension": {
+                    "http://example.com": [
+                        {
+                            "cl:clip": {
+                                "_attributes": {
+                                    "start": "25000",
+                                    "end": "34500"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "location": [
+                    "http://example.com/song3.mp3",
+                    "http://example.com/song3-live.mp3"
+                ],
+                "identifier": [
+                    "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p",
+                    "1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p"
+                ],
+                "title": "Song 3",
+                "creator": "Artist 3",
+                "annotation": "A track with a multiple values for location/identifier/link/meta/extension",
+                "link": [
+                    {
+                        "http://example.com/namespace/version1": "http://example.com/namespace/version1.rdfs"
+                    },
+                    {
+                        "http://example.com/namespace/version2": "http://example.com/namespace/version2.rdfs"
+                    }
+                ],
+                "meta": [
+                    {
+                        "http://example.org/meta/mood": "happy"
+                    },
+                    {
+                        "http://example.org/meta/genre": "electro"
+                    }
+                ],
+                "extension": {
+                    "http://example.com": [
+                        {
+                            "cl:clip": {
+                                "_attributes": {
+                                    "start": "25000",
+                                    "end": "34500"
+                                }
+                            }
+                        }
+                    ],
+                    "http://www.videolan.org/vlc/playlist/0": [
+                        {
+                            "vlc:id": {
+                                "_text": "3"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "location": [
+                    "http://example.com/song4.mp3"
+                ],
+                "title": "曲 3",
+                "creator": "アーティスト3",
+                "annotation": "A track with special characters",
+                "album": "アルバム3"
+            }
+        ]
+    }
+}

@@ -9,9 +9,10 @@ import {JSONValidationErrors} from "../entities/jspf/models";
 import { DataConverterI,ConvertOptionsI } from './interfaces';
 import JspfConverter from './formats/jspf';
 import M3u8Converter from './formats/m3u8';
+import PlsConverter from './formats/pls';
 import XspfConverter from './formats/xspf';
 
-const converters = [JspfConverter, M3u8Converter, XspfConverter];
+const converters = [JspfConverter, M3u8Converter, PlsConverter, XspfConverter];
 
 // Get a flat array of all the converter types
 export function getConverterTypes(): string[] {
