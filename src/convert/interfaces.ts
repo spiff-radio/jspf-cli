@@ -9,4 +9,5 @@ export interface ConvertOptionsI {
   format_in: string;
   format_out: string;
   ignoreValidationErrors?: boolean;
+  stripInvalid?: boolean;
 }

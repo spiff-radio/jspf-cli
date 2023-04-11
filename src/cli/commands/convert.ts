@@ -13,7 +13,8 @@ type ConvertCommandOptions = {
   path_out:string,
   format_in?:string,
   format_out?:string,
-  force?:boolean
+  force?:boolean,
+  strip?:boolean
 }
 
 async function convertCommand(argv: ConvertCommandOptions ) {
@@ -24,6 +25,7 @@ async function convertCommand(argv: ConvertCommandOptions ) {
     format_in = '',
     format_out = '',
     force = false,
+    strip=true
   } = argv;
 
   //Check file paths
@@ -65,7 +67,8 @@ async function convertCommand(argv: ConvertCommandOptions ) {
     jspfString = convertPlaylist(input_data,{
       format_in:format_in,
       format_out:'jspf',
-      ignoreValidationErrors:force
+      ignoreValidationErrors:force,
+      stripInvalid:strip
     });
   }catch(e){
     if (e instanceof JSONValidationErrors) {
@@ -88,7 +91,8 @@ async function convertCommand(argv: ConvertCommandOptions ) {
     output_data = convertPlaylist(jspfString,{
       format_in:'jspf',
       format_out:format_out,
-      ignoreValidationErrors:force
+      ignoreValidationErrors:force,
+      stripInvalid:strip
     });
   }catch(e){
     if (e instanceof JSONValidationErrors) {

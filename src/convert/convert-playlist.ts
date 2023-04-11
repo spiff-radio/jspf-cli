@@ -29,7 +29,12 @@ export function getConverterByType(type: string) {
   }
 }
 
-export function convertPlaylist(data_in: any, options: ConvertOptionsI = { format_in: 'auto', format_out: 'auto', ignoreValidationErrors: false }):string {
+export function convertPlaylist(data_in: any, options: ConvertOptionsI = {
+  format_in: 'jspf',
+  format_out: 'jspf',
+  ignoreValidationErrors: false,
+  stripInvalid:true
+}):string {
 
   //IN
   const converterInClass = getConverterByType(options.format_in);
