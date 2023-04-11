@@ -1,7 +1,7 @@
 import { plainToClass, plainToClassFromExist,classToPlain, Exclude, Type } from 'class-transformer';
 import {Validator, ValidatorResult, ValidationError, Schema} from 'jsonschema';
 import {BaseDataI,JSPFDataI,PlaylistDataI,TrackDataI,AttributionDataI,MetaDataI,LinkDataI,ExtensionDataI} from './interfaces';
-import {removeEmptyAndUndefined,getChildSchema} from '../../utils';
+import {cleanNestedObject,getChildSchema} from '../../utils';
 
 type PlaylistOptions = {
   notValidError?: boolean,
@@ -29,7 +29,7 @@ export class BaseData implements BaseDataI{
   //- strip all empty and undefined values
   public toDTO():object{
     let obj = this.toJSON();
-    obj = removeEmptyAndUndefined(obj);
+    obj = cleanNestedObject(obj);
     return obj;
   }
 
@@ -231,7 +231,7 @@ export class JSPFData extends ValidateData implements JSPFDataI {
   //TOUFIX should be within class BaseData ?
   public toJSON():Record<string, any>{
     let obj = classToPlain(this);
-    obj = removeEmptyAndUndefined(obj);
+    obj = cleanNestedObject(obj);
     return obj;
   }
 

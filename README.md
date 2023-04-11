@@ -1,7 +1,7 @@
 JSPF CLI : A playlist converter tool
 ===============
 
-JSPF CLI is a command line utility (CLI) relying on the [JSPF](https://www.xspf.org/jspf) format to convert and validate playlist files.
+JSPF CLI is a robust command line utility (CLI) relying on the [JSPF](https://www.xspf.org/jspf) format to convert and validate playlist files.
 
 **Supports conversion between:** `jspf`,`xspf`,`m3u8`,`m3u`
 

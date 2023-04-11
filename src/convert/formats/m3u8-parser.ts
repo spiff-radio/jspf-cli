@@ -1,19 +1,28 @@
 //TOUFIX official types not existing yet.
-//https://github.com/videojs/m3u8-parser/pull/111
-//https://github.com/henninghall/m3u8-parser/blob/a021326a42fbdd7cc1d48c94baca086730333ac0/index.d.ts
+//TOUFIX title is not extracted : https://github.com/videojs/m3u8-parser/issues/created_by/spiff-radio
 // @ts-ignore
 import { Parser } from 'm3u8-parser';
 import {
-  BaseDataI,
-  AttributionDataI,
-  LinkDataI,
-  MetaDataI,
-  ExtensionDataI,
   TrackDataI,
   PlaylistDataI,
-} from '../../entities/jspf/interfaces'; // replace with your actual file name
+} from '../../entities/jspf/interfaces';
+
+//TOUFIX handle both basic and extended format ?
+function parseTrackTitle(segmentTitle: string): string | undefined {
+  const regex = /^a=(.*),t=(.*)$/;
+  const match = regex.exec(segmentTitle);
+  return match?.[2];
+}
+
+//TOUFIX handle both basic and extended format ?
+function parseTrackArtist(segmentTitle: string): string | undefined {
+  const regex = /^a=(.*),t=(.*)$/;
+  const match = regex.exec(segmentTitle);
+  return match?.[1];
+}
 
 function parseTrack(segment:any):TrackDataI{
+
   const trackData: TrackDataI = {
     location: [segment.uri],
     duration: segment.duration,
@@ -21,7 +30,8 @@ function parseTrack(segment:any):TrackDataI{
   };
 
   if (segment.title) {
-    trackData.title = segment.title;
+    trackData.title = parseTrackTitle(segment.title);
+    trackData.creator = parseTrackArtist(segment.title);
   }
 
   if (segment.byterange && trackData.extension) {

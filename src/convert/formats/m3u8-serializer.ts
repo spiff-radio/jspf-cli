@@ -1,5 +1,4 @@
 import { PlaylistDataI,TrackDataI } from '../../entities/jspf/interfaces';
-import { Playlist } from '../../entities/models';
 
 
 export default function serializeM3U8(input: PlaylistDataI): string {
@@ -11,6 +10,9 @@ export default function serializeM3U8(input: PlaylistDataI): string {
   // Add playlist information
   if (input.title){
     lines.push(`#EXTINF:-1,t=${input.title}`);
+  }
+  if (input.creator){
+    lines.push(`#EXTINF:-1,a=${input.creator}`);
   }
 
   if (input.image){
@@ -25,9 +27,10 @@ export default function serializeM3U8(input: PlaylistDataI): string {
 
   // Add tracks
   if (input.track) {
+    output += "\n";
     for (const trackInput of input.track) {
       const track:string = serializeTrack(trackInput);
-      output+= track;
+      output+= "\n" + track + "\n";
     }
   }
 
@@ -37,16 +40,26 @@ export default function serializeM3U8(input: PlaylistDataI): string {
 function serializeTrack(input: TrackDataI): string {
   let lines:string[] = [];
 
+  const duration = input.duration ?? -1;
+
+  let firstLine:string[] = [`#EXTINF:${duration}`];
+
+  if (input.creator){
+    firstLine.push(`a=${input.creator}`);
+  }
   if (input.title){
-    lines.push(`#EXTINF:${input.duration || '-1'},t=${input.title}`);
+    firstLine.push(`t=${input.title}`);
+  }
+  lines.push(firstLine.join(','));
+
+  if (input.location){
+    for (const location of input.location){
+      lines.push(location);
+    }
   }
 
-  //location (only the first one)
-  if (input.location?.[0]){
-    lines.push(`${input.location[0]}`);
-  }
 
-  // Add track metadata
+  // Add metadatas
   if (input.meta) {
     for (const meta of input.meta) {
       for (const key in meta) {
