@@ -29,20 +29,38 @@ export function getConverterByType(type: string) {
   }
 }
 
-export function convertPlaylist(data_in: any, options: ConvertOptionsI = {
-  format_in: 'jspf',
-  format_out: 'jspf',
+export function convertPlaylistToDTO(data_in: any, format_in:string='dto',options: ConvertOptionsI = {
   ignoreValidationErrors: false,
   stripInvalid:true
-}):string {
+}):object{
 
-  //IN
-  const converterInClass = getConverterByType(options.format_in);
-  const converterIn = new converterInClass();
+    //IN
+    const converterInClass = getConverterByType(format_in);
+    const converterIn = new converterInClass();
 
-  //DTO
-  const dto:PlaylistDataI = converterIn.get(data_in);
+    console.log("CLASS",converterInClass);
 
+    //DTO
+    let dto:PlaylistDataI;
+
+    if (format_in==='dto'){
+      dto = data_in;
+    }else{
+      dto = converterIn.get(data_in);
+    }
+
+    const jspf = new Jspf();
+    jspf.playlist = new Playlist(dto);
+
+    return jspf.playlist.toDTO();
+}
+
+export function convertPlaylist(data_in: any, format_in:string='dto',format_out:string='dto',options: ConvertOptionsI = {
+  ignoreValidationErrors: false,
+  stripInvalid:true
+}):string{
+
+  const dto = convertPlaylistToDTO(data_in,format_in,options);
   const jspf = new Jspf();
   jspf.playlist = new Playlist(dto);
 
@@ -59,7 +77,7 @@ export function convertPlaylist(data_in: any, options: ConvertOptionsI = {
   }
 
   //OUT
-  const converterOutClass = getConverterByType(options.format_out);
+  const converterOutClass = getConverterByType(format_out);
   const converterOut = new converterOutClass();
   const data_out = converterOut.set(dto);
   return data_out;

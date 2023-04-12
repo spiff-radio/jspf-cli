@@ -53,9 +53,10 @@ export class Playlist extends PlaylistData{
   @Type(() => Track)
   track: Track[];
 
-  hello(){
-    console.log("hello");
+  public tracks(): Track[] {
+    return this.track || [];
   }
+
 }
 
 export class Jspf extends JSPFData{

@@ -64,9 +64,7 @@ async function convertCommand(argv: ConvertCommandOptions ) {
   let jspfString:string;
 
   try{
-    jspfString = convertPlaylist(input_data,{
-      format_in:format_in,
-      format_out:'jspf',
+    jspfString = convertPlaylist(input_data,format_in,'jspf'{
       ignoreValidationErrors:force,
       stripInvalid:strip
     });
@@ -88,9 +86,7 @@ async function convertCommand(argv: ConvertCommandOptions ) {
   let output_data:any = undefined;
 
   try{
-    output_data = convertPlaylist(jspfString,{
-      format_in:'jspf',
-      format_out:format_out,
+    output_data = convertPlaylist(jspfString,'jspf',format_out,{
       ignoreValidationErrors:force,
       stripInvalid:strip
     });

@@ -21,7 +21,7 @@ export class BaseData implements BaseDataI{
 
   //export to JSON - override built-in class function
   public toJSON():object{
-    let obj = classToPlain(this);
+    let obj = classToPlain(this, { excludePrefixes: ['_'] });
     return obj;
   }
 
@@ -97,7 +97,7 @@ export class SingleKeyValue extends ValidateData{
   [key: string]: any;
   static schemaPath:string;
   toJSON(){
-    return classToPlain(this);
+    return classToPlain(this, { excludePrefixes: ['_'] });
   }
   toString(){
     return JSON.stringify(this.toJSON());
@@ -230,7 +230,7 @@ export class JSPFData extends ValidateData implements JSPFDataI {
   //export to JSON - override built-in class function
   //TOUFIX should be within class BaseData ?
   public toJSON():Record<string, any>{
-    let obj = classToPlain(this);
+    let obj = classToPlain(this, { excludePrefixes: ['_'] });
     obj = cleanNestedObject(obj);
     return obj;
   }
