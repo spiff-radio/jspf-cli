@@ -6,7 +6,7 @@ import serializeXSPF from './xspf-serializer';
 export default class XspfConverter extends DataConverter {
   public static readonly types = ['xspf'];
 
-  public get(data:any):PlaylistDataI{
+  public get(data:string):PlaylistDataI{
     return parseXSPF(data);
   }
 

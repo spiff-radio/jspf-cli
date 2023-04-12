@@ -1,7 +1,7 @@
 const fs = require('fs');
 import yargs from 'yargs';
 import { plainToClass,classToPlain,serialize } from 'class-transformer';
-import {convertPlaylist,getConverterTypes} from "../../convert/convert-playlist";
+import {getConverterTypes} from "../../convert/index";
 import {JSONValidationErrors} from "../../entities/jspf/models";
 import {Jspf,Playlist} from "../../entities/models";
 import {readFile,writeFile,validateOptionPath,validateOptionFormat} from "../index";
@@ -58,13 +58,13 @@ async function convertCommand(argv: ConvertCommandOptions ) {
     process.exit();
   }
 
-  //conversion IN
+  ////
+
   const input_data:any = await readFile(path_in);
-  let playlistJSON:object;
-  let jspfString:string;
+  const playlist = new Playlist();
 
   try{
-    jspfString = convertPlaylist(input_data,format_in,'jspf'{
+    playlist.import(input_data,format_in,{
       ignoreValidationErrors:force,
       stripInvalid:strip
     });
@@ -86,7 +86,7 @@ async function convertCommand(argv: ConvertCommandOptions ) {
   let output_data:any = undefined;
 
   try{
-    output_data = convertPlaylist(jspfString,'jspf',format_out,{
+    output_data = playlist.export('jspf',{
       ignoreValidationErrors:force,
       stripInvalid:strip
     });

@@ -7,7 +7,7 @@ const figlet = require('figlet');
 
 
 import {REPO_URL,XSPF_URL,JSPF_VERSION,ISSUES_URL} from '../constants';
-import {getConverterTypes} from "../convert/convert-playlist";
+import {getConverterTypes} from "../convert/index";
 import {Jspf,Playlist,Track,Link} from "../entities/models";
 import {getPathExtension} from '../utils';
 

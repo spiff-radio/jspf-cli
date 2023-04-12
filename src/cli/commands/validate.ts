@@ -2,7 +2,7 @@ import yargs from 'yargs';
 import {JSPF_SPECS_URL} from '../../constants';
 import {getPathFilename} from '../../utils';
 import {Jspf,Playlist} from "../../entities/models";
-import {convertPlaylist,getConverterTypes} from "../../convert/convert-playlist";
+import {getConverterTypes} from "../../convert/index";
 import {readFile,validateOptionPath,validateOptionFormat} from "../index";
 
 type ValidateCommandOptions = {
@@ -36,26 +36,21 @@ async function validateCommand(argv: ValidateCommandOptions ) {
 
   //conversion IN
   const input_data:any = await readFile(path_in);
-  let playlistJSON:object;
+  const playlist = new Playlist();
 
   try{
-    const jspfString = convertPlaylist(input_data,{format_in:format_in,format_out:'jspf'});
-    const jspfJSON = JSON.parse(jspfString);
-    playlistJSON = jspfJSON.playlist;
+    playlist.import(input_data,format_in);
+
   }catch(e){
     console.error('Unable to load data.');
     throw e;
   }
 
-  //DTO
-  const jspf = new Jspf();
-  jspf.playlist = new Playlist(playlistJSON);
-
   //validation
   const fileName:string = getPathFilename(path_in);
 
-  if (!jspf.isValid() ){
-    console.info(jspf.validation.errors);
+  if (!playlist.isValid() ){
+    console.info(playlist.validation.errors);
     console.log();
     console.error(`Your playlist '${fileName}' is not valid.  Check the JSPF specs here: ${JSPF_SPECS_URL}`);
 
