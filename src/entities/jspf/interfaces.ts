@@ -1,26 +1,26 @@
 import {Validator, ValidatorResult} from 'jsonschema';
 
-export interface BaseDataI{
+export interface JspfBaseI{
   //toJSON():object;
 }
 
-export interface AttributionDataI extends BaseDataI {
+export interface JspfAttributionI extends JspfBaseI {
   [key: string]: string;
 }
 
-export interface LinkDataI extends BaseDataI {
+export interface JspfLinkI extends JspfBaseI {
   [key: string]: string;
 }
 
-export interface MetaDataI extends BaseDataI {
+export interface JspfMetaI extends JspfBaseI {
   [key: string]: string;
 }
 
-export interface ExtensionDataI extends BaseDataI {
+export interface JspfExtensionI extends JspfBaseI {
   [key: string]: any[];
 }
 
-export interface TrackDataI extends BaseDataI {
+export interface JspfTrackI extends JspfBaseI {
   location?: string[];
   identifier?: string[];
   title?: string;
@@ -31,12 +31,12 @@ export interface TrackDataI extends BaseDataI {
   album?: string;
   trackNum?: number;
   duration?: number;
-  link?: LinkDataI[];
-  meta?: MetaDataI[];
-  extension?: ExtensionDataI;
+  link?: JspfLinkI[];
+  meta?: JspfMetaI[];
+  extension?: JspfExtensionI;
 }
 
-export interface PlaylistDataI extends BaseDataI {
+export interface JspfPlaylistI extends JspfBaseI {
   title?: string;
   creator?: string;
   annotation?: string;
@@ -46,13 +46,13 @@ export interface PlaylistDataI extends BaseDataI {
   image?: string;
   date?: string;
   license?: string;
-  attribution?: AttributionDataI[];
-  link?: LinkDataI[];
-  meta?: MetaDataI[];
-  extension?: ExtensionDataI;
-  track?: TrackDataI[];
+  attribution?: JspfAttributionI[];
+  link?: JspfLinkI[];
+  meta?: JspfMetaI[];
+  extension?: JspfExtensionI;
+  track?: JspfTrackI[];
 }
 
-export interface JSPFDataI extends BaseDataI {
+export interface JspfObjectI extends JspfBaseI {
   playlist?:Record<string, any>
 }

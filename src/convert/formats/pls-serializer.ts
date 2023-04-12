@@ -1,7 +1,7 @@
-import { PlaylistDataI,TrackDataI } from '../../entities/jspf/interfaces';
+import { JspfPlaylistI,JspfTrackI } from '../../entities/jspf/interfaces';
 
 
-export default function serializePLS(input: PlaylistDataI): string {
+export default function serializePLS(input: JspfPlaylistI): string {
 
   let output:string = '';
   let lines:string[] = [];
@@ -23,7 +23,7 @@ export default function serializePLS(input: PlaylistDataI): string {
   return output;
 }
 
-function serializeTrack(input: TrackDataI,index:number): string {
+function serializeTrack(input: JspfTrackI,index:number): string {
   let output:string = '';
   let lines:string[] = [];
 

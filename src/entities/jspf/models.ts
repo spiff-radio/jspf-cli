@@ -1,6 +1,6 @@
 import { plainToClass, plainToClassFromExist,classToPlain, Exclude, Type } from 'class-transformer';
 import {Validator, ValidatorResult, ValidationError, Schema} from 'jsonschema';
-import {BaseDataI,JSPFDataI,PlaylistDataI,TrackDataI,AttributionDataI,MetaDataI,LinkDataI,ExtensionDataI} from './interfaces';
+import {JspfBaseI,JspfObjectI,JspfPlaylistI,JspfTrackI,JspfAttributionI,JspfMetaI,JspfLinkI,JspfExtensionI} from './interfaces';
 import {cleanNestedObject,getChildSchema} from '../../utils';
 
 type PlaylistOptions = {
@@ -13,7 +13,7 @@ const defaultPlaylistOptions: PlaylistOptions = {
   stripNotValid: true
 };
 
-export class BaseData implements BaseDataI{
+export class JspfBase implements JspfBaseI{
 
   constructor(data?: any) {
     plainToClassFromExist(this, data);
@@ -41,7 +41,7 @@ export class BaseData implements BaseDataI{
 
 }
 
-export class ValidateData extends BaseData{
+export class JspfValidate extends JspfBase{
   @Exclude()
   validator:any;//FIX type
 
@@ -59,13 +59,13 @@ export class ValidateData extends BaseData{
     }
   }
 
-  private static removeValuesWithErrors(dto:PlaylistDataI,errors:ValidationError[] | undefined):PlaylistDataI {
+  private static removeValuesWithErrors(dto:JspfPlaylistI,errors:ValidationError[] | undefined):JspfPlaylistI {
     errors = errors ?? [];
-    errors.forEach(error => PlaylistData.removeValueForError(dto,error));
+    errors.forEach(error => JspfPlaylist.removeValueForError(dto,error));
     return dto;
   }
 
-  private static removeValueForError(dto:PlaylistDataI, error: ValidationError): object {
+  private static removeValueForError(dto:JspfPlaylistI, error: ValidationError): object {
     const errorPath = error.property.replace(/\[(\w+)\]/g, '.$1').split('.');
     let currentNode: { [key: string]: any } = dto;
 
@@ -92,7 +92,7 @@ export class ValidateData extends BaseData{
 
 }
 
-export class SingleKeyValue extends ValidateData{
+export class JspfSingleKeyValue extends JspfValidate{
   //TOUFIX SHOULD BE THIS BUT FIRES A TS ERROR [key: string]: string;
   [key: string]: any;
   static schemaPath:string;
@@ -104,40 +104,40 @@ export class SingleKeyValue extends ValidateData{
   }
 }
 
-export class AttributionData extends SingleKeyValue implements AttributionDataI{
+export class JspfAttribution extends JspfSingleKeyValue implements JspfAttributionI{
   public static get_schema(schema?:Schema):Schema{
     return getChildSchema('$defs/attribution',schema);
   }
 
   public isValid(schema?:Schema):boolean{
-    schema = AttributionData.get_schema(schema);
+    schema = JspfAttribution.get_schema(schema);
     return super.isValid(schema);
   }
 }
 
-export class MetaData extends SingleKeyValue implements MetaDataI{
+export class JspfMeta extends JspfSingleKeyValue implements JspfMetaI{
   public static get_schema(schema?:Schema):Schema{
     return getChildSchema('$defs/meta',schema);
   }
 
   public isValid(schema?:Schema):boolean{
-    schema = MetaData.get_schema(schema);
+    schema = JspfMeta.get_schema(schema);
     return super.isValid(schema);
   }
 }
 
-export class LinkData extends SingleKeyValue implements LinkDataI{
+export class JspfLink extends JspfSingleKeyValue implements JspfLinkI{
   public static get_schema(schema?:Schema):Schema{
     return getChildSchema('$defs/link',schema);
   }
 
   public isValid(schema?:Schema):boolean{
-    schema = LinkData.get_schema(schema);
+    schema = JspfLink.get_schema(schema);
     return super.isValid(schema);
   }
 }
 
-export class ExtensionData extends ValidateData implements ExtensionDataI{
+export class JspfExtension extends JspfValidate implements JspfExtensionI{
   //TOUFIX SHOULD BE THIS BUT FIRES A TS ERROR [key: string]: string[];
   [key: string]: any;
 
@@ -146,12 +146,12 @@ export class ExtensionData extends ValidateData implements ExtensionDataI{
   }
 
   public isValid(schema?:Schema):boolean{
-    schema = ExtensionData.get_schema(schema);
+    schema = JspfExtension.get_schema(schema);
     return super.isValid(schema);
   }
 }
 
-export class TrackData extends ValidateData implements TrackDataI{
+export class JspfTrack extends JspfValidate implements JspfTrackI{
 
   location: string[];
   identifier: string[];
@@ -163,25 +163,25 @@ export class TrackData extends ValidateData implements TrackDataI{
   album: string;
   trackNum: number;
   duration: number;
-  @Type(() => LinkData)
-  link: LinkData[];
-  @Type(() => MetaData)
-  meta: MetaData[];
-  @Type(() => ExtensionData)
-  extension: ExtensionData;
+  @Type(() => JspfLink)
+  link: JspfLink[];
+  @Type(() => JspfMeta)
+  meta: JspfMeta[];
+  @Type(() => JspfExtension)
+  extension: JspfExtension;
 
   public static get_schema(schema?:Schema):Schema{
     return getChildSchema('$defs/track',schema);
   }
 
   public isValid(schema?:Schema):boolean{
-    schema = TrackData.get_schema(schema);
+    schema = JspfTrack.get_schema(schema);
     return super.isValid(schema);
   }
 
 }
 
-export class PlaylistData extends ValidateData implements PlaylistDataI{
+export class JspfPlaylist extends JspfValidate implements JspfPlaylistI{
 
   title: string;
   creator: string;
@@ -192,43 +192,43 @@ export class PlaylistData extends ValidateData implements PlaylistDataI{
   image: string;
   date: string;
   license: string;
-  @Type(() => AttributionData)
-  attribution: AttributionData[];
-  @Type(() => LinkData)
-  link: LinkData[];
-  @Type(() => MetaData)
-  meta: MetaData[];
-  @Type(() => ExtensionData)
-  extension: ExtensionData;
-  @Type(() => TrackData)
-  track: TrackData[];
+  @Type(() => JspfAttribution)
+  attribution: JspfAttribution[];
+  @Type(() => JspfLink)
+  link: JspfLink[];
+  @Type(() => JspfMeta)
+  meta: JspfMeta[];
+  @Type(() => JspfExtension)
+  extension: JspfExtension;
+  @Type(() => JspfTrack)
+  track: JspfTrack[];
 
   public static get_schema(schema?:Schema):Schema{
     return getChildSchema('properties/playlist',schema);
   }
 
   public isValid(schema?:Schema):boolean{
-    schema = PlaylistData.get_schema(schema);
+    schema = JspfPlaylist.get_schema(schema);
     return super.isValid(schema);
   }
 }
 
-export class JSPFData extends ValidateData implements JSPFDataI {
+export class JspfObject extends JspfValidate implements JspfObjectI {
 
-  @Type(() => PlaylistData)
-  playlist:PlaylistData
+  @Type(() => JspfPlaylist)
+  playlist:JspfPlaylist
 
   public static get_schema(schema?:Schema):Schema{
     return getChildSchema('',schema);
   }
 
   public isValid(schema?:Schema):boolean{
-    schema = JSPFData.get_schema(schema);
+    schema = JspfObject.get_schema(schema);
     return super.isValid(schema);
   }
 
   //export to JSON - override built-in class function
-  //TOUFIX should be within class BaseData ?
+  //TOUFIX should be within class JspfBase ?
   public toJSON():Record<string, any>{
     let obj = classToPlain(this, { excludePrefixes: ['_'] });
     obj = cleanNestedObject(obj);
@@ -236,7 +236,7 @@ export class JSPFData extends ValidateData implements JSPFDataI {
   }
 
   //export to string - override built-in class function
-  //TOUFIX should be within class BaseData ?
+  //TOUFIX should be within class JspfBase ?
   public toString():string{
     return JSON.stringify(this.toJSON(), null, 4);
   }

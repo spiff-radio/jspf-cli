@@ -1,8 +1,8 @@
 import { Type } from 'class-transformer';
-import {AttributionDataI,LinkDataI,MetaDataI,ExtensionDataI,PlaylistDataI,TrackDataI} from '../entities/jspf/interfaces';
+import {JspfAttributionI,JspfLinkI,JspfMetaI,JspfExtensionI,JspfPlaylistI,JspfTrackI} from '../entities/jspf/interfaces';
 import {Track} from './models';
 
-export interface PlaylistI extends PlaylistDataI {
+export interface PlaylistI extends JspfPlaylistI {
   title?: string;
   creator?: string;
   annotation?: string;
@@ -12,10 +12,10 @@ export interface PlaylistI extends PlaylistDataI {
   image?: string;
   date?: string;
   license?: string;
-  attribution?: AttributionDataI[];
-  link?: LinkDataI[];
-  meta?: MetaDataI[];
-  extension?: ExtensionDataI;
-  track?: TrackDataI[];
+  attribution?: JspfAttributionI[];
+  link?: JspfLinkI[];
+  meta?: JspfMetaI[];
+  extension?: JspfExtensionI;
+  track?: JspfTrackI[];
   tracks():Track[];
 }

@@ -1,7 +1,7 @@
-import { PlaylistDataI,TrackDataI } from '../../entities/jspf/interfaces';
+import { JspfPlaylistI,JspfTrackI } from '../../entities/jspf/interfaces';
 
 
-export default function serializeM3U8(input: PlaylistDataI): string {
+export default function serializeM3U8(input: JspfPlaylistI): string {
   let output:string = '';
 
   let lines:string[] = [];
@@ -37,7 +37,7 @@ export default function serializeM3U8(input: PlaylistDataI): string {
   return output;
 }
 
-function serializeTrack(input: TrackDataI): string {
+function serializeTrack(input: JspfTrackI): string {
   let lines:string[] = [];
 
   const duration = input.duration ?? -1;

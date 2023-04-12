@@ -3,7 +3,7 @@ import * as path from 'path';
 import { default as _ } from 'lodash'; // Optional, for string manipulation
 import merge from 'lodash/merge';
 
-import {PlaylistDataI} from "../entities/jspf/interfaces";
+import {JspfPlaylistI} from "../entities/jspf/interfaces";
 import {Jspf,Playlist} from "../entities/models";
 import {JSONValidationErrors} from "../entities/jspf/models";
 import JspfConverter from './formats/jspf';

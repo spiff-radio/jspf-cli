@@ -3,22 +3,22 @@ import { Type } from 'class-transformer';
 import {getConverterByType} from '../convert/index';
 import {ConvertOptionsI} from '../convert/interfaces';
 import {JSONValidationErrors} from "./jspf/models";
-import {PlaylistDataI} from './jspf/interfaces';
-import {JSPFData,PlaylistData,TrackData,AttributionData,MetaData,LinkData,ExtensionData} from './jspf/models';
+import {JspfPlaylistI} from './jspf/interfaces';
+import {JspfObject,JspfPlaylist,JspfTrack,JspfAttribution,JspfMeta,JspfLink,JspfExtension} from './jspf/models';
 
-export class Attribution extends AttributionData{
+export class Attribution extends JspfAttribution{
 }
 
-export class Link extends LinkData{
+export class Link extends JspfLink{
 }
 
-export class Meta extends MetaData{
+export class Meta extends JspfMeta{
 }
 
-export class Extension extends ExtensionData{
+export class Extension extends JspfExtension{
 }
 
-export class Track extends TrackData{
+export class Track extends JspfTrack{
   location: string[];
   identifier: string[];
   title: string;
@@ -37,7 +37,7 @@ export class Track extends TrackData{
   extension: Extension;
 }
 
-export class Playlist extends PlaylistData{
+export class Playlist extends JspfPlaylist{
   title: string;
   creator: string;
   annotation: string;
@@ -65,7 +65,7 @@ export class Playlist extends PlaylistData{
   public import(data:string,format:string='jspf',options: ConvertOptionsI = {ignoreValidationErrors: false,stripInvalid:true}):boolean|undefined{
     const converterClass = getConverterByType(format);
     const converter = new converterClass();
-    const dto:PlaylistDataI = converter.get(data);
+    const dto:JspfPlaylistI = converter.get(data);
 
     this.constructor(dto);
 
@@ -101,14 +101,14 @@ export class Playlist extends PlaylistData{
     const converterClass = getConverterByType(format);
     const converter = new converterClass();
 
-    const dto:PlaylistDataI = this.toDTO();
+    const dto:JspfPlaylistI = this.toDTO();
     const data:string = converter.set(dto);
     return data;
   }
 
 }
 
-export class Jspf extends JSPFData{
+export class Jspf extends JspfObject{
   @Type(() => Playlist)
   playlist: Playlist;
 }
