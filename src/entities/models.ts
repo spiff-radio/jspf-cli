@@ -4,21 +4,22 @@ import {getConverterByType} from '../convert/index';
 import {ConvertOptionsI} from '../convert/interfaces';
 import {JSONValidationErrors} from "./jspf/models";
 import {JspfPlaylistI} from './jspf/interfaces';
+import {PlaylistI,TrackI,AttributionI,MetaI,LinkI,ExtensionI} from './interfaces';
 import {JspfObject,JspfPlaylist,JspfTrack,JspfAttribution,JspfMeta,JspfLink,JspfExtension} from './jspf/models';
 
-export class Attribution extends JspfAttribution{
+export class Attribution extends JspfAttribution implements AttributionI{
 }
 
-export class Link extends JspfLink{
+export class Link extends JspfLink implements LinkI{
 }
 
-export class Meta extends JspfMeta{
+export class Meta extends JspfMeta implements MetaI{
 }
 
-export class Extension extends JspfExtension{
+export class Extension extends JspfExtension implements ExtensionI{
 }
 
-export class Track extends JspfTrack{
+export class Track extends JspfTrack implements TrackI{
   location: string[];
   identifier: string[];
   title: string;
@@ -37,7 +38,7 @@ export class Track extends JspfTrack{
   extension: Extension;
 }
 
-export class Playlist extends JspfPlaylist{
+export class Playlist extends JspfPlaylist implements PlaylistI{
   title: string;
   creator: string;
   annotation: string;

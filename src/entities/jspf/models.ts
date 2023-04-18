@@ -20,14 +20,14 @@ export class JspfBase implements JspfBaseI{
   }
 
   //export to JSON - override built-in class function
-  public toJSON():object{
+  public toJSON(): Record<string, any> {
     let obj = classToPlain(this, { excludePrefixes: ['_'] });
     return obj;
   }
 
   //export a DTO (data transfer object) :
   //- strip all empty and undefined values
-  public toDTO():object{
+  public toDTO(): Record<string, any> {
     let obj = this.toJSON();
     obj = cleanNestedObject(obj);
     return obj;
