@@ -1,12 +1,12 @@
-import {JspfPlaylistI} from '../entities/jspf/interfaces';
+import {PlaylistI} from '../entities/interfaces';
 import { DataConverterI} from './interfaces';
 
 export abstract class DataConverter implements DataConverterI {
   public static readonly types: string[] = [];
 
   //get DTO playlist from data
-  public abstract get(data: any): JspfPlaylistI;
+  public abstract get(data: any): PlaylistI;
 
   //converts DTO playlist to data
-  public abstract set(dto: JspfPlaylistI): any;
+  public abstract set(dto: PlaylistI): any;
 }

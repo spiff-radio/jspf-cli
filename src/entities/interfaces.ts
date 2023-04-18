@@ -12,6 +12,4 @@ export interface MetaI extends JspfMetaI {}
 
 export interface ExtensionI extends JspfExtensionI {}
 
-export interface PlaylistI extends JspfPlaylistI {
-  tracks():TrackI[];
-}
+export interface PlaylistI extends JspfPlaylistI {}

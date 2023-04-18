@@ -1,12 +1,12 @@
 import { classToPlain } from 'class-transformer';
-import { JspfPlaylistI } from '../../entities/jspf/interfaces';
+import { PlaylistI } from '../../entities/interfaces';
 import { Jspf,Playlist } from '../../entities/models';
 import { DataConverter } from '../models';
 
 export default class JspfConverter extends DataConverter {
   public static readonly types = ['jspf'];
 
-  public get(data:string):JspfPlaylistI{
+  public get(data:string):PlaylistI{
     /*
     try{
       data = JSON.parse(data);
@@ -23,7 +23,7 @@ export default class JspfConverter extends DataConverter {
     return json.playlist;
   }
 
-  public set(playlistData: JspfPlaylistI):string{
+  public set(playlistData: PlaylistI):string{
     const jspf = new Jspf();
     jspf.playlist = new Playlist(playlistData);
     return jspf.toString();

@@ -3,9 +3,9 @@
 // @ts-ignore
 import { Parser } from 'm3u8-parser';
 import {
-  JspfTrackI,
-  JspfPlaylistI,
-} from '../../entities/jspf/interfaces';
+  TrackI,
+  PlaylistI,
+} from '../../entities/interfaces';
 
 //TOUFIX handle both basic and extended format ?
 function parseTrackTitle(segmentTitle: string): string | undefined {
@@ -21,9 +21,9 @@ function parseTrackArtist(segmentTitle: string): string | undefined {
   return match?.[1];
 }
 
-function parseTrack(segment:any):JspfTrackI{
+function parseTrack(segment:any):TrackI{
 
-  const trackData: JspfTrackI = {
+  const trackData: TrackI = {
     location: [segment.uri],
     duration: segment.duration,
     extension: {},
@@ -51,12 +51,12 @@ function parseTrack(segment:any):JspfTrackI{
   return trackData;
 }
 
-export default function parseM3U8(input: string): JspfPlaylistI {
+export default function parseM3U8(input: string): PlaylistI {
   const parser = new Parser();
   parser.push(input);
   parser.end();
 
-  let output: JspfPlaylistI = {};
+  let output: PlaylistI = {};
 
   if (parser.manifest.playlists) {
 

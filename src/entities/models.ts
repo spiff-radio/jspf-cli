@@ -16,6 +16,43 @@ export class Link extends JspfLink implements LinkI{
 export class Meta extends JspfMeta implements MetaI{
 }
 
+/*
+export class MetaCollection extends Array<MetaI> implements MetaCollectionI {
+  getMeta(key: string) {
+    const meta = this.find(meta => meta.keys[0] === key);
+    return meta;
+  }
+
+  getMetaValue(key: string): string | null {
+    const meta = this.getMeta(key);
+    return meta ? meta.values[0] : null;
+  }
+
+  removeMeta(key: string) {
+    const existing = this.getMeta(key);
+    const index = this.indexOf(existing);
+    if (index !== -1) {
+      this.splice(index, 1);
+    }
+  }
+
+  setMeta(key: string, value: string) {
+    // Remove any existing meta with the same key
+    this.removeMeta(key);
+
+    const metaObj = { [key]: value };
+    this.push(metaObj);
+  }
+
+  mergeJspfMetas(metas: JspfMetaCollectionI) {
+    metas.forEach(meta => {
+      const key = meta.keys[0];
+      const value = meta[key];
+      this.setMeta(key, value);
+    });
+  }
+}
+*/
 export class Extension extends JspfExtension implements ExtensionI{
 }
 
@@ -102,7 +139,7 @@ export class Playlist extends JspfPlaylist implements PlaylistI{
     const converterClass = getConverterByType(format);
     const converter = new converterClass();
 
-    const dto:JspfPlaylistI = this.toDTO();
+    const dto = this.toDTO() as PlaylistI;
     const data:string = converter.set(dto);
     return data;
   }
