@@ -1,6 +1,5 @@
 import { Type } from 'class-transformer';
 import {JspfAttributionI,JspfLinkI,JspfMetaI,JspfExtensionI,JspfPlaylistI,JspfTrackI} from '../entities/jspf/interfaces';
-import {Track} from './models';
 
 export interface TrackI extends JspfTrackI {}
 
