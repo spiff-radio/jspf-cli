@@ -1,11 +1,11 @@
 import { xml2json,ElementCompact, xml2js } from 'xml-js';
-import { JspfBaseI, JspfPlaylistI, JspfTrackI, JspfAttributionI, JspfLinkI, JspfMetaI,JspfExtensionI }  from '../../entities/jspf/interfaces';
+import { PlaylistI, TrackI, AttributionI, LinkI, MetaI,ExtensionI }  from '../../entities/interfaces';
 import { Playlist } from '../../entities/models';
 
-export default function parseXSPF(input: string): JspfPlaylistI {
+export default function parseXSPF(input: string): PlaylistI {
   const data = xml2js(input, { compact: true }) as ElementCompact;
 
-  const dto: JspfPlaylistI = {};
+  const dto: PlaylistI = {};
   dto.title = data.playlist?.title?._text;
   dto.creator = data.playlist?.creator?._text;
   dto.annotation = data.playlist?.annotation?._text;
@@ -40,9 +40,9 @@ export default function parseXSPF(input: string): JspfPlaylistI {
   return new Playlist(dto);
 }
 
-function parseAttribution(input: ElementCompact): JspfAttributionI[] {
+function parseAttribution(input: ElementCompact): AttributionI[] {
 
-  const output: JspfAttributionI[] = [];
+  const output: AttributionI[] = [];
 
   //ignore '_attributes'
   delete input._attributes;
@@ -50,7 +50,7 @@ function parseAttribution(input: ElementCompact): JspfAttributionI[] {
   for (let [key, value] of Object.entries(input)) {
     value = String(value?._text);
     if (!key || !value) continue;
-    const item: JspfAttributionI = {
+    const item: AttributionI = {
       [key] : value
     };
     output.push(item);
@@ -60,20 +60,20 @@ function parseAttribution(input: ElementCompact): JspfAttributionI[] {
 
 }
 
-function parseLinks(input: ElementCompact | ElementCompact[]): JspfLinkI[] {
+function parseLinks(input: ElementCompact | ElementCompact[]): LinkI[] {
 
   //force array
   if (!Array.isArray(input)){
     input = [input];
   }
 
-  const output: JspfLinkI[] = [];
+  const output: LinkI[] = [];
 
   input.forEach((el:ElementCompact) => {
     const key = String(el._attributes?.rel);
     const value = String(el._text);
     if (!key || !value) return;
-    const item: JspfLinkI = {
+    const item: LinkI = {
       [key] : value
     };
     output.push(item);
@@ -83,20 +83,20 @@ function parseLinks(input: ElementCompact | ElementCompact[]): JspfLinkI[] {
 
 }
 
-function parseJspfMetas(input: ElementCompact | ElementCompact[]): JspfMetaI[] {
+function parseJspfMetas(input: ElementCompact | ElementCompact[]): MetaI[] {
 
   //force array
   if (!Array.isArray(input)){
     input = [input];
   }
 
-  const output: JspfMetaI[] = [];
+  const output: MetaI[] = [];
 
   input.forEach((el:ElementCompact) => {
     const key = String(el._attributes?.rel);
     const value = String(el._text);
     if (!key || !value) return;
-    const item: JspfMetaI = {
+    const item: MetaI = {
       [key] : value
     };
     output.push(item);
@@ -106,14 +106,14 @@ function parseJspfMetas(input: ElementCompact | ElementCompact[]): JspfMetaI[] {
 
 }
 
-function parseExtension(input:ElementCompact): JspfExtensionI {
+function parseExtension(input:ElementCompact): ExtensionI {
 
   //force array
   if (!Array.isArray(input)){
     input = [input];
   }
 
-  const output: JspfExtensionI = {};
+  const output: ExtensionI = {};
 
   input.forEach((el:ElementCompact) => {
     const key = String(el._attributes?.application);
@@ -133,10 +133,10 @@ function parseTrackLocationsOrIdentifiers(input:ElementCompact[] | ElementCompac
   return input.map(el=>String(el._text))
 }
 
-function parseTrackList(tracks:ElementCompact[]): JspfTrackI[] {
+function parseTrackList(tracks:ElementCompact[]): TrackI[] {
 
   return tracks.map((track:ElementCompact) => {
-    const t: JspfTrackI = {};
+    const t: TrackI = {};
 
     if (track?.location){
       t.location = parseTrackLocationsOrIdentifiers(track.location);

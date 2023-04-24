@@ -1,8 +1,8 @@
 
 import {
-  JspfTrackI,
-  JspfPlaylistI,
-} from '../../entities/jspf/interfaces';
+  TrackI,
+  PlaylistI,
+} from '../../entities/interfaces';
 
 function stripPLSHeader(input: string): string {
   const lines = input.split('\n');
@@ -18,8 +18,8 @@ function getTrackIndexFromPropName(str:string):number|undefined{
   return parseInt(matches[0]);
 }
 
-function parseTrack(input:Record<string, any>):JspfTrackI{
-  let output: JspfTrackI = {};
+function parseTrack(input:Record<string, any>):TrackI{
+  let output: TrackI = {};
 
   if (input.title){
     output.title = input.title;
@@ -46,7 +46,7 @@ function parseTrack(input:Record<string, any>):JspfTrackI{
 
 export default function parsePLS(input: string): Record<string, any> {
 
-  let output: JspfPlaylistI = {};
+  let output: PlaylistI = {};
 
   // Remove header
   const entries = input = stripPLSHeader(input);

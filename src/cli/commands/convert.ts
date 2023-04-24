@@ -2,8 +2,7 @@ const fs = require('fs');
 import yargs from 'yargs';
 import { plainToClass,classToPlain,serialize } from 'class-transformer';
 import {getConverterTypes} from "../../convert/index";
-import {JSONValidationErrors} from "../../entities/jspf/models";
-import {Jspf,Playlist} from "../../entities/models";
+import {JSONValidationErrors,Jspf,Playlist} from "../../entities/models";
 import {readFile,writeFile,validateOptionPath,validateOptionFormat} from "../index";
 
 const allowedTypes = getConverterTypes();
@@ -65,43 +64,50 @@ async function convertCommand(argv: ConvertCommandOptions ) {
 
   try{
     playlist.import(input_data,format_in,{
-      ignoreValidationErrors:force,
+      ignoreValidationErrors:false,//we'll handle this below, in the catch block
       stripInvalid:strip
     });
   }catch(e){
     if (e instanceof JSONValidationErrors) {
-        console.log(e.validation.errors);
-        console.log();
+      //always log errors
+      console.log(e.validation.errors);
+      console.log();
+      //throw error only if 'force' is not set
+      if (!force){
         console.error("The input playlist is not valid, conversion has been stopped.");
         console.log();
         console.error("You can use option '--force=true' to ignore this error.");
         console.log();
+        process.exit();
+      }
     }else{
       throw(e);
     }
-    process.exit();
   }
 
   //conversion OUT
   let output_data:any = undefined;
 
   try{
-    output_data = playlist.export('jspf',{
+    output_data = playlist.export(format_out,{
       ignoreValidationErrors:force,
       stripInvalid:strip
     });
   }catch(e){
+
     if (e instanceof JSONValidationErrors) {
       console.log(e.validation.errors);
       console.log();
-      console.error("The output playlist is not valid, conversion has been stopped.");
-      console.log();
-      console.error("You can use option '--force=true' to ignore this error.");
-      console.log();
+      if (!force){
+        console.error("The output playlist is not valid, conversion has been stopped.");
+        console.log();
+        console.error("You can use option '--force=true' to ignore this error.");
+        console.log();
+        process.exit();
+      }
     }else{
       throw(e);
     }
-    process.exit();
   }
 
   //output

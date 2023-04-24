@@ -1,8 +1,8 @@
-import {JspfPlaylistI} from '../entities/jspf/interfaces';
+import {PlaylistI} from '../entities/interfaces';
 
 export interface DataConverterI{
-  get(data: string):JspfPlaylistI;
-  set(data: JspfPlaylistI):string;
+  get(data: string):PlaylistI;
+  set(data: PlaylistI):string;
 }
 
 export interface ConvertOptionsI {
