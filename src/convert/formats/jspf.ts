@@ -7,19 +7,17 @@ export default class JspfConverter extends DataConverter {
   public static readonly types = ['jspf'];
 
   public get(data:string):PlaylistI{
-    /*
+
     try{
       data = JSON.parse(data);
     }catch(e){
       console.error('Unable to parse JSON.');
       throw e;
     }
-    */
 
-    const dto:Object = {}
-
-    const jspf = new Jspf(dto);
+    const jspf = new Jspf(data);
     const json = jspf.toJSON();
+
     return json.playlist;
   }
 
