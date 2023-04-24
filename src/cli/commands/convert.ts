@@ -64,21 +64,25 @@ async function convertCommand(argv: ConvertCommandOptions ) {
 
   try{
     playlist.import(input_data,format_in,{
-      ignoreValidationErrors:force,
+      ignoreValidationErrors:false,//we'll handle this below, in the catch block
       stripInvalid:strip
     });
   }catch(e){
     if (e instanceof JSONValidationErrors) {
-        console.log(e.validation.errors);
-        console.log();
+      //always log errors
+      console.log(e.validation.errors);
+      console.log();
+      //throw error only if 'force' is not set
+      if (!force){
         console.error("The input playlist is not valid, conversion has been stopped.");
         console.log();
         console.error("You can use option '--force=true' to ignore this error.");
         console.log();
+        process.exit();
+      }
     }else{
       throw(e);
     }
-    process.exit();
   }
 
   //conversion OUT
@@ -90,17 +94,20 @@ async function convertCommand(argv: ConvertCommandOptions ) {
       stripInvalid:strip
     });
   }catch(e){
+
     if (e instanceof JSONValidationErrors) {
       console.log(e.validation.errors);
       console.log();
-      console.error("The output playlist is not valid, conversion has been stopped.");
-      console.log();
-      console.error("You can use option '--force=true' to ignore this error.");
-      console.log();
+      if (!force){
+        console.error("The output playlist is not valid, conversion has been stopped.");
+        console.log();
+        console.error("You can use option '--force=true' to ignore this error.");
+        console.log();
+        process.exit();
+      }
     }else{
       throw(e);
     }
-    process.exit();
   }
 
   //output
