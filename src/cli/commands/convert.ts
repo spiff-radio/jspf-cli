@@ -2,8 +2,7 @@ const fs = require('fs');
 import yargs from 'yargs';
 import { plainToClass,classToPlain,serialize } from 'class-transformer';
 import {getConverterTypes} from "../../convert/index";
-import {JSONValidationErrors} from "../../entities/jspf/models";
-import {Jspf,Playlist} from "../../entities/models";
+import {JSONValidationErrors,Jspf,Playlist} from "../../entities/models";
 import {readFile,writeFile,validateOptionPath,validateOptionFormat} from "../index";
 
 const allowedTypes = getConverterTypes();

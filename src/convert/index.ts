@@ -3,7 +3,7 @@ import * as path from 'path';
 import { default as _ } from 'lodash'; // Optional, for string manipulation
 import merge from 'lodash/merge';
 
-import {JSONValidationErrors} from "../entities/jspf/models";
+import {JSONValidationErrors} from "../entities/models";
 import JspfConverter from './formats/jspf';
 import M3u8Converter from './formats/m3u8';
 import PlsConverter from './formats/pls';

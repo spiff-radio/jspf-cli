@@ -10,7 +10,7 @@ It is both simple and flexible, making it a good choice for programming purposes
 
 This module was originally developed for [Spiff Radio](https://spiff-radio.org/), which uses JSPF as a fundamental part of its architecture.
 
-Validation is done using a [JSON Schema](https://github.com/spiff-radio/jspf-cli/blob/main/src/entities/jspf/jspf-schema.json) based on the [XSPF specifications](https://www.xspf.org/spec).
+Validation is done using a [JSON Schema](https://github.com/spiff-radio/jspf-cli/blob/main/src/entities/jspf-schema.json) based on the [XSPF specifications](https://www.xspf.org/spec).
 
 ## Installation
 

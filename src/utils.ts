@@ -1,7 +1,7 @@
 import {Schema} from 'jsonschema';
 import merge from 'lodash/merge';
 import {DEFAULT_JSON_SCHEMA_VERSION} from './constants';
-import jspfSchema from './entities/jspf/jspf-schema.json';
+import jspfSchema from './entities/jspf-schema.json';
 
 //Recursively removes all empty and undefined properties from a JSON object.
 export function cleanNestedObject(obj: Record<string, any>): Record<string, any> {
