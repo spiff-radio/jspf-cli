@@ -2,7 +2,7 @@ import yargs from 'yargs';
 import {JSPF_SPECS_URL} from '../../constants';
 import {getPathFilename} from '../../utils';
 import {PlaylistI} from "../../entities/interfaces";
-import {Jspf,Playlist} from "../../entities/models";
+import {Jspf,Playlist,JSONValidationErrors} from "../../entities/models";
 import {getConverterTypes,importPlaylist} from "../../convert/index";
 import {readFile,validateOptionPath,validateOptionFormat} from "../index";
 
@@ -40,8 +40,9 @@ async function validateCommand(argv: ValidateCommandOptions ) {
   let dto:PlaylistI = {}
 
   try{
-    dto = importPlaylist(input_data,format_in);
-
+    dto = importPlaylist(input_data,format_in,{
+      ignoreValidationErrors:true
+    });
   }catch(e){
     console.error('Unable to load data.');
     throw e;
@@ -52,16 +53,22 @@ async function validateCommand(argv: ValidateCommandOptions ) {
   //validation
   const fileName:string = getPathFilename(path_in);
 
-  if (!playlist.isValid() ){
-    console.info(playlist.validation.errors);
-    console.log();
-    console.error(`Your playlist '${fileName}' is not valid.  Check the JSPF specs here: ${JSPF_SPECS_URL}`);
-
-  }else{
-    console.error(`Congratulations, your playlist '${fileName}' is valid!  ...Sometimes, life is beautiful!`);
-
+  try{
+    playlist.isValid();//will eventually throw a JSONValidationErrors
+  }catch(e){
+    if (e instanceof JSONValidationErrors) {
+      console.info(e.validation.errors);
+      console.log();
+      console.error(`Your playlist '${fileName}' is not valid.  Check the JSPF specs here: ${JSPF_SPECS_URL}`);
+      console.log();
+      process.exit();
+    }else{
+      throw(e);
+    }
   }
 
+  console.error(`Congratulations, your playlist '${fileName}' is valid!  ...Sometimes, life is beautiful!`);
+  console.log();
   process.exit();
 
 }
