@@ -85,7 +85,7 @@ async function convertCommand(argv: ConvertCommandOptions ) {
   let output_data:any = undefined;
 
   try{
-    output_data = playlist.export('jspf',{
+    output_data = playlist.export(format_out,{
       ignoreValidationErrors:force,
       stripInvalid:strip
     });
