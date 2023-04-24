@@ -25,7 +25,7 @@ export default function parseXSPF(input: string): PlaylistI {
   }
 
   if (data.playlist?.meta) {
-    dto.meta = parseJspfMetas(data.playlist.meta);
+    dto.meta = parseMetas(data.playlist.meta);
   }
 
   if (data.playlist?.extension) {
@@ -83,7 +83,7 @@ function parseLinks(input: ElementCompact | ElementCompact[]): LinkI[] {
 
 }
 
-function parseJspfMetas(input: ElementCompact | ElementCompact[]): MetaI[] {
+function parseMetas(input: ElementCompact | ElementCompact[]): MetaI[] {
 
   //force array
   if (!Array.isArray(input)){
@@ -183,7 +183,7 @@ function parseTrackList(tracks:ElementCompact[]): TrackI[] {
     }
 
     if (track?.meta) {
-      t.meta = parseJspfMetas(track.meta);
+      t.meta = parseMetas(track.meta);
     }
 
     if (track?.extension) {

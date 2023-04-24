@@ -1,6 +1,6 @@
 import { plainToClass, plainToClassFromExist,classToPlain, Exclude, Type } from 'class-transformer';
 import {Validator, ValidatorResult, ValidationError, Schema} from 'jsonschema';
-import {BaseI,JspfI,PlaylistI,TrackI,AttributionI,MetaI,LinkI,ExtensionI} from './interfaces';
+import {JspfI,PlaylistI,TrackI,AttributionI,MetaI,LinkI,ExtensionI} from './interfaces';
 import {cleanNestedObject,getChildSchema} from '../utils';
 import {getConverterByType} from '../convert/index';
 import {ConvertOptionsI} from '../convert/interfaces';
@@ -15,7 +15,7 @@ const defaultPlaylistOptions: PlaylistOptions = {
   stripNotValid: true
 };
 
-export class JspfBase implements BaseI{
+export class JspfBase{
 
   constructor(data?: any) {
     plainToClassFromExist(this, data);
@@ -106,24 +106,24 @@ export class SinglePair extends Validation{
   }
 }
 
-export class JspfAttribution extends SinglePair implements AttributionI{
+export class Attribution extends SinglePair implements AttributionI{
   public static get_schema(schema?:Schema):Schema{
     return getChildSchema('$defs/attribution',schema);
   }
 
   public isValid(schema?:Schema):boolean{
-    schema = JspfAttribution.get_schema(schema);
+    schema = Attribution.get_schema(schema);
     return super.isValid(schema);
   }
 }
 
-export class JspfMeta extends SinglePair implements MetaI{
+export class Meta extends SinglePair implements MetaI{
   public static get_schema(schema?:Schema):Schema{
     return getChildSchema('$defs/meta',schema);
   }
 
   public isValid(schema?:Schema):boolean{
-    schema = JspfMeta.get_schema(schema);
+    schema = Meta.get_schema(schema);
     return super.isValid(schema);
   }
 }
@@ -156,7 +156,7 @@ export class MetaCollection extends Array<MetaI> implements MetaCollectionI {
     this.push(metaObj);
   }
 
-  mergeJspfMetas(metas: JspfMetaCollectionI) {
+  mergeMetas(metas: MetaCollectionI) {
     metas.forEach(meta => {
       const key = meta.keys[0];
       const value = meta[key];
@@ -205,8 +205,8 @@ export class Track extends Validation implements TrackI{
   duration: number;
   @Type(() => Link)
   link: Link[];
-  @Type(() => JspfMeta)
-  meta: JspfMeta[];
+  @Type(() => Meta)
+  meta: Meta[];
   @Type(() => Extension)
   extension: Extension;
 
@@ -232,12 +232,12 @@ export class Playlist extends Validation implements PlaylistI{
   image: string;
   date: string;
   license: string;
-  @Type(() => JspfAttribution)
-  attribution: JspfAttribution[];
+  @Type(() => Attribution)
+  attribution: Attribution[];
   @Type(() => Link)
   link: Link[];
-  @Type(() => JspfMeta)
-  meta: JspfMeta[];
+  @Type(() => Meta)
+  meta: Meta[];
   @Type(() => Extension)
   extension: Extension;
   @Type(() => Track)
