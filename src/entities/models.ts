@@ -3,7 +3,7 @@ import {Validator, ValidatorResult, ValidationError, Schema} from 'jsonschema';
 import {JspfI,PlaylistI,TrackI,AttributionI,MetaI,LinkI,ExtensionI} from './interfaces';
 import {cleanNestedObject,getChildSchema} from '../utils';
 import {getConverterByType} from '../convert/index';
-import {ConvertOptionsI} from '../convert/interfaces';
+
 
 type PlaylistOptions = {
   notValidError?: boolean,
@@ -39,7 +39,6 @@ export class JspfBase{
   public toString():string{
     return JSON.stringify(this.toJSON(), null, 4);
   }
-
 
 }
 
@@ -252,49 +251,6 @@ export class Playlist extends Validation implements PlaylistI{
     return super.isValid(schema);
   }
 
-  public import(data:string,format:string='jspf',options: ConvertOptionsI = {ignoreValidationErrors: false,stripInvalid:true}):boolean|undefined{
-    const converterClass = getConverterByType(format);
-    const converter = new converterClass();
-    const dto:PlaylistI = converter.get(data);
-
-    this.constructor(dto);
-
-    try{
-      this.isValid();//will eventually throw a JSONValidationErrors
-      return true;
-    }catch(e){
-      if (e instanceof JSONValidationErrors) {
-        if (!options.ignoreValidationErrors){
-          throw(e);
-        }
-      }else{
-        throw(e);
-      }
-    }
-
-  }
-
-  public export(format:string='jspf',options: ConvertOptionsI = {ignoreValidationErrors: false,stripInvalid:true}):string|undefined{
-
-    try{
-      this.isValid();//will eventually throw a JSONValidationErrors
-    }catch(e){
-      if (e instanceof JSONValidationErrors) {
-        if (!options.ignoreValidationErrors){
-          throw(e);
-        }
-      }else{
-        throw(e);
-      }
-    }
-
-    const converterClass = getConverterByType(format);
-    const converter = new converterClass();
-
-    const dto = this.toDTO() as PlaylistI;
-    const data:string = converter.set(dto);
-    return data;
-  }
 }
 
 export class Jspf extends Validation implements JspfI {

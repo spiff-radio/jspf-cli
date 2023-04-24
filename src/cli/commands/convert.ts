@@ -1,7 +1,8 @@
 const fs = require('fs');
 import yargs from 'yargs';
 import { plainToClass,classToPlain,serialize } from 'class-transformer';
-import {getConverterTypes} from "../../convert/index";
+import {getConverterTypes,importPlaylist,exportPlaylist} from "../../convert/index";
+import {PlaylistI} from "../../entities/interfaces";
 import {JSONValidationErrors,Jspf,Playlist} from "../../entities/models";
 import {readFile,writeFile,validateOptionPath,validateOptionFormat} from "../index";
 
@@ -60,11 +61,11 @@ async function convertCommand(argv: ConvertCommandOptions ) {
   ////
 
   const input_data:any = await readFile(path_in);
-  const playlist = new Playlist();
+  let dto:PlaylistI = {}
 
   try{
-    playlist.import(input_data,format_in,{
-      ignoreValidationErrors:false,//we'll handle this below, in the catch block
+    dto = importPlaylist(input_data,format_in,{
+      ignoreValidationErrors:false,
       stripInvalid:strip
     });
   }catch(e){
@@ -79,6 +80,11 @@ async function convertCommand(argv: ConvertCommandOptions ) {
         console.error("You can use option '--force=true' to ignore this error.");
         console.log();
         process.exit();
+      }else{
+        dto = importPlaylist(input_data,format_in,{
+          ignoreValidationErrors:true,
+          stripInvalid:strip
+        });
       }
     }else{
       throw(e);
@@ -89,7 +95,7 @@ async function convertCommand(argv: ConvertCommandOptions ) {
   let output_data:any = undefined;
 
   try{
-    output_data = playlist.export(format_out,{
+    output_data = exportPlaylist(dto,format_out,{
       ignoreValidationErrors:force,
       stripInvalid:strip
     });

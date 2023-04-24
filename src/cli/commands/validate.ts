@@ -1,8 +1,9 @@
 import yargs from 'yargs';
 import {JSPF_SPECS_URL} from '../../constants';
 import {getPathFilename} from '../../utils';
+import {PlaylistI} from "../../entities/interfaces";
 import {Jspf,Playlist} from "../../entities/models";
-import {getConverterTypes} from "../../convert/index";
+import {getConverterTypes,importPlaylist} from "../../convert/index";
 import {readFile,validateOptionPath,validateOptionFormat} from "../index";
 
 type ValidateCommandOptions = {
@@ -36,15 +37,17 @@ async function validateCommand(argv: ValidateCommandOptions ) {
 
   //conversion IN
   const input_data:any = await readFile(path_in);
-  const playlist = new Playlist();
+  let dto:PlaylistI = {}
 
   try{
-    playlist.import(input_data,format_in);
+    dto = importPlaylist(input_data,format_in);
 
   }catch(e){
     console.error('Unable to load data.');
     throw e;
   }
+
+  const playlist = new Playlist(dto);
 
   //validation
   const fileName:string = getPathFilename(path_in);
