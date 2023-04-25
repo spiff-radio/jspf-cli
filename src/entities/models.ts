@@ -42,7 +42,7 @@ export class JspfBase{
 
 }
 
-export class Validation extends JspfBase{
+export class JspfValidation extends JspfBase{
   @Exclude()
   validator:any;//FIX type
 
@@ -62,7 +62,7 @@ export class Validation extends JspfBase{
 
   private static removeValuesWithErrors(dto:JspfPlaylistI,errors:ValidationError[] | undefined):JspfPlaylistI {
     errors = errors ?? [];
-    errors.forEach(error => Validation.removeValueForError(dto,error));
+    errors.forEach(error => JspfValidation.removeValueForError(dto,error));
     return dto;
   }
 
@@ -93,7 +93,7 @@ export class Validation extends JspfBase{
 
 }
 
-export class SinglePair extends Validation{
+export class SinglePair extends JspfValidation{
   //TOUFIX SHOULD BE THIS BUT FIRES A TS ERROR [key: string]: string;
   [key: string]: any;
   static schemaPath:string;
@@ -176,7 +176,7 @@ export class JspfLink extends SinglePair implements JspfLinkI{
   }
 }
 
-export class JspfExtension extends Validation implements JspfExtensionI{
+export class JspfExtension extends JspfValidation implements JspfExtensionI{
   //TOUFIX SHOULD BE THIS BUT FIRES A TS ERROR [key: string]: string[];
   [key: string]: any;
 
@@ -190,7 +190,7 @@ export class JspfExtension extends Validation implements JspfExtensionI{
   }
 }
 
-export class JspfTrack extends Validation implements JspfTrackI{
+export class JspfTrack extends JspfValidation implements JspfTrackI{
 
   location: string[];
   identifier: string[];
@@ -220,7 +220,7 @@ export class JspfTrack extends Validation implements JspfTrackI{
 
 }
 
-export class JspfPlaylist extends Validation implements JspfPlaylistI{
+export class JspfPlaylist extends JspfValidation implements JspfPlaylistI{
 
   title: string;
   creator: string;
@@ -253,7 +253,7 @@ export class JspfPlaylist extends Validation implements JspfPlaylistI{
 
 }
 
-export class Jspf extends Validation implements JspfI {
+export class Jspf extends JspfValidation implements JspfI {
 
   @Type(() => JspfPlaylist)
   playlist:JspfPlaylist
