@@ -1,8 +1,8 @@
 import yargs from 'yargs';
 import {JSPF_SPECS_URL} from '../../constants';
 import {getPathFilename} from '../../utils';
-import {PlaylistI} from "../../entities/interfaces";
-import {Jspf,Playlist,JSONValidationErrors} from "../../entities/models";
+import {JspfPlaylistI} from "../../entities/interfaces";
+import {JspfPlaylist,JSONValidationErrors} from "../../entities/models";
 import {getConverterTypes,importPlaylist} from "../../convert/index";
 import {readFile,validateOptionPath,validateOptionFormat} from "../index";
 
@@ -37,7 +37,7 @@ async function validateCommand(argv: ValidateCommandOptions ) {
 
   //conversion IN
   const input_data:any = await readFile(path_in);
-  let dto:PlaylistI = {}
+  let dto:JspfPlaylistI = {}
 
   try{
     dto = importPlaylist(input_data,format_in,{
@@ -48,7 +48,7 @@ async function validateCommand(argv: ValidateCommandOptions ) {
     throw e;
   }
 
-  const playlist = new Playlist(dto);
+  const playlist = new JspfPlaylist(dto);
 
   //validation
   const fileName:string = getPathFilename(path_in);

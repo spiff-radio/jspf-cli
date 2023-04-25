@@ -1,6 +1,6 @@
 import { plainToClass, plainToClassFromExist,classToPlain, Exclude, Type } from 'class-transformer';
 import {Validator, ValidatorResult, ValidationError, Schema} from 'jsonschema';
-import {JspfI,PlaylistI,TrackI,AttributionI,MetaI,LinkI,ExtensionI} from './interfaces';
+import {JspfI,JspfPlaylistI,JspfTrackI,JspfAttributionI,JspfMetaI,JspfLinkI,JspfExtensionI} from './interfaces';
 import {cleanNestedObject,getChildSchema} from '../utils';
 import {getConverterByType} from '../convert/index';
 
@@ -60,13 +60,13 @@ export class Validation extends JspfBase{
     }
   }
 
-  private static removeValuesWithErrors(dto:PlaylistI,errors:ValidationError[] | undefined):PlaylistI {
+  private static removeValuesWithErrors(dto:JspfPlaylistI,errors:ValidationError[] | undefined):JspfPlaylistI {
     errors = errors ?? [];
-    errors.forEach(error => Playlist.removeValueForError(dto,error));
+    errors.forEach(error => Validation.removeValueForError(dto,error));
     return dto;
   }
 
-  private static removeValueForError(dto:PlaylistI, error: ValidationError): object {
+  private static removeValueForError(dto:JspfPlaylistI, error: ValidationError): object {
     const errorPath = error.property.replace(/\[(\w+)\]/g, '.$1').split('.');
     let currentNode: { [key: string]: any } = dto;
 
@@ -105,30 +105,30 @@ export class SinglePair extends Validation{
   }
 }
 
-export class Attribution extends SinglePair implements AttributionI{
+export class JspfAttribution extends SinglePair implements JspfAttributionI{
   public static get_schema(schema?:Schema):Schema{
     return getChildSchema('$defs/attribution',schema);
   }
 
   public isValid(schema?:Schema):boolean{
-    schema = Attribution.get_schema(schema);
+    schema = JspfAttribution.get_schema(schema);
     return super.isValid(schema);
   }
 }
 
-export class Meta extends SinglePair implements MetaI{
+export class JspfMeta extends SinglePair implements JspfMetaI{
   public static get_schema(schema?:Schema):Schema{
     return getChildSchema('$defs/meta',schema);
   }
 
   public isValid(schema?:Schema):boolean{
-    schema = Meta.get_schema(schema);
+    schema = JspfMeta.get_schema(schema);
     return super.isValid(schema);
   }
 }
 
 /*
-export class MetaCollection extends Array<MetaI> implements MetaCollectionI {
+export class JspfMetaCollection extends Array<JspfMetaI> implements JspfMetaCollectionI {
   getMeta(key: string) {
     const meta = this.find(meta => meta.keys[0] === key);
     return meta;
@@ -155,7 +155,7 @@ export class MetaCollection extends Array<MetaI> implements MetaCollectionI {
     this.push(metaObj);
   }
 
-  mergeMetas(metas: MetaCollectionI) {
+  mergeMetas(metas: JspfMetaCollectionI) {
     metas.forEach(meta => {
       const key = meta.keys[0];
       const value = meta[key];
@@ -165,18 +165,18 @@ export class MetaCollection extends Array<MetaI> implements MetaCollectionI {
 }
 */
 
-export class Link extends SinglePair implements LinkI{
+export class JspfLink extends SinglePair implements JspfLinkI{
   public static get_schema(schema?:Schema):Schema{
     return getChildSchema('$defs/link',schema);
   }
 
   public isValid(schema?:Schema):boolean{
-    schema = Link.get_schema(schema);
+    schema = JspfLink.get_schema(schema);
     return super.isValid(schema);
   }
 }
 
-export class Extension extends Validation implements ExtensionI{
+export class JspfExtension extends Validation implements JspfExtensionI{
   //TOUFIX SHOULD BE THIS BUT FIRES A TS ERROR [key: string]: string[];
   [key: string]: any;
 
@@ -185,12 +185,12 @@ export class Extension extends Validation implements ExtensionI{
   }
 
   public isValid(schema?:Schema):boolean{
-    schema = Extension.get_schema(schema);
+    schema = JspfExtension.get_schema(schema);
     return super.isValid(schema);
   }
 }
 
-export class Track extends Validation implements TrackI{
+export class JspfTrack extends Validation implements JspfTrackI{
 
   location: string[];
   identifier: string[];
@@ -202,25 +202,25 @@ export class Track extends Validation implements TrackI{
   album: string;
   trackNum: number;
   duration: number;
-  @Type(() => Link)
-  link: Link[];
-  @Type(() => Meta)
-  meta: Meta[];
-  @Type(() => Extension)
-  extension: Extension;
+  @Type(() => JspfLink)
+  link: JspfLink[];
+  @Type(() => JspfMeta)
+  meta: JspfMeta[];
+  @Type(() => JspfExtension)
+  extension: JspfExtension;
 
   public static get_schema(schema?:Schema):Schema{
     return getChildSchema('$defs/track',schema);
   }
 
   public isValid(schema?:Schema):boolean{
-    schema = Track.get_schema(schema);
+    schema = JspfTrack.get_schema(schema);
     return super.isValid(schema);
   }
 
 }
 
-export class Playlist extends Validation implements PlaylistI{
+export class JspfPlaylist extends Validation implements JspfPlaylistI{
 
   title: string;
   creator: string;
@@ -231,23 +231,23 @@ export class Playlist extends Validation implements PlaylistI{
   image: string;
   date: string;
   license: string;
-  @Type(() => Attribution)
-  attribution: Attribution[];
-  @Type(() => Link)
-  link: Link[];
-  @Type(() => Meta)
-  meta: Meta[];
-  @Type(() => Extension)
-  extension: Extension;
-  @Type(() => Track)
-  track: Track[];
+  @Type(() => JspfAttribution)
+  attribution: JspfAttribution[];
+  @Type(() => JspfLink)
+  link: JspfLink[];
+  @Type(() => JspfMeta)
+  meta: JspfMeta[];
+  @Type(() => JspfExtension)
+  extension: JspfExtension;
+  @Type(() => JspfTrack)
+  track: JspfTrack[];
 
   public static get_schema(schema?:Schema):Schema{
     return getChildSchema('properties/playlist',schema);
   }
 
   public isValid(schema?:Schema):boolean{
-    schema = Playlist.get_schema(schema);
+    schema = JspfPlaylist.get_schema(schema);
     return super.isValid(schema);
   }
 
@@ -255,8 +255,8 @@ export class Playlist extends Validation implements PlaylistI{
 
 export class Jspf extends Validation implements JspfI {
 
-  @Type(() => Playlist)
-  playlist:Playlist
+  @Type(() => JspfPlaylist)
+  playlist:JspfPlaylist
 
   public static get_schema(schema?:Schema):Schema{
     return getChildSchema('',schema);

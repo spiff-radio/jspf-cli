@@ -13,34 +13,34 @@ export class SinglePair {
   }
 }
 
-export class Attribution extends SinglePair{
+export class JspfAttribution extends SinglePair{
   @IsString()
   rel: string;
   @IsUrl()
   content:string;
 }
 
-export class Meta extends SinglePair{
+export class JspfMeta extends SinglePair{
   @IsUrl()
   rel: string;
   content:any;
 }
 
-export class Link extends SinglePair{
+export class JspfLink extends SinglePair{
   @IsUrl()
   rel: string;
   @IsUrl()
   content:string;
 }
 
-export class Extension extends SinglePair{
+export class JspfExtension extends SinglePair{
   @IsUrl()
   rel: string;
   @IsArray()
   content:any[];
 }
 
-export class Track {
+export class JspfTrack {
 
   @IsOptional()
   @IsArray()
@@ -90,19 +90,19 @@ export class Track {
   @IsOptional()
   @IsArray()
   @ValidateNested({each:true})
-  @TransformPair({each:true,type:Link})
-  link?: Link[];
+  @TransformPair({each:true,type:JspfLink})
+  link?: JspfLink[];
 
   @IsOptional()
   @IsArray()
   @ValidateNested({each:true})
-  @TransformPair({each:true,type:Meta})
-  meta?: Meta[];
+  @TransformPair({each:true,type:JspfMeta})
+  meta?: JspfMeta[];
 
   @IsOptional()
   @ValidateNested()
-  @TransformPair({type:Extension})
-  extension?: Extension;
+  @TransformPair({type:JspfExtension})
+  extension?: JspfExtension;
 
   constructor(data?: any) {
     plainToClassFromExist(this, data);
@@ -115,7 +115,7 @@ type PlaylistOptions = {
 }
 
 
-export class Playlist {
+export class JspfPlaylist {
   @IsOptional()
   @IsString()
   title?: string;
@@ -156,31 +156,31 @@ export class Playlist {
   @IsOptional()
   @IsArray()
   @ValidateNested()
-  @TransformPair({each:true,type:Attribution})
-  attribution?: Attribution[];
+  @TransformPair({each:true,type:JspfAttribution})
+  attribution?: JspfAttribution[];
 
   @IsOptional()
   @IsArray()
   @ValidateNested({each:true})
-  @TransformPair({each:true,type:Link})
-  link?: Link[];
+  @TransformPair({each:true,type:JspfLink})
+  link?: JspfLink[];
 
   @IsOptional()
   @IsArray()
   @ValidateNested({each:true})
-  @TransformPair({each:true,type:Meta})
-  meta?: Meta[];
+  @TransformPair({each:true,type:JspfMeta})
+  meta?: JspfMeta[];
 
   @IsOptional()
   @ValidateNested()
-  @TransformPair({type:Extension})
-  extension?: Extension;
+  @TransformPair({type:JspfExtension})
+  extension?: JspfExtension;
 
   @IsOptional()
   @IsArray()
   @ValidateNested()
-  @Type(() => Track)
-  track?: Track[];
+  @Type(() => JspfTrack)
+  track?: JspfTrack[];
 
   constructor(data?: any,options: PlaylistOptions = { strip: false }) {
     plainToClassFromExist(this, data);

@@ -1,8 +1,8 @@
 import { json2xml } from 'xml-js';
 import {XSPF_VERSION,XSPF_XMLNS} from '../../constants';
 import { JspfI } from '../../entities/interfaces';
-import { PlaylistI } from '../../entities/interfaces';
-import { Jspf,Playlist } from '../../entities/models';
+import { JspfPlaylistI } from '../../entities/interfaces';
+import { Jspf,JspfPlaylist } from '../../entities/models';
 
 export interface XSPFDataI extends JspfI {
   _declaration?: {
@@ -13,9 +13,9 @@ export interface XSPFDataI extends JspfI {
   };
 }
 
-export default function serializeXSPF(playlistData: PlaylistI):string{
+export default function serializeXSPF(playlistData: JspfPlaylistI):string{
   const jspf = new Jspf();
-  jspf.playlist = new Playlist(playlistData);
+  jspf.playlist = new JspfPlaylist(playlistData);
 
   let xspfJSON: XSPFDataI = {
     //add XML declaration

@@ -1,22 +1,22 @@
 import {Validator, ValidatorResult} from 'jsonschema';
 
-export interface AttributionI {
+export interface JspfAttributionI {
   [key: string]: string;
 }
 
-export interface LinkI {
+export interface JspfLinkI {
   [key: string]: string;
 }
 
-export interface MetaI {
+export interface JspfMetaI {
   [key: string]: string;
 }
 
-export interface ExtensionI {
+export interface JspfExtensionI {
   [key: string]: any[];
 }
 
-export interface TrackI {
+export interface JspfTrackI {
   location?: string[];
   identifier?: string[];
   title?: string;
@@ -27,12 +27,12 @@ export interface TrackI {
   album?: string;
   trackNum?: number;
   duration?: number;
-  link?: LinkI[];
-  meta?: MetaI[];
-  extension?: ExtensionI;
+  link?: JspfLinkI[];
+  meta?: JspfMetaI[];
+  extension?: JspfExtensionI;
 }
 
-export interface PlaylistI {
+export interface JspfPlaylistI {
   title?: string;
   creator?: string;
   annotation?: string;
@@ -42,11 +42,11 @@ export interface PlaylistI {
   image?: string;
   date?: string;
   license?: string;
-  attribution?: AttributionI[];
-  link?: LinkI[];
-  meta?: MetaI[];
-  extension?: ExtensionI;
-  track?: TrackI[];
+  attribution?: JspfAttributionI[];
+  link?: JspfLinkI[];
+  meta?: JspfMetaI[];
+  extension?: JspfExtensionI;
+  track?: JspfTrackI[];
 }
 
 export interface JspfI {

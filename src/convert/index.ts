@@ -3,8 +3,8 @@ import * as path from 'path';
 import { default as _ } from 'lodash'; // Optional, for string manipulation
 import merge from 'lodash/merge';
 
-import {JSONValidationErrors,Playlist} from "../entities/models";
-import {PlaylistI} from "../entities/interfaces";
+import {JSONValidationErrors,JspfPlaylist} from "../entities/models";
+import {JspfPlaylistI} from "../entities/interfaces";
 import JspfConverter from './formats/jspf';
 import M3u8Converter from './formats/m3u8';
 import PlsConverter from './formats/pls';
@@ -28,12 +28,12 @@ export function getConverterByType(type: string) {
   }
 }
 
-export function importPlaylist(data:string,format:string='jspf',options: ConvertOptionsI = {ignoreValidationErrors: false,stripInvalid:true}):PlaylistI{
+export function importPlaylist(data:string,format:string='jspf',options: ConvertOptionsI = {ignoreValidationErrors: false,stripInvalid:true}):JspfPlaylistI{
   const converterClass = getConverterByType(format);
   const converter = new converterClass();
-  const dto:PlaylistI = converter.get(data);
+  const dto:JspfPlaylistI = converter.get(data);
 
-  const playlist = new Playlist(dto);
+  const playlist = new JspfPlaylist(dto);
 
   try{
     playlist.isValid();//will eventually throw a JSONValidationErrors
@@ -47,13 +47,13 @@ export function importPlaylist(data:string,format:string='jspf',options: Convert
     }
   }
 
-  return playlist.toDTO() as PlaylistI;
+  return playlist.toDTO() as JspfPlaylistI;
 
 }
 
-export function exportPlaylist(dto:PlaylistI,format:string='jspf',options: ConvertOptionsI = {ignoreValidationErrors: false,stripInvalid:true}):string{
+export function exportPlaylist(dto:JspfPlaylistI,format:string='jspf',options: ConvertOptionsI = {ignoreValidationErrors: false,stripInvalid:true}):string{
 
-  const playlist = new Playlist(dto);
+  const playlist = new JspfPlaylist(dto);
 
   try{
     playlist.isValid();//will eventually throw a JSONValidationErrors
@@ -70,7 +70,7 @@ export function exportPlaylist(dto:PlaylistI,format:string='jspf',options: Conve
   const converterClass = getConverterByType(format);
   const converter = new converterClass();
 
-  dto = playlist.toDTO() as PlaylistI;
+  dto = playlist.toDTO() as JspfPlaylistI;
   const data:string = converter.set(dto);
   return data;
 }

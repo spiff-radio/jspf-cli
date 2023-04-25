@@ -2,8 +2,8 @@ const fs = require('fs');
 import yargs from 'yargs';
 import { plainToClass,classToPlain,serialize } from 'class-transformer';
 import {getConverterTypes,importPlaylist,exportPlaylist} from "../../convert/index";
-import {PlaylistI} from "../../entities/interfaces";
-import {JSONValidationErrors,Jspf,Playlist} from "../../entities/models";
+import {JspfPlaylistI} from "../../entities/interfaces";
+import {JSONValidationErrors,Jspf,JspfPlaylist} from "../../entities/models";
 import {readFile,writeFile,validateOptionPath,validateOptionFormat} from "../index";
 
 const allowedTypes = getConverterTypes();
@@ -61,7 +61,7 @@ async function convertCommand(argv: ConvertCommandOptions ) {
   ////
 
   const input_data:any = await readFile(path_in);
-  let dto:PlaylistI = {}
+  let dto:JspfPlaylistI = {}
 
   try{
     dto = importPlaylist(input_data,format_in,{
