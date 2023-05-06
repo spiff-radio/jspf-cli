@@ -23,7 +23,7 @@ export class JspfBase{
 
   //export to JSON - override built-in class function
   public toJSON(): Record<string, any> {
-    let obj = classToPlain(this, { excludePrefixes: ['_'] });
+    let obj = classToPlain(this);
     return obj;
   }
 
@@ -44,13 +44,13 @@ export class JspfBase{
 
 export class JspfValidation extends JspfBase{
   @Exclude()
-  validator:any;//FIX type
+  validator:Validator;
 
   @Exclude()
-  validation:any;//FIX type
+  validation:ValidatorResult;
 
   //Checks if a JSPF fragment is valid against a JSON schema (defining a full JSPF).
-  public isValid(schema?:Schema):boolean{
+  public isValid(schema:Schema = {}):boolean{
     this.validator = new Validator();
     this.validation = this.validator.validate(this.toDTO(),schema);
     if (this.validation.errors.length){
@@ -98,7 +98,7 @@ export class SinglePair extends JspfValidation{
   [key: string]: any;
   static schemaPath:string;
   toJSON(){
-    return classToPlain(this, { excludePrefixes: ['_'] });
+    return classToPlain(this);
   }
   toString(){
     return JSON.stringify(this.toJSON());
@@ -265,20 +265,6 @@ export class Jspf extends JspfValidation implements JspfI {
   public isValid(schema?:Schema):boolean{
     schema = Jspf.get_schema(schema);
     return super.isValid(schema);
-  }
-
-  //export to JSON - override built-in class function
-  //TOUFIX should be within class JspfBase ?
-  public toJSON():Record<string, any>{
-    let obj = classToPlain(this, { excludePrefixes: ['_'] });
-    obj = cleanNestedObject(obj);
-    return obj;
-  }
-
-  //export to string - override built-in class function
-  //TOUFIX should be within class JspfBase ?
-  public toString():string{
-    return JSON.stringify(this.toJSON(), null, 4);
   }
 
 }
