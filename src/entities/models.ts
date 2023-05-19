@@ -1,4 +1,4 @@
-import { plainToClass, plainToClassFromExist,classToPlain, Exclude, Type } from 'class-transformer';
+import { plainToClass, plainToClassFromExist,classToPlain, Expose, Type } from 'class-transformer';
 import {Validator, ValidatorResult, ValidationError, Schema} from 'jsonschema';
 import {JspfI,JspfPlaylistI,JspfTrackI,JspfAttributionI,JspfMetaI,JspfLinkI,JspfExtensionI} from './interfaces';
 import {cleanNestedObject,getChildSchema} from '../utils';
@@ -18,7 +18,7 @@ const defaultPlaylistOptions: PlaylistOptions = {
 export class JspfBase{
 
   constructor(data?: any) {
-    plainToClassFromExist(this, data);
+    plainToClassFromExist(this, data, { excludeExtraneousValues: true });
   }
 
   //export to JSON - override built-in class function
@@ -43,10 +43,7 @@ export class JspfBase{
 }
 
 export class JspfValidation extends JspfBase{
-  @Exclude()
   validator:Validator;
-
-  @Exclude()
   validation:ValidatorResult;
 
   //Checks if a JSPF fragment is valid against a JSON schema (defining a full JSPF).
@@ -192,20 +189,45 @@ export class JspfExtension extends JspfValidation implements JspfExtensionI{
 
 export class JspfTrack extends JspfValidation implements JspfTrackI{
 
+  @Expose()
   location: string[];
+
+  @Expose()
   identifier: string[];
+
+  @Expose()
   title: string;
+
+  @Expose()
   creator: string;
+
+  @Expose()
   annotation: string;
+
+  @Expose()
   info: string;
+
+  @Expose()
   image: string;
+
+  @Expose()
   album: string;
+
+  @Expose()
   trackNum: number;
+
+  @Expose()
   duration: number;
+
+  @Expose()
   @Type(() => JspfLink)
   link: JspfLink[];
+
+  @Expose()
   @Type(() => JspfMeta)
   meta: JspfMeta[];
+
+  @Expose()
   @Type(() => JspfExtension)
   extension: JspfExtension;
 
@@ -221,24 +243,50 @@ export class JspfTrack extends JspfValidation implements JspfTrackI{
 }
 
 export class JspfPlaylist extends JspfValidation implements JspfPlaylistI{
-
+  @Expose()
   title: string;
+
+  @Expose()
   creator: string;
+
+  @Expose()
   annotation: string;
+
+  @Expose()
   info: string;
+
+  @Expose()
   location: string;
+
+  @Expose()
   identifier: string;
+
+  @Expose()
   image: string;
+
+  @Expose()
   date: string;
+
+  @Expose()
   license: string;
+
+  @Expose()
   @Type(() => JspfAttribution)
   attribution: JspfAttribution[];
+
+  @Expose()
   @Type(() => JspfLink)
   link: JspfLink[];
+
+  @Expose()
   @Type(() => JspfMeta)
   meta: JspfMeta[];
+
+  @Expose()
   @Type(() => JspfExtension)
   extension: JspfExtension;
+
+  @Expose()
   @Type(() => JspfTrack)
   track: JspfTrack[];
 
@@ -254,7 +302,7 @@ export class JspfPlaylist extends JspfValidation implements JspfPlaylistI{
 }
 
 export class Jspf extends JspfValidation implements JspfI {
-
+  @Expose()
   @Type(() => JspfPlaylist)
   playlist:JspfPlaylist
 
