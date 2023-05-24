@@ -2,23 +2,6 @@
   "name": "jspf-cli",
   "version": "1.0.3",
   "description": "JSPF CLI is a command line utility (CLI) relying on the JSPF format to convert and validate playlist files.",
-  "main": "./build/cli/index.js",
-  "bin": {
-    "jspf-cli": "./build/cli/index.js"
-  },
-  "scripts": {
-    "start": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/cli/index.ts",
-    "start:windows": "nodemon --watch 'src/**/*.ts' --exec \"npx ts-node\" src/cli/index.ts",
-    "create": "npm run build && npm run test",
-    "build": "tsc -p .",
-    "install-local": "npm i -g && jspf-cli",
-    "uninstall-local": "npm uninstall -g && jspf-cli",
-    "refresh": "rm -rf ./node_modules ./package-lock.json && npm install"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/spiff-radio/jspf-cli.git"
-  },
   "keywords": [
     "playlist",
     "jspf",
@@ -36,12 +19,31 @@
     "validate",
     "validation"
   ],
-  "author": "spiff-radio",
-  "license": "GPL",
+  "author": {
+    "name": "Spiff Radio"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spiff-radio/jspf-cli.git"
+  },
   "bugs": {
     "url": "https://github.com/spiff-radio/jspf-cli/issues"
   },
   "homepage": "https://github.com/spiff-radio/jspf-cli#readme",
+  "license": "GPL",
+  "main": "./build/cli/index.js",
+  "bin": {
+    "jspf-cli": "./build/cli/index.js"
+  },
+  "scripts": {
+    "start": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/cli/index.ts",
+    "start:windows": "nodemon --watch 'src/**/*.ts' --exec \"npx ts-node\" src/cli/index.ts",
+    "create": "npm run build && npm run test",
+    "build": "tsc -p .",
+    "install-local": "npm i -g && jspf-cli",
+    "uninstall-local": "npm uninstall -g && jspf-cli",
+    "refresh": "rm -rf ./node_modules ./package-lock.json && npm install"
+  },
   "dependencies": {
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
