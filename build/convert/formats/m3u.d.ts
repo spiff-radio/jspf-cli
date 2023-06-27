@@ -1,8 +1,8 @@
 import { DataConverter } from '../models';
 import { JspfPlaylistI } from '../../entities/interfaces';
-export default class PlsConverter extends DataConverter {
-    static readonly type = "pls";
-    static readonly contentType = "audio/x-scpls";
+export default class M3uConverter extends DataConverter {
+    static readonly type = "m3u";
+    static readonly contentType = "audio/mpegurl";
     get(input: string): JspfPlaylistI;
     set(dto: JspfPlaylistI): string;
 }

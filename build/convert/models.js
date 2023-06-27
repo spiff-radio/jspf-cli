@@ -5,5 +5,6 @@ var DataConverter = exports.DataConverter = /** @class */ (function () {
     function DataConverter() {
     }
     DataConverter.types = [];
+    DataConverter.contentType = '';
     return DataConverter;
 }());

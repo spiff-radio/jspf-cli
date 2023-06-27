@@ -32,7 +32,8 @@ var PlsConverter = /** @class */ (function (_super) {
     PlsConverter.prototype.set = function (dto) {
         return (0, pls_serializer_1.default)(dto);
     };
-    PlsConverter.types = ['pls'];
+    PlsConverter.type = 'pls';
+    PlsConverter.contentType = 'audio/x-scpls';
     return PlsConverter;
 }(models_1.DataConverter));
 exports.default = PlsConverter;

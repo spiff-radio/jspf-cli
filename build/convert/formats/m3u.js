@@ -14,33 +14,26 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var models_1 = require("../../entities/models");
-var models_2 = require("../models");
-var JspfConverter = /** @class */ (function (_super) {
-    __extends(JspfConverter, _super);
-    function JspfConverter() {
+var models_1 = require("../models");
+var m3u8_parser_1 = __importDefault(require("./m3u8-parser"));
+var m3u8_serializer_1 = __importDefault(require("./m3u8-serializer"));
+var M3uConverter = /** @class */ (function (_super) {
+    __extends(M3uConverter, _super);
+    function M3uConverter() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    JspfConverter.prototype.get = function (data) {
-        try {
-            data = JSON.parse(data);
-        }
-        catch (e) {
-            console.error('Unable to parse JSON.');
-            throw e;
-        }
-        var jspf = new models_1.Jspf(data);
-        var json = jspf.toJSON();
-        return json.playlist;
+    M3uConverter.prototype.get = function (input) {
+        return (0, m3u8_parser_1.default)(input);
     };
-    JspfConverter.prototype.set = function (playlistData) {
-        var jspf = new models_1.Jspf();
-        jspf.playlist = new models_1.JspfPlaylist(playlistData);
-        return jspf.toString();
+    M3uConverter.prototype.set = function (dto) {
+        return (0, m3u8_serializer_1.default)(dto);
     };
-    JspfConverter.type = 'jspf';
-    JspfConverter.contentType = 'application/jspf+json;charset=utf-8';
-    return JspfConverter;
-}(models_2.DataConverter));
-exports.default = JspfConverter;
+    M3uConverter.type = 'm3u';
+    M3uConverter.contentType = 'audio/mpegurl';
+    return M3uConverter;
+}(models_1.DataConverter));
+exports.default = M3uConverter;

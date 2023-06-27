@@ -3,21 +3,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.exportPlaylist = exports.importPlaylist = exports.getConverterByType = exports.getConverterTypes = void 0;
+exports.exportPlaylistAsBlob = exports.exportPlaylist = exports.importPlaylist = exports.getConverterByType = exports.getConverterTypes = void 0;
 var models_1 = require("../entities/models");
 var jspf_1 = __importDefault(require("./formats/jspf"));
+var m3u_1 = __importDefault(require("./formats/m3u"));
 var m3u8_1 = __importDefault(require("./formats/m3u8"));
 var pls_1 = __importDefault(require("./formats/pls"));
 var xspf_1 = __importDefault(require("./formats/xspf"));
-var converters = [jspf_1.default, m3u8_1.default, pls_1.default, xspf_1.default];
+var converters = [jspf_1.default, m3u_1.default, m3u8_1.default, pls_1.default, xspf_1.default];
 // Get a flat array of all the converter types
 function getConverterTypes() {
-    return converters.flatMap(function (converter) { return converter.types; });
+    return converters.map(function (converter) { return converter.type; });
 }
 exports.getConverterTypes = getConverterTypes;
 // Get a converter by a type
 function getConverterByType(type) {
-    var converter = converters.find(function (converter) { return converter.types.includes(type); });
+    var converter = converters.find(function (converter) { return converter.type === type; });
     if (converter) {
         return converter;
     }
@@ -73,3 +74,14 @@ function exportPlaylist(dto, format, options) {
     return data;
 }
 exports.exportPlaylist = exportPlaylist;
+function exportPlaylistAsBlob(dto, format, options) {
+    if (format === void 0) { format = 'jspf'; }
+    if (options === void 0) { options = { ignoreValidationErrors: false, stripInvalid: true }; }
+    var converterClass = getConverterByType(format);
+    var blobString = exportPlaylist(dto, format, options);
+    var blob = new Blob([blobString], {
+        type: converterClass.contentType
+    });
+    return blob;
+}
+exports.exportPlaylistAsBlob = exportPlaylistAsBlob;

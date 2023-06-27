@@ -70,6 +70,8 @@ function updateNodes(data) {
     }
 }
 function updateSingle(data, type) {
+    if (!data)
+        return;
     var prop_name = Object.keys(data)[0];
     var prop_value = data[prop_name];
     switch (type) {
