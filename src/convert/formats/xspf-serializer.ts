@@ -79,6 +79,8 @@ function updateNodes(data: any) {
 }
 
 function updateSingle(data:any,type:string){
+  if (!data) return;
+
   const prop_name:string = Object.keys(data)[0];
   const prop_value:any = data[prop_name];
 
