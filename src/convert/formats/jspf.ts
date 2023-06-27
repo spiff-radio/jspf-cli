@@ -4,7 +4,8 @@ import { Jspf,JspfPlaylist } from '../../entities/models';
 import { DataConverter } from '../models';
 
 export default class JspfConverter extends DataConverter {
-  public static readonly types = ['jspf'];
+  public static readonly type = 'jspf';
+  public static readonly contentType = 'application/jspf+json;charset=utf-8';
 
   public get(data:string):JspfPlaylistI{
 

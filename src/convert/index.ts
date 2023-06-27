@@ -6,21 +6,22 @@ import merge from 'lodash/merge';
 import {JSONValidationErrors,JspfPlaylist} from "../entities/models";
 import {JspfPlaylistI} from "../entities/interfaces";
 import JspfConverter from './formats/jspf';
+import M3uConverter from './formats/m3u';
 import M3u8Converter from './formats/m3u8';
 import PlsConverter from './formats/pls';
 import XspfConverter from './formats/xspf';
 import {ConvertOptionsI} from "./interfaces";
 
-const converters = [JspfConverter, M3u8Converter, PlsConverter, XspfConverter];
+const converters = [JspfConverter, M3uConverter, M3u8Converter, PlsConverter, XspfConverter];
 
 // Get a flat array of all the converter types
 export function getConverterTypes(): string[] {
-  return converters.flatMap((converter) => converter.types);
+  return converters.map((converter) => converter.type);
 }
 
 // Get a converter by a type
 export function getConverterByType(type: string) {
-  const converter = converters.find(converter => converter.types.includes(type));
+  const converter = converters.find(converter => converter.type === type);
   if (converter) {
     return converter;
   } else {
@@ -73,4 +74,16 @@ export function exportPlaylist(dto:JspfPlaylistI,format:string='jspf',options: C
   dto = playlist.toDTO() as JspfPlaylistI;
   const data:string = converter.set(dto);
   return data;
+}
+
+export function exportPlaylistAsBlob(dto:JspfPlaylistI,format:string='jspf',options: ConvertOptionsI = {ignoreValidationErrors: false,stripInvalid:true}):Blob{
+
+  const converterClass = getConverterByType(format);
+  let blobString:string = exportPlaylist(dto,format,options);
+
+  let blob = new Blob([blobString], {
+    type: converterClass.contentType
+  });
+
+  return blob;
 }
