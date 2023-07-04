@@ -31,7 +31,7 @@ var defaultPlaylistOptions = {
 };
 var JspfBase = /** @class */ (function () {
     function JspfBase(data) {
-        (0, class_transformer_1.plainToClassFromExist)(this, data, { excludeExtraneousValues: true });
+        (0, class_transformer_1.plainToClassFromExist)(this, data, { excludeExtraneousValues: true, exposeUnsetFields: false });
     }
     //export to JSON - override built-in class function
     JspfBase.prototype.toJSON = function () {
