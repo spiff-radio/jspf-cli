@@ -18,7 +18,7 @@ const defaultPlaylistOptions: PlaylistOptions = {
 export class JspfBase{
 
   constructor(data?: any) {
-    plainToClassFromExist(this, data, { excludeExtraneousValues: true });
+    plainToClassFromExist(this, data, { excludeExtraneousValues: true, exposeUnsetFields: false });
   }
 
   //export to JSON - override built-in class function
