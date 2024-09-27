@@ -1,19 +1,19 @@
 //custom decorator
 import { buildMessage, ValidateBy, registerDecorator, ValidationOptions, ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
 import { URL } from 'url';
-import ValidatorJS from 'validator';
+import { IsURLOptions } from 'validator';
 
 /**
  * Checks if a given value is a date.
  */
-export function isUri(value: any, options?: ValidatorJS.IsURLOptions): boolean {
+export function isUri(value: any, options?: IsURLOptions): boolean {
   return value instanceof URL;
 }
 
 /**
  * Checks if a value is a date.
  */
-export function IsUri(options?: ValidatorJS.IsURLOptions, validationOptions?: ValidationOptions): PropertyDecorator {
+export function IsUri(options?: IsURLOptions, validationOptions?: ValidationOptions): PropertyDecorator {
   return ValidateBy(
     {
       name: 'isUri',
