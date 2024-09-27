@@ -32,7 +32,7 @@ var SinglePair = /** @class */ (function () {
     return SinglePair;
 }());
 exports.SinglePair = SinglePair;
-var JspfAttribution = exports.JspfAttribution = /** @class */ (function (_super) {
+var JspfAttribution = /** @class */ (function (_super) {
     __extends(JspfAttribution, _super);
     function JspfAttribution() {
         return _super !== null && _super.apply(this, arguments) || this;
@@ -45,7 +45,8 @@ var JspfAttribution = exports.JspfAttribution = /** @class */ (function (_super)
     ], JspfAttribution.prototype, "content", void 0);
     return JspfAttribution;
 }(SinglePair));
-var JspfMeta = exports.JspfMeta = /** @class */ (function (_super) {
+exports.JspfAttribution = JspfAttribution;
+var JspfMeta = /** @class */ (function (_super) {
     __extends(JspfMeta, _super);
     function JspfMeta() {
         return _super !== null && _super.apply(this, arguments) || this;
@@ -55,7 +56,8 @@ var JspfMeta = exports.JspfMeta = /** @class */ (function (_super) {
     ], JspfMeta.prototype, "rel", void 0);
     return JspfMeta;
 }(SinglePair));
-var JspfLink = exports.JspfLink = /** @class */ (function (_super) {
+exports.JspfMeta = JspfMeta;
+var JspfLink = /** @class */ (function (_super) {
     __extends(JspfLink, _super);
     function JspfLink() {
         return _super !== null && _super.apply(this, arguments) || this;
@@ -68,7 +70,8 @@ var JspfLink = exports.JspfLink = /** @class */ (function (_super) {
     ], JspfLink.prototype, "content", void 0);
     return JspfLink;
 }(SinglePair));
-var JspfExtension = exports.JspfExtension = /** @class */ (function (_super) {
+exports.JspfLink = JspfLink;
+var JspfExtension = /** @class */ (function (_super) {
     __extends(JspfExtension, _super);
     function JspfExtension() {
         return _super !== null && _super.apply(this, arguments) || this;
@@ -81,7 +84,8 @@ var JspfExtension = exports.JspfExtension = /** @class */ (function (_super) {
     ], JspfExtension.prototype, "content", void 0);
     return JspfExtension;
 }(SinglePair));
-var JspfTrack = exports.JspfTrack = /** @class */ (function () {
+exports.JspfExtension = JspfExtension;
+var JspfTrack = /** @class */ (function () {
     function JspfTrack(data) {
         (0, class_transformer_1.plainToClassFromExist)(this, data);
     }
@@ -148,7 +152,8 @@ var JspfTrack = exports.JspfTrack = /** @class */ (function () {
     ], JspfTrack.prototype, "extension", void 0);
     return JspfTrack;
 }());
-var JspfPlaylist = exports.JspfPlaylist = /** @class */ (function () {
+exports.JspfTrack = JspfTrack;
+var JspfPlaylist = /** @class */ (function () {
     function JspfPlaylist(data, options) {
         if (options === void 0) { options = { strip: false }; }
         (0, class_transformer_1.plainToClassFromExist)(this, data);
@@ -221,3 +226,4 @@ var JspfPlaylist = exports.JspfPlaylist = /** @class */ (function () {
     ], JspfPlaylist.prototype, "track", void 0);
     return JspfPlaylist;
 }());
+exports.JspfPlaylist = JspfPlaylist;

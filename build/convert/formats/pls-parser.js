@@ -11,6 +11,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = parsePLS;
 function stripPLSHeader(input) {
     var lines = input.split('\n');
     if (lines[0].toLowerCase() === '[playlist]') {
@@ -78,4 +79,3 @@ function parsePLS(input) {
     output.track = Object.values(tracksPropsObj).map(function (el) { return parseTrack(el); });
     return output;
 }
-exports.default = parsePLS;

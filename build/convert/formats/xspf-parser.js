@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = parseXSPF;
 var xml_js_1 = require("xml-js");
 var models_1 = require("../../entities/models");
 function parseXSPF(input) {
@@ -32,7 +33,6 @@ function parseXSPF(input) {
     }
     return new models_1.JspfPlaylist(dto);
 }
-exports.default = parseXSPF;
 function parseAttribution(input) {
     var _a;
     var output = [];

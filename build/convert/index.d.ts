@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { JspfPlaylistI } from "../entities/interfaces";
 import JspfConverter from './formats/jspf';
 import M3uConverter from './formats/m3u';

@@ -11,6 +11,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = serializeXSPF;
 var xml_js_1 = require("xml-js");
 var constants_1 = require("../../constants");
 var models_1 = require("../../entities/models");
@@ -44,7 +45,6 @@ function serializeXSPF(playlistData) {
     var xml = (0, xml_js_1.json2xml)(JSON.stringify(xspfJSON), { compact: true, spaces: 4 });
     return xml;
 }
-exports.default = serializeXSPF;
 function updateNodes(data) {
     if (Array.isArray(data)) {
         for (var i = 0; i < data.length; i++) {

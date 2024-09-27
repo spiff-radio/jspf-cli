@@ -14,7 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getChildSchema = exports.getPathFilename = exports.getPathExtension = exports.cleanNestedObject = void 0;
+exports.cleanNestedObject = cleanNestedObject;
+exports.getPathExtension = getPathExtension;
+exports.getPathFilename = getPathFilename;
+exports.getChildSchema = getChildSchema;
 var merge_1 = __importDefault(require("lodash/merge"));
 var constants_1 = require("./constants");
 var jspf_schema_json_1 = __importDefault(require("./entities/jspf-schema.json"));
@@ -41,7 +44,6 @@ function cleanNestedObject(obj) {
     });
     return obj;
 }
-exports.cleanNestedObject = cleanNestedObject;
 //get extension out of a file path
 function getPathExtension(filePath) {
     var match = /[^/.]\.([^/.]+)$/.exec(filePath);
@@ -50,7 +52,6 @@ function getPathExtension(filePath) {
     }
     return null;
 }
-exports.getPathExtension = getPathExtension;
 //get filename out of a file path
 function getPathFilename(filePath) {
     var match = filePath.match(/[/\\]([^/\\]+)$/); //both unix & windows
@@ -59,7 +60,6 @@ function getPathFilename(filePath) {
     }
     return filePath;
 }
-exports.getPathFilename = getPathFilename;
 //Given a JSON schema (or using the default one) and a path, return a new schema - including local references.
 //TOUFIX TOUCHECK use a package for this ?
 function getChildSchema(path, inputSchema) {
@@ -147,4 +147,3 @@ function getChildSchema(path, inputSchema) {
     childSchema = (0, merge_1.default)(childSchema, contentSchema, childReferences);
     return childSchema;
 }
-exports.getChildSchema = getChildSchema;

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = serializeM3U8;
 function serializeM3U8(input) {
     var output = '';
     var lines = [];
@@ -29,7 +30,6 @@ function serializeM3U8(input) {
     }
     return output;
 }
-exports.default = serializeM3U8;
 function serializeTrack(input) {
     var _a;
     var lines = [];

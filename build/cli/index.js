@@ -10,8 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
@@ -40,7 +40,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateOptionPath = exports.validateOptionFormat = exports.writeFile = exports.readFile = void 0;
+exports.readFile = readFile;
+exports.writeFile = writeFile;
+exports.validateOptionFormat = validateOptionFormat;
+exports.validateOptionPath = validateOptionPath;
 var yargs_1 = __importDefault(require("yargs"));
 require("reflect-metadata");
 var fs = require('fs');
@@ -69,7 +72,6 @@ function readFile(path) {
         });
     });
 }
-exports.readFile = readFile;
 function writeFile(path, fileData) {
     return __awaiter(this, void 0, void 0, function () {
         var error_2;
@@ -90,7 +92,6 @@ function writeFile(path, fileData) {
         });
     });
 }
-exports.writeFile = writeFile;
 function validateOptionFormat(name, value, path) {
     var _a;
     var allowedTypes = (0, index_1.getConverterTypes)();
@@ -106,7 +107,6 @@ function validateOptionFormat(name, value, path) {
     }
     return value;
 }
-exports.validateOptionFormat = validateOptionFormat;
 function validateOptionPath(name, value, existsCheck) {
     if (existsCheck === void 0) { existsCheck = false; }
     if (!value) {
@@ -117,7 +117,6 @@ function validateOptionPath(name, value, existsCheck) {
     }
     return value;
 }
-exports.validateOptionPath = validateOptionPath;
 function cli() {
     return __awaiter(this, void 0, void 0, function () {
         var allowedTypes;

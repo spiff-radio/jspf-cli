@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.IsSinglePropertyObject = exports.isSinglePropertyObject = exports.IsUri = exports.isUri = void 0;
+exports.isUri = isUri;
+exports.IsUri = IsUri;
+exports.isSinglePropertyObject = isSinglePropertyObject;
+exports.IsSinglePropertyObject = IsSinglePropertyObject;
 //custom decorator
 var class_validator_1 = require("class-validator");
 var url_1 = require("url");
@@ -10,7 +13,6 @@ var url_1 = require("url");
 function isUri(value, options) {
     return value instanceof url_1.URL;
 }
-exports.isUri = isUri;
 /**
  * Checks if a value is a date.
  */
@@ -24,12 +26,10 @@ function IsUri(options, validationOptions) {
         },
     }, validationOptions);
 }
-exports.IsUri = IsUri;
 function isSinglePropertyObject(value) {
     var keys = Object.keys(value);
     return keys.length === 1;
 }
-exports.isSinglePropertyObject = isSinglePropertyObject;
 function IsSinglePropertyObject(validationOptions) {
     return (0, class_validator_1.ValidateBy)({
         name: 'isSinglePropertyObject',
@@ -39,4 +39,3 @@ function IsSinglePropertyObject(validationOptions) {
         },
     }, validationOptions);
 }
-exports.IsSinglePropertyObject = IsSinglePropertyObject;

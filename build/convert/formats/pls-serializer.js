@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = serializePLS;
 function serializePLS(input) {
     var _a;
     var output = '';
@@ -17,7 +18,6 @@ function serializePLS(input) {
     }
     return output;
 }
-exports.default = serializePLS;
 function serializeTrack(input, index) {
     var _a;
     var output = '';

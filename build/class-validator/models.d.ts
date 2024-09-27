@@ -1,4 +1,3 @@
-/// <reference types="node" />
 export declare class SinglePair {
     rel: string;
     content: any;

@@ -213,7 +213,7 @@ var JspfExtension = /** @class */ (function (_super) {
     return JspfExtension;
 }(JspfValidation));
 exports.JspfExtension = JspfExtension;
-var JspfTrack = exports.JspfTrack = /** @class */ (function (_super) {
+var JspfTrack = /** @class */ (function (_super) {
     __extends(JspfTrack, _super);
     function JspfTrack() {
         return _super !== null && _super.apply(this, arguments) || this;
@@ -269,7 +269,8 @@ var JspfTrack = exports.JspfTrack = /** @class */ (function (_super) {
     ], JspfTrack.prototype, "extension", void 0);
     return JspfTrack;
 }(JspfValidation));
-var JspfPlaylist = exports.JspfPlaylist = /** @class */ (function (_super) {
+exports.JspfTrack = JspfTrack;
+var JspfPlaylist = /** @class */ (function (_super) {
     __extends(JspfPlaylist, _super);
     function JspfPlaylist() {
         return _super !== null && _super.apply(this, arguments) || this;
@@ -330,7 +331,8 @@ var JspfPlaylist = exports.JspfPlaylist = /** @class */ (function (_super) {
     ], JspfPlaylist.prototype, "track", void 0);
     return JspfPlaylist;
 }(JspfValidation));
-var Jspf = exports.Jspf = /** @class */ (function (_super) {
+exports.JspfPlaylist = JspfPlaylist;
+var Jspf = /** @class */ (function (_super) {
     __extends(Jspf, _super);
     function Jspf() {
         return _super !== null && _super.apply(this, arguments) || this;
@@ -348,6 +350,7 @@ var Jspf = exports.Jspf = /** @class */ (function (_super) {
     ], Jspf.prototype, "playlist", void 0);
     return Jspf;
 }(JspfValidation));
+exports.Jspf = Jspf;
 var JSONValidationErrors = /** @class */ (function (_super) {
     __extends(JSONValidationErrors, _super);
     function JSONValidationErrors(message, validation) {

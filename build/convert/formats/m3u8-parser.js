@@ -11,6 +11,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = parseM3U8;
 //TOUFIX official types not existing yet.
 //TOUFIX title is not extracted : https://github.com/videojs/m3u8-parser/issues/created_by/spiff-radio
 // @ts-ignore
@@ -83,4 +84,3 @@ function parseM3U8(input) {
     }
     return output;
 }
-exports.default = parseM3U8;
