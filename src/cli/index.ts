@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 import 'reflect-metadata';
 const fs = require('fs');
 const clear = require('clear');
@@ -71,7 +72,8 @@ async function cli(){
     figlet.textSync('JSPF CLI', { horizontalLayout: 'full' })
   );
 
-  await yargs
+  const argv = hideBin(process.argv);
+  await yargs(argv)
     .scriptName('jspf-cli')
       .usage('$0 <cmd> [args]')
     .commandDir('./commands')
@@ -92,7 +94,7 @@ async function cli(){
     .alias('h', 'help')
     .epilogue(`JSPF version: ${JSPF_VERSION} - ${XSPF_URL}`)
     .epilogue(`for more information or issues, reach out ${REPO_URL}`)
-    .argv;
+    .parseAsync();
 
 }
 
