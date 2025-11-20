@@ -1,5 +1,3 @@
-import { classToPlain } from 'class-transformer';
-
 import { JspfPlaylistI } from '../../entities/interfaces';
 import { Jspf, JspfPlaylist } from '../../entities/models';
 import { DataConverter } from '../models';
@@ -26,6 +24,7 @@ export default class JspfConverter extends DataConverter {
   public set(playlistData: JspfPlaylistI):string{
     const jspf = new Jspf();
     jspf.playlist = new JspfPlaylist(playlistData);
-    return jspf.toString();
+    const cleaned = jspf.toDTO();
+    return JSON.stringify(cleaned, null, 4);
   }
 }
