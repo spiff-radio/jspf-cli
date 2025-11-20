@@ -46,6 +46,16 @@ export function getPathFilename(filePath: string): string {
   return filePath;
 }
 
+/**
+ * Check if a string is a JSON string (starts and ends with double quotes)
+ * @param str - The string to check
+ * @returns true if the string appears to be a JSON string
+ */
+export function isJsonString(str: string): boolean {
+  str = str.trim();
+  return str.length >= 2 && str[0] === '"' && str[str.length - 1] === '"';
+}
+
 //Given a JSON schema (or using the default one) and a path, return a new schema - including local references.
 //TOUFIX TOUCHECK use a package for this ?
 export function getChildSchema(path: string, inputSchema?: Schema): Schema {

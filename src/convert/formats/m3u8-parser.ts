@@ -4,32 +4,67 @@
 import { Parser } from 'm3u8-parser';
 
 import { JspfPlaylistI, JspfTrackI } from '../../entities/interfaces';
+import { isJsonString } from '../../utils';
 
-//TOUFIX handle both basic and extended format ?
-function parseTrackTitle(segmentTitle: string): string | undefined {
-  const regex = /^a=(.*),t=(.*)$/;
-  const match = regex.exec(segmentTitle);
-  return match?.[2];
+/**
+ * Parse title string that may be in format "Artist - Title" or just "Title"
+ * Also handles cases where duration is included (e.g., "-1,Title" or "123,Title")
+ * Returns object with creator and title separated
+ */
+function parseTrackTitle(title: string): { creator?: string; title?: string } {
+  if (!title) {
+    return {};
+  }
+
+  // Handle quoted strings using JSON.parse for proper unescaping
+  title = title.trim();
+
+  if (isJsonString(title)) {
+    try {
+      // JSON.parse handles all escaping correctly (quotes, backslashes, etc.)
+      title = JSON.parse(title);
+    } catch {
+      // If parsing fails, fall back to removing quotes manually
+      title = title.slice(1, -1);
+    }
+  }
+
+  // Remove duration prefix if present (format: "duration,title")
+  // The m3u8-parser sometimes includes the duration in the title
+  const durationMatch = title.match(/^-?\d+(?:\.\d+)?,(.+)$/);
+  if (durationMatch) {
+    title = durationMatch[1].trim();
+  }
+
+  // Try to parse "Artist - Title" format
+  const dashMatch = title.match(/^(.+?)\s*-\s*(.+)$/);
+  if (dashMatch) {
+    return {
+      creator: dashMatch[1].trim(),
+      title: dashMatch[2].trim()
+    };
+  }
+
+  // If no dash separator, treat entire string as title
+  return { title: title };
 }
 
-//TOUFIX handle both basic and extended format ?
-function parseTrackArtist(segmentTitle: string): string | undefined {
-  const regex = /^a=(.*),t=(.*)$/;
-  const match = regex.exec(segmentTitle);
-  return match?.[1];
-}
-
-function parseTrack(segment:any):JspfTrackI{
-
+function parseTrack(segment: any): JspfTrackI {
   const trackData: JspfTrackI = {
     location: [segment.uri],
-    duration: segment.duration,
+    // Convert -1 (unknown duration) to undefined for JSPF format
+    duration: segment.duration !== undefined && segment.duration !== -1 ? segment.duration : undefined,
     extension: {},
   };
 
   if (segment.title) {
-    trackData.title = parseTrackTitle(segment.title);
-    trackData.creator = parseTrackArtist(segment.title);
+    const parsed = parseTrackTitle(segment.title);
+    if (parsed.creator) {
+      trackData.creator = parsed.creator;
+    }
+    if (parsed.title) {
+      trackData.title = parsed.title;
+    }
   }
 
   if (segment.byterange && trackData.extension) {
