@@ -1,5 +1,5 @@
-import {JspfPlaylistI} from '../entities/interfaces';
-import { DataConverterI} from './interfaces';
+import { JspfPlaylistI } from '../entities/interfaces';
+import { DataConverterI } from './interfaces';
 
 export abstract class DataConverter implements DataConverterI {
   public static readonly types: string[] = [];

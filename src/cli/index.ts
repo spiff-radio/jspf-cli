@@ -1,16 +1,16 @@
 #!/usr/bin/env node
+import * as fs from 'fs';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+// @ts-ignore - clear module doesn't have type definitions
+import clear from 'clear';
+import figlet from 'figlet';
 import 'reflect-metadata';
-const fs = require('fs');
-const clear = require('clear');
-const figlet = require('figlet');
 
-
-import {REPO_URL,XSPF_URL,JSPF_VERSION,ISSUES_URL} from '../constants';
-import {getConverterTypes} from "../convert/index";
-import {JspfPlaylist,JspfTrack,JspfLink} from "../entities/models";
-import {getPathExtension} from '../utils';
+import { REPO_URL, XSPF_URL, JSPF_VERSION, ISSUES_URL } from '../constants';
+import { getConverterTypes } from '../convert/index';
+import { JspfPlaylist, JspfTrack, JspfLink } from '../entities/models';
+import { getPathExtension } from '../utils';
 
 export async function readFile(path: string): Promise<string> {
   try {

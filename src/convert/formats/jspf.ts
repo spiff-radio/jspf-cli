@@ -1,6 +1,7 @@
 import { classToPlain } from 'class-transformer';
+
 import { JspfPlaylistI } from '../../entities/interfaces';
-import { Jspf,JspfPlaylist } from '../../entities/models';
+import { Jspf, JspfPlaylist } from '../../entities/models';
 import { DataConverter } from '../models';
 
 export default class JspfConverter extends DataConverter {

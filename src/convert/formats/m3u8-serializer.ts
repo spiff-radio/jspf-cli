@@ -1,4 +1,4 @@
-import { JspfPlaylistI,JspfTrackI } from '../../entities/interfaces';
+import { JspfPlaylistI, JspfTrackI } from '../../entities/interfaces';
 
 
 export default function serializeM3U8(input: JspfPlaylistI): string {

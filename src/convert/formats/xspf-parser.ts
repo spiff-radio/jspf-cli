@@ -1,5 +1,6 @@
-import { xml2json,ElementCompact, xml2js } from 'xml-js';
-import { JspfPlaylistI, JspfTrackI, JspfAttributionI, JspfLinkI, JspfMetaI,JspfExtensionI }  from '../../entities/interfaces';
+import { xml2json, ElementCompact, xml2js } from 'xml-js';
+
+import { JspfPlaylistI, JspfTrackI, JspfAttributionI, JspfLinkI, JspfMetaI, JspfExtensionI } from '../../entities/interfaces';
 import { JspfPlaylist } from '../../entities/models';
 
 export default function parseXSPF(input: string): JspfPlaylistI {

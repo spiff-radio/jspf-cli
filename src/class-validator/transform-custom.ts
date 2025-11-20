@@ -1,6 +1,7 @@
-import { validate,validateSync, IsDefined, IsUrl, IsNotEmptyObject, IsArray, IsOptional, IsString, IsDate, IsNotEmpty, ValidateNested, IsObject, IsDateString, IsInt, Min } from 'class-validator';
-import { Type,Transform, TransformFnParams, plainToClass, plainToClassFromExist } from 'class-transformer';
-import {SinglePair} from './models';
+import { validate, validateSync, IsDefined, IsUrl, IsNotEmptyObject, IsArray, IsOptional, IsString, IsDate, IsNotEmpty, ValidateNested, IsObject, IsDateString, IsInt, Min } from 'class-validator';
+import { Type, Transform, TransformFnParams, plainToClass, plainToClassFromExist } from 'class-transformer';
+
+import { SinglePair } from './models';
 
 /*
 function TransformURI(){

@@ -1,8 +1,4 @@
-
-import {
-  JspfTrackI,
-  JspfPlaylistI,
-} from '../../entities/interfaces';
+import { JspfPlaylistI, JspfTrackI } from '../../entities/interfaces';
 
 function stripPLSHeader(input: string): string {
   const lines = input.split('\n');

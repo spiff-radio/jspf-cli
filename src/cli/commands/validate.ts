@@ -1,10 +1,11 @@
 import yargs from 'yargs';
-import {JSPF_SPECS_URL} from '../../constants';
-import {getPathFilename} from '../../utils';
-import {JspfPlaylistI} from "../../entities/interfaces";
-import {JspfPlaylist,JSONValidationErrors} from "../../entities/models";
-import {getConverterTypes,importPlaylist} from "../../convert/index";
-import {readFile,validateOptionPath,validateOptionFormat} from "../index";
+
+import { JSPF_SPECS_URL } from '../../constants';
+import { getPathFilename } from '../../utils';
+import { JspfPlaylistI } from '../../entities/interfaces';
+import { JspfPlaylist, JSONValidationErrors } from '../../entities/models';
+import { getConverterTypes, importPlaylist } from '../../convert/index';
+import { readFile, validateOptionPath, validateOptionFormat } from '../index';
 
 type ValidateCommandOptions = {
   path_in:string,

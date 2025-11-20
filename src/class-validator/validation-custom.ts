@@ -1,6 +1,6 @@
 //custom decorator
-import { buildMessage, ValidateBy, registerDecorator, ValidationOptions, ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
 import { URL } from 'url';
+import { buildMessage, ValidateBy, registerDecorator, ValidationOptions, ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
 import { IsURLOptions } from 'validator';
 
 /**

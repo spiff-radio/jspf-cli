@@ -1,4 +1,4 @@
-import {JspfPlaylistI} from '../entities/interfaces';
+import { JspfPlaylistI } from '../entities/interfaces';
 
 export interface DataConverterI{
   get(data: string):JspfPlaylistI;

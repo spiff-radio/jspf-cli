@@ -1,5 +1,5 @@
-import { DataConverter } from '../models';
 import { JspfPlaylistI } from '../../entities/interfaces';
+import { DataConverter } from '../models';
 import parseM3U8 from './m3u8-parser';
 import serializeM3U8 from './m3u8-serializer';
 

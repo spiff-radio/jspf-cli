@@ -1,5 +1,5 @@
-import { DataConverter } from '../models';
 import { JspfPlaylistI } from '../../entities/interfaces';
+import { DataConverter } from '../models';
 import parseXSPF from './xspf-parser';
 import serializeXSPF from './xspf-serializer';
 

@@ -2,10 +2,8 @@
 //TOUFIX title is not extracted : https://github.com/videojs/m3u8-parser/issues/created_by/spiff-radio
 // @ts-ignore
 import { Parser } from 'm3u8-parser';
-import {
-  JspfTrackI,
-  JspfPlaylistI,
-} from '../../entities/interfaces';
+
+import { JspfPlaylistI, JspfTrackI } from '../../entities/interfaces';
 
 //TOUFIX handle both basic and extended format ?
 function parseTrackTitle(segmentTitle: string): string | undefined {

@@ -1,8 +1,9 @@
-import { plainToClass, plainToClassFromExist,classToPlain, Expose, Type } from 'class-transformer';
-import {Validator, ValidatorResult, ValidationError, Schema} from 'jsonschema';
-import {JspfI,JspfPlaylistI,JspfTrackI,JspfAttributionI,JspfMetaI,JspfLinkI,JspfExtensionI} from './interfaces';
-import {cleanNestedObject,getChildSchema} from '../utils';
-import {getConverterByType} from '../convert/index';
+import { plainToClass, plainToClassFromExist, classToPlain, Expose, Type } from 'class-transformer';
+import { Validator, ValidatorResult, ValidationError, Schema } from 'jsonschema';
+
+import { JspfI, JspfPlaylistI, JspfTrackI, JspfAttributionI, JspfMetaI, JspfLinkI, JspfExtensionI } from './interfaces';
+import { cleanNestedObject, getChildSchema } from '../utils';
+import { getConverterByType } from '../convert/index';
 
 
 type PlaylistOptions = {

@@ -1,16 +1,11 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { default as _ } from 'lodash'; // Optional, for string manipulation
-import merge from 'lodash/merge';
-
-import {JSONValidationErrors,JspfPlaylist} from "../entities/models";
-import {JspfPlaylistI} from "../entities/interfaces";
+import { JSONValidationErrors, JspfPlaylist } from '../entities/models';
+import { JspfPlaylistI } from '../entities/interfaces';
+import { ConvertOptionsI } from './interfaces';
 import JspfConverter from './formats/jspf';
 import M3uConverter from './formats/m3u';
 import M3u8Converter from './formats/m3u8';
 import PlsConverter from './formats/pls';
 import XspfConverter from './formats/xspf';
-import {ConvertOptionsI} from "./interfaces";
 
 const converters = [JspfConverter, M3uConverter, M3u8Converter, PlsConverter, XspfConverter];
 

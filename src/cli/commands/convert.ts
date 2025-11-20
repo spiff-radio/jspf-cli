@@ -1,10 +1,10 @@
-const fs = require('fs');
 import yargs from 'yargs';
-import { plainToClass,classToPlain,serialize } from 'class-transformer';
-import {getConverterTypes,importPlaylist,exportPlaylist} from "../../convert/index";
-import {JspfPlaylistI} from "../../entities/interfaces";
-import {JSONValidationErrors,Jspf,JspfPlaylist} from "../../entities/models";
-import {readFile,writeFile,validateOptionPath,validateOptionFormat} from "../index";
+import { plainToClass, classToPlain, serialize } from 'class-transformer';
+
+import { getConverterTypes, importPlaylist, exportPlaylist } from '../../convert/index';
+import { JspfPlaylistI } from '../../entities/interfaces';
+import { JSONValidationErrors, Jspf, JspfPlaylist } from '../../entities/models';
+import { readFile, writeFile, validateOptionPath, validateOptionFormat } from '../index';
 
 const allowedTypes = getConverterTypes();
 

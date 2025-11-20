@@ -1,4 +1,4 @@
-import {Validator, ValidatorResult} from 'jsonschema';
+import { Validator, ValidatorResult } from 'jsonschema';
 
 export interface JspfAttributionI {
   [key: string]: string;

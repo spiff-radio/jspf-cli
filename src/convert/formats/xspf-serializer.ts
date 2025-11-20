@@ -1,8 +1,8 @@
 import { json2xml } from 'xml-js';
-import {XSPF_VERSION,XSPF_XMLNS} from '../../constants';
-import { JspfI } from '../../entities/interfaces';
-import { JspfPlaylistI } from '../../entities/interfaces';
-import { Jspf,JspfPlaylist } from '../../entities/models';
+
+import { XSPF_VERSION, XSPF_XMLNS } from '../../constants';
+import { JspfI, JspfPlaylistI } from '../../entities/interfaces';
+import { Jspf, JspfPlaylist } from '../../entities/models';
 
 export interface XSPFDataI extends JspfI {
   _declaration?: {
