@@ -22,23 +22,25 @@ async function validateCommand(argv: ValidateCommandOptions ) {
   try{
     path_in = validateOptionPath('path_in',path_in,true);
   }catch(e){
-    console.log(e);
+    console.error(e);
+    process.exit(1);
   }
 
   //check file formats
   try{
     format_in = validateOptionFormat('format_in',format_in,path_in);
   }catch(e){
-    console.log(e);
+    console.error(e);
+    process.exit(1);
   }
 
   if (!path_in || !format_in){
-    process.exit();
+    process.exit(1);
   }
 
   //conversion IN
-  const input_data:any = await readFile(path_in);
-  let dto:JspfPlaylistI = {}
+  const input_data: string = await readFile(path_in);
+  let dto: JspfPlaylistI = {}
 
   try{
     dto = importPlaylist(input_data,format_in,{
@@ -62,15 +64,15 @@ async function validateCommand(argv: ValidateCommandOptions ) {
       console.log();
       console.error(`Your playlist '${fileName}' is not valid.  Check the JSPF specs here: ${JSPF_SPECS_URL}`);
       console.log();
-      process.exit();
+      process.exit(1);
     }else{
       throw(e);
     }
   }
 
-  console.error(`Congratulations, your playlist '${fileName}' is valid!  ...Sometimes, life is beautiful!`);
+  console.log(`Congratulations, your playlist '${fileName}' is valid!  ...Sometimes, life is beautiful!`);
   console.log();
-  process.exit();
+  process.exit(0);
 
 }
 

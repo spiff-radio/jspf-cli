@@ -22,7 +22,7 @@ export async function readFile(path: string): Promise<string> {
   }
 }
 
-export async function writeFile(path: string, fileData: any): Promise<void> {
+export async function writeFile(path: string, fileData: string): Promise<void> {
   try {
     await fs.promises.writeFile(path, fileData);
   } catch (error) {
@@ -103,5 +103,5 @@ cli().catch((e) => {
   console.error(e);
   console.log();
   console.info(`👹 That was a bug. Report it at ${ISSUES_URL}`);
-  process.exit();
+  process.exit(1);
 });

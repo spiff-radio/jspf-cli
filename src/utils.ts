@@ -126,7 +126,6 @@ export function getChildSchema(path: string, inputSchema?: Schema): Schema {
 
       if (typeof prop === 'object' && prop !== null && !Array.isArray(prop)) {
         for (const [propKey, propValue] of Object.entries(prop)) {
-          const propValue = prop[propKey];
           if (propKey === '$ref'){
             const refPath = propValue.replace('#/', '');
             list.push(refPath);

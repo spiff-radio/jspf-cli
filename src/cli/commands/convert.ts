@@ -32,36 +32,40 @@ async function convertCommand(argv: ConvertCommandOptions ) {
   try{
     path_in = validateOptionPath('path_in',path_in,true);
   }catch(e){
-    console.log(e);
+    console.error(e);
+    process.exit(1);
   }
 
   try{
     path_out = validateOptionPath('path_out',path_out);
   }catch(e){
-    console.log(e);
+    console.error(e);
+    process.exit(1);
   }
 
   //check file formats
   try{
     format_in = validateOptionFormat('format_in',format_in,path_in);
   }catch(e){
-    console.log(e);
+    console.error(e);
+    process.exit(1);
   }
 
   try{
     format_out = validateOptionFormat('format_out',format_out,path_out);
   }catch(e){
-    console.log(e);
+    console.error(e);
+    process.exit(1);
   }
 
   if (!path_in || !path_out || !format_in || !format_out){
-    process.exit();
+    process.exit(1);
   }
 
   ////
 
-  const input_data:any = await readFile(path_in);
-  let dto:JspfPlaylistI = {}
+  const input_data: string = await readFile(path_in);
+  let dto: JspfPlaylistI = {}
 
   try{
     dto = importPlaylist(input_data,format_in,{
@@ -79,7 +83,7 @@ async function convertCommand(argv: ConvertCommandOptions ) {
         console.log();
         console.error("You can use option '--force=true' to ignore this error.");
         console.log();
-        process.exit();
+        process.exit(1);
       }else{
         dto = importPlaylist(input_data,format_in,{
           ignoreValidationErrors:true,
@@ -92,7 +96,7 @@ async function convertCommand(argv: ConvertCommandOptions ) {
   }
 
   //conversion OUT
-  let output_data:any = undefined;
+  let output_data: string | undefined = undefined;
 
   try{
     output_data = exportPlaylist(dto,format_out,{
@@ -109,11 +113,16 @@ async function convertCommand(argv: ConvertCommandOptions ) {
         console.log();
         console.error("You can use option '--force=true' to ignore this error.");
         console.log();
-        process.exit();
+        process.exit(1);
       }
     }else{
       throw(e);
     }
+  }
+
+  if (!output_data) {
+    console.error("Failed to generate output data.");
+    process.exit(1);
   }
 
   //output
@@ -123,7 +132,7 @@ async function convertCommand(argv: ConvertCommandOptions ) {
   console.log();
   console.log(path_out);
   console.log();
-  process.exit();
+  process.exit(0);
 
 }
 
