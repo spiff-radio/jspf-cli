@@ -1,0 +1,11 @@
+#EXTM3U
+#EXTVLCOPT:artworkURL=http://example.com/playlist-image.jpg
+#EXTVLCOPT:meta-date=2023-04-06T15:32:21-07:00
+#EXTINF:-1,Artist 1 - Song 1
+#EXTINF:240,Artist 2 - Song 2
+http://example.com/song2.mp3
+#EXTINF:-1,Artist 3 - Song 3
+http://example.com/song3.mp3
+http://example.com/song3-live.mp3
+#EXTINF:-1,アーティスト3 - 曲 3
+http://example.com/song4.mp3
