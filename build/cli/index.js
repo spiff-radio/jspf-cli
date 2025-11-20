@@ -45,6 +45,7 @@ exports.writeFile = writeFile;
 exports.validateOptionFormat = validateOptionFormat;
 exports.validateOptionPath = validateOptionPath;
 var yargs_1 = __importDefault(require("yargs"));
+var helpers_1 = require("yargs/helpers");
 require("reflect-metadata");
 var fs = require('fs');
 var clear = require('clear');
@@ -119,14 +120,15 @@ function validateOptionPath(name, value, existsCheck) {
 }
 function cli() {
     return __awaiter(this, void 0, void 0, function () {
-        var allowedTypes;
+        var allowedTypes, argv;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     allowedTypes = (0, index_1.getConverterTypes)();
                     clear();
                     console.log(figlet.textSync('JSPF CLI', { horizontalLayout: 'full' }));
-                    return [4 /*yield*/, yargs_1.default
+                    argv = (0, helpers_1.hideBin)(process.argv);
+                    return [4 /*yield*/, (0, yargs_1.default)(argv)
                             .scriptName('jspf-cli')
                             .usage('$0 <cmd> [args]')
                             .commandDir('./commands')
@@ -147,7 +149,7 @@ function cli() {
                             .alias('h', 'help')
                             .epilogue("JSPF version: ".concat(constants_1.JSPF_VERSION, " - ").concat(constants_1.XSPF_URL))
                             .epilogue("for more information or issues, reach out ".concat(constants_1.REPO_URL))
-                            .argv];
+                            .parseAsync()];
                 case 1:
                     _a.sent();
                     return [2 /*return*/];
