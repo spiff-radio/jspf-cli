@@ -12,7 +12,8 @@
     "resolveJsonModule": true,
     "strictPropertyInitialization": false,
     "declaration": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "skipLibCheck": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts", "node_modules"]
