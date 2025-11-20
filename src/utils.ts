@@ -10,7 +10,7 @@ export function cleanNestedObject(obj: Record<string, any>): Record<string, any>
       // Get this value and its type
       var value = obj[key];
       var type = typeof value;
-      if (type === "object") {
+      if (type === "object" && value !== null && !Array.isArray(value)) {
           cleanNestedObject(value);
           if (value === undefined || value === ''){
             delete obj[key];
@@ -19,8 +19,8 @@ export function cleanNestedObject(obj: Record<string, any>): Record<string, any>
               delete obj[key]
           }
       }
-      else if (type === "undefined") {
-          // Undefined, remove it
+      else if (type === "undefined" || value === null || value === '') {
+          // Undefined, null, or empty string, remove it
           delete obj[key];
       }
   });
