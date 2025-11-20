@@ -36,7 +36,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var fs = require('fs');
 var index_1 = require("../../convert/index");
 var models_1 = require("../../entities/models");
 var index_2 = require("../index");
@@ -53,29 +52,33 @@ function convertCommand(argv) {
                         path_in = (0, index_2.validateOptionPath)('path_in', path_in, true);
                     }
                     catch (e) {
-                        console.log(e);
+                        console.error(e);
+                        process.exit(1);
                     }
                     try {
                         path_out = (0, index_2.validateOptionPath)('path_out', path_out);
                     }
                     catch (e) {
-                        console.log(e);
+                        console.error(e);
+                        process.exit(1);
                     }
                     //check file formats
                     try {
                         format_in = (0, index_2.validateOptionFormat)('format_in', format_in, path_in);
                     }
                     catch (e) {
-                        console.log(e);
+                        console.error(e);
+                        process.exit(1);
                     }
                     try {
                         format_out = (0, index_2.validateOptionFormat)('format_out', format_out, path_out);
                     }
                     catch (e) {
-                        console.log(e);
+                        console.error(e);
+                        process.exit(1);
                     }
                     if (!path_in || !path_out || !format_in || !format_out) {
-                        process.exit();
+                        process.exit(1);
                     }
                     return [4 /*yield*/, (0, index_2.readFile)(path_in)];
                 case 1:
@@ -98,7 +101,7 @@ function convertCommand(argv) {
                                 console.log();
                                 console.error("You can use option '--force=true' to ignore this error.");
                                 console.log();
-                                process.exit();
+                                process.exit(1);
                             }
                             else {
                                 dto = (0, index_1.importPlaylist)(input_data, format_in, {
@@ -127,12 +130,16 @@ function convertCommand(argv) {
                                 console.log();
                                 console.error("You can use option '--force=true' to ignore this error.");
                                 console.log();
-                                process.exit();
+                                process.exit(1);
                             }
                         }
                         else {
                             throw (e);
                         }
+                    }
+                    if (!output_data) {
+                        console.error("Failed to generate output data.");
+                        process.exit(1);
                     }
                     //output
                     return [4 /*yield*/, (0, index_2.writeFile)(path_out, output_data)];
@@ -143,7 +150,7 @@ function convertCommand(argv) {
                     console.log();
                     console.log(path_out);
                     console.log();
-                    process.exit();
+                    process.exit(0);
                     return [2 /*return*/];
             }
         });

@@ -1,5 +1,4 @@
-import { JspfI } from '../../entities/interfaces';
-import { JspfPlaylistI } from '../../entities/interfaces';
+import { JspfI, JspfPlaylistI } from '../../entities/interfaces';
 export interface XSPFDataI extends JspfI {
     _declaration?: {
         _attributes?: {

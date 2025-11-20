@@ -12,6 +12,13 @@ var __assign = (this && this.__assign) || function () {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = parsePLS;
+/**
+ * Unescape a PLS value (reverse of escapePLSValue)
+ */
+function unescapePLSValue(value) {
+    // Unescape backslashes
+    return value.replace(/\\\\/g, '\\');
+}
 function stripPLSHeader(input) {
     var lines = input.split('\n');
     if (lines[0].toLowerCase() === '[playlist]') {
@@ -56,9 +63,17 @@ function parsePLS(input) {
     // Create a new object for storing the key-value pairs
     var propsList = {};
     // Loop through each line and extract the key-value pair
+    // Handle values that may contain '=' by splitting only on the first '='
     cleanedLines.forEach(function (line) {
-        var _a = line.split('='), key = _a[0], value = _a[1];
-        propsList[key.trim()] = value.trim();
+        var equalIndex = line.indexOf('=');
+        if (equalIndex === -1) {
+            // Skip lines without '='
+            return;
+        }
+        var key = line.substring(0, equalIndex).trim();
+        var value = line.substring(equalIndex + 1).trim();
+        // Unescape the value
+        propsList[key] = unescapePLSValue(value);
     });
     var tracksPropsObj = {};
     //fill an array of tracks where properties have their key stripped of their suffix

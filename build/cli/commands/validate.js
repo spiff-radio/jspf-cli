@@ -53,17 +53,19 @@ function validateCommand(argv) {
                         path_in = (0, index_2.validateOptionPath)('path_in', path_in, true);
                     }
                     catch (e) {
-                        console.log(e);
+                        console.error(e);
+                        process.exit(1);
                     }
                     //check file formats
                     try {
                         format_in = (0, index_2.validateOptionFormat)('format_in', format_in, path_in);
                     }
                     catch (e) {
-                        console.log(e);
+                        console.error(e);
+                        process.exit(1);
                     }
                     if (!path_in || !format_in) {
-                        process.exit();
+                        process.exit(1);
                     }
                     return [4 /*yield*/, (0, index_2.readFile)(path_in)];
                 case 1:
@@ -89,15 +91,15 @@ function validateCommand(argv) {
                             console.log();
                             console.error("Your playlist '".concat(fileName, "' is not valid.  Check the JSPF specs here: ").concat(constants_1.JSPF_SPECS_URL));
                             console.log();
-                            process.exit();
+                            process.exit(1);
                         }
                         else {
                             throw (e);
                         }
                     }
-                    console.error("Congratulations, your playlist '".concat(fileName, "' is valid!  ...Sometimes, life is beautiful!"));
+                    console.log("Congratulations, your playlist '".concat(fileName, "' is valid!  ...Sometimes, life is beautiful!"));
                     console.log();
-                    process.exit();
+                    process.exit(0);
                     return [2 /*return*/];
             }
         });

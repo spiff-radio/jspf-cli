@@ -16,27 +16,60 @@ exports.default = parseM3U8;
 //TOUFIX title is not extracted : https://github.com/videojs/m3u8-parser/issues/created_by/spiff-radio
 // @ts-ignore
 var m3u8_parser_1 = require("m3u8-parser");
-//TOUFIX handle both basic and extended format ?
-function parseTrackTitle(segmentTitle) {
-    var regex = /^a=(.*),t=(.*)$/;
-    var match = regex.exec(segmentTitle);
-    return match === null || match === void 0 ? void 0 : match[2];
-}
-//TOUFIX handle both basic and extended format ?
-function parseTrackArtist(segmentTitle) {
-    var regex = /^a=(.*),t=(.*)$/;
-    var match = regex.exec(segmentTitle);
-    return match === null || match === void 0 ? void 0 : match[1];
+var utils_1 = require("../../utils");
+/**
+ * Parse title string that may be in format "Artist - Title" or just "Title"
+ * Also handles cases where duration is included (e.g., "-1,Title" or "123,Title")
+ * Returns object with creator and title separated
+ */
+function parseTrackTitle(title) {
+    if (!title) {
+        return {};
+    }
+    // Handle quoted strings using JSON.parse for proper unescaping
+    title = title.trim();
+    if ((0, utils_1.isJsonString)(title)) {
+        try {
+            // JSON.parse handles all escaping correctly (quotes, backslashes, etc.)
+            title = JSON.parse(title);
+        }
+        catch (_a) {
+            // If parsing fails, fall back to removing quotes manually
+            title = title.slice(1, -1);
+        }
+    }
+    // Remove duration prefix if present (format: "duration,title")
+    // The m3u8-parser sometimes includes the duration in the title
+    var durationMatch = title.match(/^-?\d+(?:\.\d+)?,(.+)$/);
+    if (durationMatch) {
+        title = durationMatch[1].trim();
+    }
+    // Try to parse "Artist - Title" format
+    var dashMatch = title.match(/^(.+?)\s*-\s*(.+)$/);
+    if (dashMatch) {
+        return {
+            creator: dashMatch[1].trim(),
+            title: dashMatch[2].trim()
+        };
+    }
+    // If no dash separator, treat entire string as title
+    return { title: title };
 }
 function parseTrack(segment) {
     var trackData = {
         location: [segment.uri],
-        duration: segment.duration,
+        // Convert -1 (unknown duration) to undefined for JSPF format
+        duration: segment.duration !== undefined && segment.duration !== -1 ? segment.duration : undefined,
         extension: {},
     };
     if (segment.title) {
-        trackData.title = parseTrackTitle(segment.title);
-        trackData.creator = parseTrackArtist(segment.title);
+        var parsed = parseTrackTitle(segment.title);
+        if (parsed.creator) {
+            trackData.creator = parsed.creator;
+        }
+        if (parsed.title) {
+            trackData.title = parsed.title;
+        }
     }
     if (segment.byterange && trackData.extension) {
         trackData.extension['BYTERANGE'] = ["".concat(segment.byterange.length, "@").concat(segment.byterange.offset)];

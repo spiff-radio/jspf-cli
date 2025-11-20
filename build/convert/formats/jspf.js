@@ -37,7 +37,8 @@ var JspfConverter = /** @class */ (function (_super) {
     JspfConverter.prototype.set = function (playlistData) {
         var jspf = new models_1.Jspf();
         jspf.playlist = new models_1.JspfPlaylist(playlistData);
-        return jspf.toString();
+        var cleaned = jspf.toDTO();
+        return JSON.stringify(cleaned, null, 4);
     };
     JspfConverter.type = 'jspf';
     JspfConverter.contentType = 'application/jspf+json;charset=utf-8';

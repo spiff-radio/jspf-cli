@@ -74,11 +74,28 @@ function exportPlaylist(dto, format, options) {
     var data = converter.set(dto);
     return data;
 }
+/**
+ * Export playlist as a Blob-like object (for browser environments).
+ * Note: In Node.js environments where Blob is not available, this returns a Buffer instead.
+ * For Node.js usage, consider using exportPlaylist() directly and handling the string result.
+ *
+ * @param dto - The playlist data transfer object
+ * @param format - The output format (default: 'jspf')
+ * @param options - Conversion options
+ * @returns Blob in browser environments, Buffer in Node.js environments without Blob support
+ */
 function exportPlaylistAsBlob(dto, format, options) {
     if (format === void 0) { format = 'jspf'; }
     if (options === void 0) { options = { ignoreValidationErrors: false, stripInvalid: true }; }
     var converterClass = getConverterByType(format);
     var blobString = exportPlaylist(dto, format, options);
+    // Check if we're in a Node.js environment without Blob support
+    if (typeof Blob === 'undefined') {
+        // Node.js environment - return Buffer instead
+        // Buffer is available in all Node.js versions
+        return Buffer.from(blobString, 'utf8');
+    }
+    // Browser environment or Node.js 18+ - use native Blob
     var blob = new Blob([blobString], {
         type: converterClass.contentType
     });

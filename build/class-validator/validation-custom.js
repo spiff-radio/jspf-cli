@@ -5,8 +5,8 @@ exports.IsUri = IsUri;
 exports.isSinglePropertyObject = isSinglePropertyObject;
 exports.IsSinglePropertyObject = IsSinglePropertyObject;
 //custom decorator
-var class_validator_1 = require("class-validator");
 var url_1 = require("url");
+var class_validator_1 = require("class-validator");
 /**
  * Checks if a given value is a date.
  */

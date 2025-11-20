@@ -17,6 +17,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.cleanNestedObject = cleanNestedObject;
 exports.getPathExtension = getPathExtension;
 exports.getPathFilename = getPathFilename;
+exports.isJsonString = isJsonString;
 exports.getChildSchema = getChildSchema;
 var merge_1 = __importDefault(require("lodash/merge"));
 var constants_1 = require("./constants");
@@ -59,6 +60,15 @@ function getPathFilename(filePath) {
         return match[1];
     }
     return filePath;
+}
+/**
+ * Check if a string is a JSON string (starts and ends with double quotes)
+ * @param str - The string to check
+ * @returns true if the string appears to be a JSON string
+ */
+function isJsonString(str) {
+    str = str.trim();
+    return str.length >= 2 && str[0] === '"' && str[str.length - 1] === '"';
 }
 //Given a JSON schema (or using the default one) and a path, return a new schema - including local references.
 //TOUFIX TOUCHECK use a package for this ?
@@ -119,13 +129,12 @@ function getChildSchema(path, inputSchema) {
             if (typeof prop === 'object' && prop !== null && !Array.isArray(prop)) {
                 for (var _i = 0, _a = Object.entries(prop); _i < _a.length; _i++) {
                     var _b = _a[_i], propKey = _b[0], propValue = _b[1];
-                    var propValue_1 = prop[propKey];
                     if (propKey === '$ref') {
-                        var refPath = propValue_1.replace('#/', '');
+                        var refPath = propValue.replace('#/', '');
                         list.push(refPath);
                     }
                     else {
-                        searchLocalReferences(propValue_1);
+                        searchLocalReferences(propValue);
                     }
                 }
             }
