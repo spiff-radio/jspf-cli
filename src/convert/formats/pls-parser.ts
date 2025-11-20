@@ -1,5 +1,13 @@
 import { JspfPlaylistI, JspfTrackI } from '../../entities/interfaces';
 
+/**
+ * Unescape a PLS value (reverse of escapePLSValue)
+ */
+function unescapePLSValue(value: string): string {
+  // Unescape backslashes
+  return value.replace(/\\\\/g, '\\');
+}
+
 function stripPLSHeader(input: string): string {
   const lines = input.split('\n');
   if (lines[0].toLowerCase() === '[playlist]') {
@@ -57,9 +65,17 @@ export default function parsePLS(input: string): Record<string, any> {
   const propsList: Record<string, any> = {};
 
   // Loop through each line and extract the key-value pair
+  // Handle values that may contain '=' by splitting only on the first '='
   cleanedLines.forEach(line => {
-    const [key, value] = line.split('=');
-    propsList[key.trim()] = value.trim();
+    const equalIndex = line.indexOf('=');
+    if (equalIndex === -1) {
+      // Skip lines without '='
+      return;
+    }
+    const key = line.substring(0, equalIndex).trim();
+    const value = line.substring(equalIndex + 1).trim();
+    // Unescape the value
+    propsList[key] = unescapePLSValue(value);
   });
 
   let tracksPropsObj:Record<string, any> = {}
