@@ -27,7 +27,7 @@ export default function serializeXSPF(playlistData: JspfPlaylistI):string{
     },
     //add playlist attributes
     playlist: {
-      ...jspf.playlist,
+      ...jspf.playlist.toDTO(),
       _attributes: {
         version: XSPF_VERSION,
         xmlns: XSPF_XMLNS

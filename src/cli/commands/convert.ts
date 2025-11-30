@@ -63,6 +63,13 @@ async function convertCommand(argv: ConvertCommandOptions ) {
     process.exit(1);
   }
 
+  // Check if input and output formats are the same
+  if (format_in === format_out) {
+    console.log(`Input and output formats are the same (${format_in}). Skipping conversion.`);
+    console.log();
+    process.exit(0);
+  }
+
   ////
 
   const input_data: string = await readFile(path_in);
@@ -73,13 +80,13 @@ async function convertCommand(argv: ConvertCommandOptions ) {
       ignoreValidationErrors:!strict, // Default: ignore errors (show warnings), strict: abort
       stripInvalid:stripInvalid
     });
-    
+
     dto = result.data as JspfPlaylistI;
-    
+
     // Show warnings if validation errors exist and not quiet
     if (result.validationErrors && !quiet) {
       console.warn("⚠️  Validation warnings for input playlist:");
-      
+
       // Group warnings by type
       const groupedWarnings = new Map<string, string[]>();
       result.validationErrors.issues.forEach(issue => {
@@ -90,7 +97,7 @@ async function convertCommand(argv: ConvertCommandOptions ) {
         }
         groupedWarnings.get(key)!.push(path);
       });
-      
+
       // Display grouped warnings
       groupedWarnings.forEach((paths, message) => {
         if (paths.length === 1) {
@@ -142,13 +149,13 @@ async function convertCommand(argv: ConvertCommandOptions ) {
       ignoreValidationErrors:!strict, // Default: ignore errors (show warnings), strict: abort
       stripInvalid:stripInvalid
     });
-    
+
     output_data = result.data as string;
-    
+
     // Show warnings if validation errors exist and not quiet
     if (result.validationErrors && !quiet) {
       console.warn("⚠️  Validation warnings for output playlist:");
-      
+
       // Group warnings by type
       const groupedWarnings = new Map<string, string[]>();
       result.validationErrors.issues.forEach(issue => {
@@ -159,7 +166,7 @@ async function convertCommand(argv: ConvertCommandOptions ) {
         }
         groupedWarnings.get(key)!.push(path);
       });
-      
+
       // Display grouped warnings
       groupedWarnings.forEach((paths, message) => {
         if (paths.length === 1) {

@@ -17,9 +17,9 @@ export default class JspfConverter extends DataConverter {
     }
 
     const jspf = new Jspf(parsedData);
-    const json = jspf.toJSON();
+    const dto = jspf.toDTO();
 
-    return json.playlist;
+    return dto.playlist;
   }
 
   public set(playlistData: JspfPlaylistI):string{
