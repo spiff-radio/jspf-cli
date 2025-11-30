@@ -1,7 +1,6 @@
 import { ZodValidationError, JspfPlaylist } from '../entities/models';
 import { JspfPlaylistI } from '../entities/interfaces';
 import { ConvertOptionsI, ConvertResult } from './interfaces';
-import { ZodError } from 'zod';
 import JspfConverter from './formats/jspf';
 import M3uConverter from './formats/m3u';
 import M3u8Converter from './formats/m3u8';

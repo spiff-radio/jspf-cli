@@ -9,7 +9,6 @@ import figlet from 'figlet';
 
 import { REPO_URL, XSPF_URL, JSPF_VERSION, ISSUES_URL } from '../constants';
 import { getConverterTypes } from '../convert/index';
-import { JspfPlaylist, JspfTrack, JspfLink } from '../entities/models';
 import { getPathExtension } from '../utils';
 
 // Read package version
