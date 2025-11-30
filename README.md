@@ -1,18 +1,20 @@
-JSPF CLI : A command line tool to convert playlists between different formats
-===============
+# JSPF CLI — A command-line tool to convert and validate music playlists
 
-JSPF CLI is a robust command line tool (CLI) relying on the [JSPF](https://www.xspf.org/jspf) format to convert and validate playlist files.
+**JSPF CLI** is a robust command-line tool (CLI) for converting and validating playlist files.  
+It relies on the open **JSPF** format (JSON Scalable Playlist Format) as an internal model to ensure consistency and correctness.
 
-**Supports conversion between:** `jspf`,`xspf`,`m3u8`,`m3u`,`pls`
+### Supported playlist formats
+`jspf` · `xspf` · `m3u8` · `m3u` · `pls`
 
-JSPF is an open format used to describe a list of multimedia files (audio or video), created by [Xiph](https://xiph.org/).
-It is both simple and flexible, making it a good choice for programming purposes.
+JSPF is an open, JSON-based playlist format created by [Xiph](https://xiph.org/).  
+It is simple, flexible, and well-suited for programmatic processing—making it an ideal pivot format.
 
-This module was originally developed for [Spiff Radio](https://spiff-radio.org/), which uses JSPF as a fundamental part of its architecture.
+This module was originally developed for [Spiff Radio](https://spiff-radio.org/), where JSPF plays a key role in the platform’s architecture.
 
-Validation is done using a [JSON Schema](https://github.com/spiff-radio/jspf-cli/blob/main/src/entities/jspf-schema.json) based on the [XSPF specifications](https://www.xspf.org/spec).
+---
 
 ## Installation
+
 
 ```sh
 $ npm install -g jspf-cli

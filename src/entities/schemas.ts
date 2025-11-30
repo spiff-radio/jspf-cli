@@ -1,14 +1,15 @@
 import { z } from 'zod';
 
+/**
+ * JSPF (JSON Shareable Playlist Format) Schemas
+ *
+ * Based on XSPF (XML Shareable Playlist Format) specification version 1
+ * See: https://www.xspf.org/spec
+ *
+ */
+
 // URI validation helper
 const uriSchema = z.string().url();
-
-// Single property object schemas (for attribution, link, meta)
-// These are objects with max 1 property where the key is a string and value is a string/URI
-const singlePropertyObjectSchema = z.record(z.string(), z.string()).refine(
-  (obj) => Object.keys(obj).length <= 1,
-  { message: "Object must have at most one property" }
-);
 
 // Attribution: single property object with URI value
 export const JspfAttributionSchema = z.record(z.string(), uriSchema).refine(
@@ -16,19 +17,22 @@ export const JspfAttributionSchema = z.record(z.string(), uriSchema).refine(
   { message: "Attribution must have at most one property" }
 );
 
-// Link: single property object with URI key and URI value
+// Link: single property object
+// According to XSPF spec: rel attribute MUST be a URI, content MUST be a URI
 export const JspfLinkSchema = z.record(uriSchema, uriSchema).refine(
   (obj) => Object.keys(obj).length <= 1,
   { message: "Link must have at most one property" }
 );
 
-// Meta: single property object with URI key and string value
+// Meta: single property object
+// According to XSPF spec: rel attribute MUST be a URI, content is plain text
 export const JspfMetaSchema = z.record(uriSchema, z.string()).refine(
   (obj) => Object.keys(obj).length <= 1,
   { message: "Meta must have at most one property" }
 );
 
 // Extension: object with URI keys and array values
+// According to XSPF spec: application attribute MUST be a URI
 export const JspfExtensionSchema = z.record(uriSchema, z.array(z.any()));
 
 // Track schema
@@ -41,7 +45,7 @@ export const JspfTrackSchema = z.object({
   info: uriSchema.optional(),
   image: uriSchema.optional(),
   album: z.string().optional(),
-  trackNum: z.number().int().min(0).optional(),
+  trackNum: z.number().int().positive().optional(),
   duration: z.number().int().min(0).optional(),
   link: z.array(JspfLinkSchema).optional(),
   meta: z.array(JspfMetaSchema).optional(),
@@ -79,4 +83,3 @@ export type JspfExtension = z.infer<typeof JspfExtensionSchema>;
 export type JspfTrack = z.infer<typeof JspfTrackSchema>;
 export type JspfPlaylist = z.infer<typeof JspfPlaylistSchema>;
 export type Jspf = z.infer<typeof JspfSchema>;
-

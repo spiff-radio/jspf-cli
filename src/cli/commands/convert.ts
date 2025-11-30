@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 
-import { getConverterTypes, importPlaylist, exportPlaylist } from '../../convert/index';
+import { getConverterTypes, importPlaylistWithErrors, exportPlaylistWithErrors } from '../../convert/index';
 import { JspfPlaylistI } from '../../entities/interfaces';
 import { ZodValidationError } from '../../entities/models';
 import { readFile, writeFile, validateOptionPath, validateOptionFormat } from '../index';
@@ -12,8 +12,9 @@ type ConvertCommandOptions = {
   path_out:string,
   format_in?:string,
   format_out?:string,
-  force?:boolean,
-  strip?:boolean
+  strict?:boolean,
+  stripInvalid?:boolean,
+  quiet?:boolean
 }
 
 async function convertCommand(argv: ConvertCommandOptions ) {
@@ -23,8 +24,9 @@ async function convertCommand(argv: ConvertCommandOptions ) {
     path_out = '',
     format_in = '',
     format_out = '',
-    force = false,
-    strip=true
+    strict = false,
+    stripInvalid = true,
+    quiet = false
   } = argv;
 
   //Check file paths
@@ -67,27 +69,65 @@ async function convertCommand(argv: ConvertCommandOptions ) {
   let dto: JspfPlaylistI = {}
 
   try{
-    dto = importPlaylist(input_data,format_in,{
-      ignoreValidationErrors:false,
-      stripInvalid:strip
+    const result = importPlaylistWithErrors(input_data,format_in,{
+      ignoreValidationErrors:!strict, // Default: ignore errors (show warnings), strict: abort
+      stripInvalid:stripInvalid
     });
+    
+    dto = result.data as JspfPlaylistI;
+    
+    // Show warnings if validation errors exist and not quiet
+    if (result.validationErrors && !quiet) {
+      console.warn("⚠️  Validation warnings for input playlist:");
+      
+      // Group warnings by type
+      const groupedWarnings = new Map<string, string[]>();
+      result.validationErrors.issues.forEach(issue => {
+        const path = issue.path.length > 0 ? issue.path.join('.') : 'root';
+        const key = issue.message;
+        if (!groupedWarnings.has(key)) {
+          groupedWarnings.set(key, []);
+        }
+        groupedWarnings.get(key)!.push(path);
+      });
+      
+      // Display grouped warnings
+      groupedWarnings.forEach((paths, message) => {
+        if (paths.length === 1) {
+          console.warn(`  - ${paths[0]}: ${message}`);
+        } else {
+          console.warn(`  - ${paths.length} fields: ${message}`);
+          // Show first few examples
+          const examples = paths.slice(0, 3);
+          examples.forEach(path => {
+            console.warn(`    • ${path}`);
+          });
+          if (paths.length > 3) {
+            console.warn(`    ... and ${paths.length - 3} more`);
+          }
+        }
+      });
+      console.log();
+    }
   }catch(e){
     if (e instanceof ZodValidationError) {
-      //always log errors
-      console.log(e.errors.issues);
-      console.log();
-      //throw error only if 'force' is not set
-      if (!force){
-        console.error("The input playlist is not valid, conversion has been stopped.");
+      // Abort only if --strict is set
+      if (strict){
+        console.error("❌ The input playlist is not valid, conversion has been stopped.");
+        if (!quiet) {
+          console.error("Validation errors:");
+          e.errors.issues.forEach(issue => {
+            const path = issue.path.length > 0 ? issue.path.join('.') : 'root';
+            console.error(`  - ${path}: ${issue.message}`);
+          });
+        }
         console.log();
-        console.error("You can use option '--force=true' to ignore this error.");
+        console.error("Remove '--strict' to continue with warnings.");
         console.log();
         process.exit(1);
       }else{
-        dto = importPlaylist(input_data,format_in,{
-          ignoreValidationErrors:true,
-          stripInvalid:strip
-        });
+        // This shouldn't happen in default mode, but handle it anyway
+        throw(e);
       }
     }else{
       throw(e);
@@ -98,21 +138,66 @@ async function convertCommand(argv: ConvertCommandOptions ) {
   let output_data: string | undefined = undefined;
 
   try{
-    output_data = exportPlaylist(dto,format_out,{
-      ignoreValidationErrors:force,
-      stripInvalid:strip
+    const result = exportPlaylistWithErrors(dto,format_out,{
+      ignoreValidationErrors:!strict, // Default: ignore errors (show warnings), strict: abort
+      stripInvalid:stripInvalid
     });
+    
+    output_data = result.data as string;
+    
+    // Show warnings if validation errors exist and not quiet
+    if (result.validationErrors && !quiet) {
+      console.warn("⚠️  Validation warnings for output playlist:");
+      
+      // Group warnings by type
+      const groupedWarnings = new Map<string, string[]>();
+      result.validationErrors.issues.forEach(issue => {
+        const path = issue.path.length > 0 ? issue.path.join('.') : 'root';
+        const key = issue.message;
+        if (!groupedWarnings.has(key)) {
+          groupedWarnings.set(key, []);
+        }
+        groupedWarnings.get(key)!.push(path);
+      });
+      
+      // Display grouped warnings
+      groupedWarnings.forEach((paths, message) => {
+        if (paths.length === 1) {
+          console.warn(`  - ${paths[0]}: ${message}`);
+        } else {
+          console.warn(`  - ${paths.length} fields: ${message}`);
+          // Show first few examples
+          const examples = paths.slice(0, 3);
+          examples.forEach(path => {
+            console.warn(`    • ${path}`);
+          });
+          if (paths.length > 3) {
+            console.warn(`    ... and ${paths.length - 3} more`);
+          }
+        }
+      });
+      console.log();
+    }
   }catch(e){
 
     if (e instanceof ZodValidationError) {
-      console.log(e.errors.issues);
-      console.log();
-      if (!force){
-        console.error("The output playlist is not valid, conversion has been stopped.");
+      // Abort only if --strict is set
+      if (strict){
+        console.error("❌ The output playlist is not valid, conversion has been stopped.");
+        if (!quiet) {
+          console.error("Validation errors:");
+          e.errors.issues.forEach(issue => {
+            const path = issue.path.length > 0 ? issue.path.join('.') : 'root';
+            console.error(`  - ${path}: ${issue.message}`);
+          });
+        }
         console.log();
-        console.error("You can use option '--force=true' to ignore this error.");
+        console.error("Remove '--strict' to continue with warnings.");
         console.log();
         process.exit(1);
+      }else{
+        // This shouldn't happen in default mode, but handle it anyway
+        throw(e);
       }
     }else{
       throw(e);
@@ -150,8 +235,18 @@ module.exports = {
         choices: allowedTypes,
         type: 'string'
       })
-      .option('force', {
-        describe: 'Force conversion even if validation fails. It will also remove values that do not conform to the JSPF specifications',
+      .option('strict', {
+        describe: 'Abort conversion if validation fails. By default, conversion continues with warnings.',
+        type: 'boolean',
+        default: false
+      })
+      .option('strip-invalid', {
+        describe: 'Strip invalid values that do not conform to the JSPF specifications',
+        type: 'boolean',
+        default: true
+      })
+      .option('quiet', {
+        describe: 'Suppress validation warnings. Only errors will be shown.',
         type: 'boolean',
         default: false
       })

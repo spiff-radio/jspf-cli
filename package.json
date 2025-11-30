@@ -1,6 +1,6 @@
 {
   "name": "jspf-cli",
-  "version": "1.1.0",
+  "version": "2.0.2",
   "description": "JSPF CLI is a command line utility (CLI) relying on the JSPF format to convert and validate playlist files.",
   "keywords": [
     "playlist",
@@ -52,7 +52,6 @@
     "clear": "^0.1.0",
     "figlet": "^1.9.4",
     "jsesc": "^3.1.0",
-    "jsonschema": "^1.5.0",
     "lodash": "^4.17.21",
     "m3u8-parser": "^7.2.0",
     "xml-js": "^1.6.11",

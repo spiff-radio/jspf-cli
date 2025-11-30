@@ -6,4 +6,3 @@ export const ISSUES_URL = REPO_URL + '/issues';
 export const XSPF_URL='https://www.xiph.org/';
 export const JSON_VALIDATOR_URL='https://jsonlint.com';
 export const JSPF_SPECS_URL='https://www.xspf.org/spec';
-export const DEFAULT_JSON_SCHEMA_VERSION='https://json-schema.org/draft/2020-12/schema';

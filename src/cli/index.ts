@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import * as fs from 'fs';
+import * as path from 'path';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 // @ts-ignore - clear module doesn't have type definitions
@@ -10,6 +11,11 @@ import { REPO_URL, XSPF_URL, JSPF_VERSION, ISSUES_URL } from '../constants';
 import { getConverterTypes } from '../convert/index';
 import { JspfPlaylist, JspfTrack, JspfLink } from '../entities/models';
 import { getPathExtension } from '../utils';
+
+// Read package version
+const packageJsonPath = path.join(__dirname, '../../package.json');
+const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+const PACKAGE_VERSION = packageJson.version;
 
 export async function readFile(path: string): Promise<string> {
   try {
@@ -70,6 +76,7 @@ async function cli(){
   console.log(
     figlet.textSync('JSPF CLI', { horizontalLayout: 'full' })
   );
+  console.log(`Version: ${PACKAGE_VERSION}\n`);
 
   const argv = hideBin(process.argv);
   await yargs(argv)
