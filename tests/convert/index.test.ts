@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -10,7 +9,7 @@ import {
   exportPlaylistAsBlob
 } from '../../src/convert/index';
 import { JspfPlaylistI } from '../../src/entities/interfaces';
-import { JSONValidationErrors } from '../../src/entities/models';
+import { ZodValidationError } from '../../src/entities/models';
 
 const testDataDir = join(__dirname, '../data');
 
@@ -143,7 +142,7 @@ describe('convert/index', () => {
         importPlaylist(invalidData, 'jspf', { ignoreValidationErrors: false });
         // If it doesn't throw, that's acceptable - schema may be lenient
       } catch (e) {
-        expect(e).toBeInstanceOf(JSONValidationErrors);
+        expect(e).toBeInstanceOf(ZodValidationError);
       }
     });
 
@@ -278,7 +277,7 @@ describe('convert/index', () => {
         exportPlaylist(invalidPlaylist, 'jspf', { ignoreValidationErrors: false });
         // If it doesn't throw, that's acceptable - schema may be lenient
       } catch (e) {
-        expect(e).toBeInstanceOf(JSONValidationErrors);
+        expect(e).toBeInstanceOf(ZodValidationError);
       }
     });
 

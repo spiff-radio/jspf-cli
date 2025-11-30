@@ -1,4 +1,4 @@
-import { JSONValidationErrors, JspfPlaylist } from '../entities/models';
+import { ZodValidationError, JspfPlaylist } from '../entities/models';
 import { JspfPlaylistI } from '../entities/interfaces';
 import { ConvertOptionsI } from './interfaces';
 import JspfConverter from './formats/jspf';
@@ -32,9 +32,9 @@ export function importPlaylist(data:string,format:string='jspf',options: Convert
   const playlist = new JspfPlaylist(dto);
 
   try{
-    playlist.isValid();//will eventually throw a JSONValidationErrors
+    playlist.isValid();//will eventually throw a ZodValidationError
   }catch(e){
-    if (e instanceof JSONValidationErrors) {
+    if (e instanceof ZodValidationError) {
       if (!options.ignoreValidationErrors){
         throw(e);
       }
@@ -52,9 +52,9 @@ export function exportPlaylist(dto:JspfPlaylistI,format:string='jspf',options: C
   const playlist = new JspfPlaylist(dto);
 
   try{
-    playlist.isValid();//will eventually throw a JSONValidationErrors
+    playlist.isValid();//will eventually throw a ZodValidationError
   }catch(e){
-    if (e instanceof JSONValidationErrors) {
+    if (e instanceof ZodValidationError) {
       if (!options.ignoreValidationErrors){
         throw(e);
       }

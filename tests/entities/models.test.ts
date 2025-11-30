@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { describe, it, expect } from 'vitest';
 import {
   Jspf,
@@ -8,7 +7,7 @@ import {
   JspfMeta,
   JspfAttribution,
   JspfExtension,
-  JSONValidationErrors
+  ZodValidationError
 } from '../../src/entities/models';
 import { JspfPlaylistI, JspfTrackI } from '../../src/entities/interfaces';
 
@@ -87,7 +86,7 @@ describe('entities/models', () => {
         playlist.isValid();
         // If it doesn't throw, that's also acceptable for this test
       } catch (e) {
-        expect(e).toBeInstanceOf(JSONValidationErrors);
+        expect(e).toBeInstanceOf(ZodValidationError);
       }
     });
 
@@ -291,17 +290,21 @@ describe('entities/models', () => {
     });
   });
 
-  describe('JSONValidationErrors', () => {
-    it('should create error with validation result', () => {
-      const { Validator, ValidatorResult } = require('jsonschema');
-      const validator = new Validator();
-      const validation = validator.validate({ invalid: 'data' }, { type: 'object', required: ['title'] });
+  describe('ZodValidationError', () => {
+    it('should create error with Zod validation errors', () => {
+      const { z } = require('zod');
+      const schema = z.object({ title: z.string() });
+      const result = schema.safeParse({ invalid: 'data' });
       
-      const error = new JSONValidationErrors('Test error', validation);
-      expect(error).toBeInstanceOf(Error);
-      expect(error).toBeInstanceOf(JSONValidationErrors);
-      expect(error.validation).toBe(validation);
-      expect(error.name).toBe('JSONValidationErrors');
+      if (!result.success) {
+        const error = new ZodValidationError('Test error', result.error);
+        expect(error).toBeInstanceOf(Error);
+        expect(error).toBeInstanceOf(ZodValidationError);
+        expect(error.errors).toBe(result.error);
+        expect(error.name).toBe('ZodValidationError');
+      } else {
+        throw new Error('Expected validation to fail');
+      }
     });
   });
 });

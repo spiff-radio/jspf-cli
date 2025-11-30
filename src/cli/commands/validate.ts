@@ -3,7 +3,7 @@ import yargs from 'yargs';
 import { JSPF_SPECS_URL } from '../../constants';
 import { getPathFilename } from '../../utils';
 import { JspfPlaylistI } from '../../entities/interfaces';
-import { JspfPlaylist, JSONValidationErrors } from '../../entities/models';
+import { JspfPlaylist, ZodValidationError } from '../../entities/models';
 import { getConverterTypes, importPlaylist } from '../../convert/index';
 import { readFile, validateOptionPath, validateOptionFormat } from '../index';
 
@@ -57,10 +57,10 @@ async function validateCommand(argv: ValidateCommandOptions ) {
   const fileName:string = getPathFilename(path_in);
 
   try{
-    playlist.isValid();//will eventually throw a JSONValidationErrors
+    playlist.isValid();//will eventually throw a ZodValidationError
   }catch(e){
-    if (e instanceof JSONValidationErrors) {
-      console.info(e.validation.errors);
+    if (e instanceof ZodValidationError) {
+      console.info(e.errors.issues);
       console.log();
       console.error(`Your playlist '${fileName}' is not valid.  Check the JSPF specs here: ${JSPF_SPECS_URL}`);
       console.log();

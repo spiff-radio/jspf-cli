@@ -8,22 +8,22 @@ export default class JspfConverter extends DataConverter {
 
   public get(data:string):JspfPlaylistI{
 
+    let parsedData: any;
     try{
-      data = JSON.parse(data);
+      parsedData = JSON.parse(data);
     }catch(e){
       console.error('Unable to parse JSON.');
       throw e;
     }
 
-    const jspf = new Jspf(data);
+    const jspf = new Jspf(parsedData);
     const json = jspf.toJSON();
 
     return json.playlist;
   }
 
   public set(playlistData: JspfPlaylistI):string{
-    const jspf = new Jspf();
-    jspf.playlist = new JspfPlaylist(playlistData);
+    const jspf = new Jspf({ playlist: playlistData });
     const cleaned = jspf.toDTO();
     return JSON.stringify(cleaned, null, 4);
   }

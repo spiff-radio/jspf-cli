@@ -1,330 +1,294 @@
-import { plainToClass, plainToClassFromExist, classToPlain, Expose, Type } from 'class-transformer';
-import { Validator, ValidatorResult, ValidationError, Schema } from 'jsonschema';
-
+import { z } from 'zod';
+import {
+  JspfAttributionSchema,
+  JspfLinkSchema,
+  JspfMetaSchema,
+  JspfExtensionSchema,
+  JspfTrackSchema,
+  JspfPlaylistSchema,
+  JspfSchema,
+} from './schemas';
 import { JspfI, JspfPlaylistI, JspfTrackI, JspfAttributionI, JspfMetaI, JspfLinkI, JspfExtensionI } from './interfaces';
-import { cleanNestedObject, getChildSchema } from '../utils';
-import { getConverterByType } from '../convert/index';
+import { cleanNestedObject } from '../utils';
 
-
-type PlaylistOptions = {
-  notValidError?: boolean,
-  stripNotValid?: boolean
+// Custom error class for Zod validation errors
+export class ZodValidationError extends Error {
+  errors: z.ZodError;
+  name: string;
+  
+  constructor(message: string, errors: z.ZodError) {
+    super(message);
+    Object.setPrototypeOf(this, ZodValidationError.prototype);
+    this.errors = errors;
+    this.name = 'ZodValidationError';
+  }
 }
 
-const defaultPlaylistOptions: PlaylistOptions = {
-  notValidError: true,
-  stripNotValid: true
-};
-
-export class JspfBase{
+// Base class with common functionality
+export class JspfBase {
+  protected _data: Record<string, any>;
 
   constructor(data?: any) {
-    plainToClassFromExist(this, data, { excludeExtraneousValues: true, exposeUnsetFields: false });
+    this._data = data ? { ...data } : {};
   }
 
-  //export to JSON - override built-in class function
+  // Export to JSON
   public toJSON(): Record<string, any> {
-    let obj = classToPlain(this);
-    return obj;
+    return { ...this._data };
   }
 
-  //export a DTO (data transfer object) :
-  //- strip all empty and undefined values
+  // Export a DTO (data transfer object) - strip all empty and undefined values
   public toDTO(): Record<string, any> {
-    let obj = this.toJSON();
-    obj = cleanNestedObject(obj);
-    return obj;
+    const obj = this.toJSON();
+    return cleanNestedObject(obj);
   }
 
-  //export to string - override built-in class function
-  public toString():string{
+  // Export to string
+  public toString(): string {
     return JSON.stringify(this.toJSON(), null, 4);
   }
-
 }
 
-export class JspfValidation extends JspfBase{
-  validator:Validator;
-  validation:ValidatorResult;
+// Validation base class
+export class JspfValidation extends JspfBase {
+  protected _schema: z.ZodSchema;
 
-  //Checks if a JSPF fragment is valid against a JSON schema (defining a full JSPF).
-  public isValid(schema:Schema = {}):boolean{
-    this.validator = new Validator();
-    this.validation = this.validator.validate(this.toDTO(),schema);
-    if (this.validation.errors.length){
-      throw new JSONValidationErrors("The playlist is not valid.",this.validation);
-    }else{
-      return true;
+  constructor(data?: any, schema?: z.ZodSchema) {
+    super(data);
+    if (!schema) {
+      throw new Error('Schema is required for JspfValidation');
     }
+    this._schema = schema;
   }
 
-  private static removeValuesWithErrors(dto:JspfPlaylistI,errors:ValidationError[] | undefined):JspfPlaylistI {
-    errors = errors ?? [];
-    errors.forEach(error => JspfValidation.removeValueForError(dto,error));
-    return dto;
-  }
-
-  private static removeValueForError(dto:JspfPlaylistI, error: ValidationError): object {
-    const errorPath = error.property.replace(/\[(\w+)\]/g, '.$1').split('.');
-    let currentNode: { [key: string]: any } = dto;
-
-    for (let i = 0; i < errorPath.length; i++) {
-      const key = errorPath[i];
-      if (i === errorPath.length - 1) {
-        if (Array.isArray(currentNode)) {
-          if (key !== null) {
-            currentNode.splice(parseInt(key, 10), 1);
-          }
-        } else if (typeof currentNode === 'object') {
-          delete currentNode[key];
-        }
-      } else {
-        if (!currentNode.hasOwnProperty(key)) {
-          // Property is not defined in the data, maybe already deleted, move on to next error
-          continue;
-        }
-        currentNode = currentNode[key];
-      }
+  // Validate against Zod schema
+  public isValid(): boolean {
+    const result = this._schema.safeParse(this._data);
+    if (!result.success) {
+      throw new ZodValidationError('Validation failed', result.error);
     }
-    return dto;
+    return true;
   }
 
+  // Get validation errors without throwing
+  public getValidationErrors(): z.ZodError | null {
+    const result = this._schema.safeParse(this._data);
+    if (!result.success) {
+      return result.error;
+    }
+    return null;
+  }
+
+  // Parse and validate data, returning the validated data
+  public parse(): any {
+    return this._schema.parse(this._data);
+  }
+
+  // Safe parse - returns success/error without throwing
+  public safeParse() {
+    return this._schema.safeParse(this._data);
+  }
 }
 
-export class SinglePair extends JspfValidation{
-  //TOUFIX SHOULD BE THIS BUT FIRES A TS ERROR [key: string]: string;
+// Single pair classes (for attribution, link, meta)
+// These need index signatures to match the interfaces
+export class SinglePair extends JspfValidation {
   [key: string]: any;
-  static schemaPath:string;
-  toJSON(){
-    return classToPlain(this);
+
+  constructor(data?: any, schema?: z.ZodSchema) {
+    super(data, schema || z.record(z.string(), z.any()));
+    if (data) {
+      Object.assign(this, data);
+    }
   }
-  toString(){
+
+  toJSON() {
+    return super.toJSON();
+  }
+
+  toString() {
     return JSON.stringify(this.toJSON());
   }
 }
 
-export class JspfAttribution extends SinglePair implements JspfAttributionI{
-  public static get_schema(schema?:Schema):Schema{
-    return getChildSchema('$defs/attribution',schema);
+export class JspfAttribution extends SinglePair implements JspfAttributionI {
+  [key: string]: string | any;
+
+  constructor(data?: any) {
+    super(data, JspfAttributionSchema);
   }
 
-  public isValid(schema?:Schema):boolean{
-    schema = JspfAttribution.get_schema(schema);
-    return super.isValid(schema);
-  }
-}
-
-export class JspfMeta extends SinglePair implements JspfMetaI{
-  public static get_schema(schema?:Schema):Schema{
-    return getChildSchema('$defs/meta',schema);
-  }
-
-  public isValid(schema?:Schema):boolean{
-    schema = JspfMeta.get_schema(schema);
-    return super.isValid(schema);
+  public isValid(): boolean {
+    return super.isValid();
   }
 }
 
-/*
-export class JspfMetaCollection extends Array<JspfMetaI> implements JspfMetaCollectionI {
-  getMeta(key: string) {
-    const meta = this.find(meta => meta.keys[0] === key);
-    return meta;
+export class JspfMeta extends SinglePair implements JspfMetaI {
+  [key: string]: string | any;
+
+  constructor(data?: any) {
+    super(data, JspfMetaSchema);
   }
 
-  getMetaValue(key: string): string | null {
-    const meta = this.getMeta(key);
-    return meta ? meta.values[0] : null;
+  public isValid(): boolean {
+    return super.isValid();
+  }
+}
+
+export class JspfLink extends SinglePair implements JspfLinkI {
+  [key: string]: string | any;
+
+  constructor(data?: any) {
+    super(data, JspfLinkSchema);
   }
 
-  removeMeta(key: string) {
-    const existing = this.getMeta(key);
-    const index = this.indexOf(existing);
-    if (index !== -1) {
-      this.splice(index, 1);
+  public isValid(): boolean {
+    return super.isValid();
+  }
+}
+
+export class JspfExtension extends JspfValidation implements JspfExtensionI {
+  [key: string]: any[] | any;
+
+  constructor(data?: any) {
+    super(data, JspfExtensionSchema);
+    if (data) {
+      Object.assign(this, data);
     }
   }
 
-  setMeta(key: string, value: string) {
-    // Remove any existing meta with the same key
-    this.removeMeta(key);
-
-    const metaObj = { [key]: value };
-    this.push(metaObj);
-  }
-
-  mergeMetas(metas: JspfMetaCollectionI) {
-    metas.forEach(meta => {
-      const key = meta.keys[0];
-      const value = meta[key];
-      this.setMeta(key, value);
-    });
-  }
-}
-*/
-
-export class JspfLink extends SinglePair implements JspfLinkI{
-  public static get_schema(schema?:Schema):Schema{
-    return getChildSchema('$defs/link',schema);
-  }
-
-  public isValid(schema?:Schema):boolean{
-    schema = JspfLink.get_schema(schema);
-    return super.isValid(schema);
+  public isValid(): boolean {
+    return super.isValid();
   }
 }
 
-export class JspfExtension extends JspfValidation implements JspfExtensionI{
-  //TOUFIX SHOULD BE THIS BUT FIRES A TS ERROR [key: string]: string[];
-  [key: string]: any;
+export class JspfTrack extends JspfValidation implements JspfTrackI {
+  location?: string[];
+  identifier?: string[];
+  title?: string;
+  creator?: string;
+  annotation?: string;
+  info?: string;
+  image?: string;
+  album?: string;
+  trackNum?: number;
+  duration?: number;
+  link?: JspfLink[];
+  meta?: JspfMeta[];
+  extension?: JspfExtension;
 
-  public static get_schema(schema?:Schema):Schema{
-    return getChildSchema('$defs/extension',schema);
+  constructor(data?: any) {
+    super(data, JspfTrackSchema);
+    
+    // Populate properties from data
+    if (data) {
+      this.location = data.location;
+      this.identifier = data.identifier;
+      this.title = data.title;
+      this.creator = data.creator;
+      this.annotation = data.annotation;
+      this.info = data.info;
+      this.image = data.image;
+      this.album = data.album;
+      this.trackNum = data.trackNum;
+      this.duration = data.duration;
+      this.link = Array.isArray(data.link) ? data.link.map((l: any) => new JspfLink(l)) : undefined;
+      this.meta = Array.isArray(data.meta) ? data.meta.map((m: any) => new JspfMeta(m)) : undefined;
+      this.extension = data.extension ? new JspfExtension(data.extension) : undefined;
+    }
   }
 
-  public isValid(schema?:Schema):boolean{
-    schema = JspfExtension.get_schema(schema);
-    return super.isValid(schema);
+  public isValid(): boolean {
+    return super.isValid();
+  }
+
+  public toJSON(): JspfTrackI {
+    const base = super.toJSON();
+    return {
+      ...base,
+      link: this.link?.map(l => l.toJSON()),
+      meta: this.meta?.map(m => m.toJSON()),
+      extension: this.extension?.toJSON(),
+    } as JspfTrackI;
   }
 }
 
-export class JspfTrack extends JspfValidation implements JspfTrackI{
+export class JspfPlaylist extends JspfValidation implements JspfPlaylistI {
+  title?: string;
+  creator?: string;
+  annotation?: string;
+  info?: string;
+  location?: string;
+  identifier?: string;
+  image?: string;
+  date?: string;
+  license?: string;
+  attribution?: JspfAttribution[];
+  link?: JspfLink[];
+  meta?: JspfMeta[];
+  extension?: JspfExtension;
+  track?: JspfTrack[];
 
-  @Expose()
-  location: string[];
-
-  @Expose()
-  identifier: string[];
-
-  @Expose()
-  title: string;
-
-  @Expose()
-  creator: string;
-
-  @Expose()
-  annotation: string;
-
-  @Expose()
-  info: string;
-
-  @Expose()
-  image: string;
-
-  @Expose()
-  album: string;
-
-  @Expose()
-  trackNum: number;
-
-  @Expose()
-  duration: number;
-
-  @Expose()
-  @Type(() => JspfLink)
-  link: JspfLink[];
-
-  @Expose()
-  @Type(() => JspfMeta)
-  meta: JspfMeta[];
-
-  @Expose()
-  @Type(() => JspfExtension)
-  extension: JspfExtension;
-
-  public static get_schema(schema?:Schema):Schema{
-    return getChildSchema('$defs/track',schema);
+  constructor(data?: any) {
+    super(data, JspfPlaylistSchema);
+    
+    // Populate properties from data
+    if (data) {
+      this.title = data.title;
+      this.creator = data.creator;
+      this.annotation = data.annotation;
+      this.info = data.info;
+      this.location = data.location;
+      this.identifier = data.identifier;
+      this.image = data.image;
+      this.date = data.date;
+      this.license = data.license;
+      this.attribution = Array.isArray(data.attribution) ? data.attribution.map((a: any) => new JspfAttribution(a)) : undefined;
+      this.link = Array.isArray(data.link) ? data.link.map((l: any) => new JspfLink(l)) : undefined;
+      this.meta = Array.isArray(data.meta) ? data.meta.map((m: any) => new JspfMeta(m)) : undefined;
+      this.extension = data.extension ? new JspfExtension(data.extension) : undefined;
+      this.track = Array.isArray(data.track) ? data.track.map((t: any) => new JspfTrack(t)) : undefined;
+    }
   }
 
-  public isValid(schema?:Schema):boolean{
-    schema = JspfTrack.get_schema(schema);
-    return super.isValid(schema);
+  public isValid(): boolean {
+    return super.isValid();
   }
 
-}
-
-export class JspfPlaylist extends JspfValidation implements JspfPlaylistI{
-  @Expose()
-  title: string;
-
-  @Expose()
-  creator: string;
-
-  @Expose()
-  annotation: string;
-
-  @Expose()
-  info: string;
-
-  @Expose()
-  location: string;
-
-  @Expose()
-  identifier: string;
-
-  @Expose()
-  image: string;
-
-  @Expose()
-  date: string;
-
-  @Expose()
-  license: string;
-
-  @Expose()
-  @Type(() => JspfAttribution)
-  attribution: JspfAttribution[];
-
-  @Expose()
-  @Type(() => JspfLink)
-  link: JspfLink[];
-
-  @Expose()
-  @Type(() => JspfMeta)
-  meta: JspfMeta[];
-
-  @Expose()
-  @Type(() => JspfExtension)
-  extension: JspfExtension;
-
-  @Expose()
-  @Type(() => JspfTrack)
-  track: JspfTrack[];
-
-  public static get_schema(schema?:Schema):Schema{
-    return getChildSchema('properties/playlist',schema);
+  public toJSON(): JspfPlaylistI {
+    const base = super.toJSON();
+    return {
+      ...base,
+      attribution: this.attribution?.map(a => a.toJSON()),
+      link: this.link?.map(l => l.toJSON()),
+      meta: this.meta?.map(m => m.toJSON()),
+      extension: this.extension?.toJSON(),
+      track: this.track?.map(t => t.toJSON()),
+    } as JspfPlaylistI;
   }
-
-  public isValid(schema?:Schema):boolean{
-    schema = JspfPlaylist.get_schema(schema);
-    return super.isValid(schema);
-  }
-
 }
 
 export class Jspf extends JspfValidation implements JspfI {
-  @Expose()
-  @Type(() => JspfPlaylist)
-  playlist:JspfPlaylist
+  playlist: JspfPlaylist;
 
-  public static get_schema(schema?:Schema):Schema{
-    return getChildSchema('',schema);
+  constructor(data?: any) {
+    super(data, JspfSchema);
+    
+    if (data?.playlist) {
+      this.playlist = new JspfPlaylist(data.playlist);
+    } else {
+      this.playlist = new JspfPlaylist();
+    }
   }
 
-  public isValid(schema?:Schema):boolean{
-    schema = Jspf.get_schema(schema);
-    return super.isValid(schema);
+  public isValid(): boolean {
+    return super.isValid();
   }
 
-}
-
-export class JSONValidationErrors extends Error {
-  validation:ValidatorResult;
-  name:string;
-  constructor(message:string,validation:ValidatorResult) {
-    super(message);
-    Object.setPrototypeOf(this, JSONValidationErrors.prototype);//without this, TypeScript build fails - https://www.ashsmith.io/handling-custom-error-classes-in-typescript
-    this.validation = validation;
-    this.name = 'JSONValidationErrors';
+  public toJSON() {
+    return {
+      playlist: this.playlist.toJSON(),
+    };
   }
 }
+

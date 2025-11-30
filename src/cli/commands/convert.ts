@@ -1,9 +1,8 @@
 import yargs from 'yargs';
-import { plainToClass, classToPlain, serialize } from 'class-transformer';
 
 import { getConverterTypes, importPlaylist, exportPlaylist } from '../../convert/index';
 import { JspfPlaylistI } from '../../entities/interfaces';
-import { JSONValidationErrors, Jspf, JspfPlaylist } from '../../entities/models';
+import { ZodValidationError } from '../../entities/models';
 import { readFile, writeFile, validateOptionPath, validateOptionFormat } from '../index';
 
 const allowedTypes = getConverterTypes();
@@ -73,9 +72,9 @@ async function convertCommand(argv: ConvertCommandOptions ) {
       stripInvalid:strip
     });
   }catch(e){
-    if (e instanceof JSONValidationErrors) {
+    if (e instanceof ZodValidationError) {
       //always log errors
-      console.log(e.validation.errors);
+      console.log(e.errors.issues);
       console.log();
       //throw error only if 'force' is not set
       if (!force){
@@ -105,8 +104,8 @@ async function convertCommand(argv: ConvertCommandOptions ) {
     });
   }catch(e){
 
-    if (e instanceof JSONValidationErrors) {
-      console.log(e.validation.errors);
+    if (e instanceof ZodValidationError) {
+      console.log(e.errors.issues);
       console.log();
       if (!force){
         console.error("The output playlist is not valid, conversion has been stopped.");

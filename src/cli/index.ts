@@ -5,7 +5,6 @@ import { hideBin } from 'yargs/helpers';
 // @ts-ignore - clear module doesn't have type definitions
 import clear from 'clear';
 import figlet from 'figlet';
-import 'reflect-metadata';
 
 import { REPO_URL, XSPF_URL, JSPF_VERSION, ISSUES_URL } from '../constants';
 import { getConverterTypes } from '../convert/index';
