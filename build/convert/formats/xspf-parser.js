@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = parseXSPF;
 var xml_js_1 = require("xml-js");
-var models_1 = require("../../entities/models");
 function parseXSPF(input) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
     var data = (0, xml_js_1.xml2js)(input, { compact: true });
@@ -31,7 +30,7 @@ function parseXSPF(input) {
     if ((_z = (_y = data.playlist) === null || _y === void 0 ? void 0 : _y.trackList) === null || _z === void 0 ? void 0 : _z.track) {
         dto.track = parseTrackList(data.playlist.trackList.track);
     }
-    return new models_1.JspfPlaylist(dto);
+    return dto;
 }
 function parseAttribution(input) {
     var _a;

@@ -6,7 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getConverterTypes = getConverterTypes;
 exports.getConverterByType = getConverterByType;
 exports.importPlaylist = importPlaylist;
+exports.importPlaylistWithErrors = importPlaylistWithErrors;
 exports.exportPlaylist = exportPlaylist;
+exports.exportPlaylistWithErrors = exportPlaylistWithErrors;
 exports.exportPlaylistAsBlob = exportPlaylistAsBlob;
 var models_1 = require("../entities/models");
 var jspf_1 = __importDefault(require("./formats/jspf"));
@@ -36,36 +38,38 @@ function importPlaylist(data, format, options) {
     var converter = new converterClass();
     var dto = converter.get(data);
     var playlist = new models_1.JspfPlaylist(dto);
-    try {
-        playlist.isValid(); //will eventually throw a JSONValidationErrors
-    }
-    catch (e) {
-        if (e instanceof models_1.JSONValidationErrors) {
-            if (!options.ignoreValidationErrors) {
-                throw (e);
-            }
-        }
-        else {
-            throw (e);
+    var validationErrors = playlist.getValidationErrors();
+    if (validationErrors) {
+        if (!options.ignoreValidationErrors) {
+            throw new models_1.ZodValidationError('Validation failed', validationErrors);
         }
     }
     return playlist.toDTO();
+}
+function importPlaylistWithErrors(data, format, options) {
+    if (format === void 0) { format = 'jspf'; }
+    if (options === void 0) { options = { ignoreValidationErrors: false, stripInvalid: true }; }
+    var converterClass = getConverterByType(format);
+    var converter = new converterClass();
+    var dto = converter.get(data);
+    var playlist = new models_1.JspfPlaylist(dto);
+    var validationErrors = playlist.getValidationErrors();
+    if (validationErrors && !options.ignoreValidationErrors) {
+        throw new models_1.ZodValidationError('Validation failed', validationErrors);
+    }
+    return {
+        data: playlist.toDTO(),
+        validationErrors: validationErrors || null
+    };
 }
 function exportPlaylist(dto, format, options) {
     if (format === void 0) { format = 'jspf'; }
     if (options === void 0) { options = { ignoreValidationErrors: false, stripInvalid: true }; }
     var playlist = new models_1.JspfPlaylist(dto);
-    try {
-        playlist.isValid(); //will eventually throw a JSONValidationErrors
-    }
-    catch (e) {
-        if (e instanceof models_1.JSONValidationErrors) {
-            if (!options.ignoreValidationErrors) {
-                throw (e);
-            }
-        }
-        else {
-            throw (e);
+    var validationErrors = playlist.getValidationErrors();
+    if (validationErrors) {
+        if (!options.ignoreValidationErrors) {
+            throw new models_1.ZodValidationError('Validation failed', validationErrors);
         }
     }
     var converterClass = getConverterByType(format);
@@ -73,6 +77,23 @@ function exportPlaylist(dto, format, options) {
     dto = playlist.toDTO();
     var data = converter.set(dto);
     return data;
+}
+function exportPlaylistWithErrors(dto, format, options) {
+    if (format === void 0) { format = 'jspf'; }
+    if (options === void 0) { options = { ignoreValidationErrors: false, stripInvalid: true }; }
+    var playlist = new models_1.JspfPlaylist(dto);
+    var validationErrors = playlist.getValidationErrors();
+    if (validationErrors && !options.ignoreValidationErrors) {
+        throw new models_1.ZodValidationError('Validation failed', validationErrors);
+    }
+    var converterClass = getConverterByType(format);
+    var converter = new converterClass();
+    dto = playlist.toDTO();
+    var data = converter.set(dto);
+    return {
+        data: data,
+        validationErrors: validationErrors || null
+    };
 }
 /**
  * Export playlist as a Blob-like object (for browser environments).

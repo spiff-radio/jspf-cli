@@ -23,20 +23,20 @@ var JspfConverter = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     JspfConverter.prototype.get = function (data) {
+        var parsedData;
         try {
-            data = JSON.parse(data);
+            parsedData = JSON.parse(data);
         }
         catch (e) {
             console.error('Unable to parse JSON.');
             throw e;
         }
-        var jspf = new models_1.Jspf(data);
-        var json = jspf.toJSON();
-        return json.playlist;
+        var jspf = new models_1.Jspf(parsedData);
+        var dto = jspf.toDTO();
+        return dto.playlist;
     };
     JspfConverter.prototype.set = function (playlistData) {
-        var jspf = new models_1.Jspf();
-        jspf.playlist = new models_1.JspfPlaylist(playlistData);
+        var jspf = new models_1.Jspf({ playlist: playlistData });
         var cleaned = jspf.toDTO();
         return JSON.stringify(cleaned, null, 4);
     };

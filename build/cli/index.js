@@ -78,15 +78,19 @@ exports.writeFile = writeFile;
 exports.validateOptionFormat = validateOptionFormat;
 exports.validateOptionPath = validateOptionPath;
 var fs = __importStar(require("fs"));
+var path = __importStar(require("path"));
 var yargs_1 = __importDefault(require("yargs"));
 var helpers_1 = require("yargs/helpers");
 // @ts-ignore - clear module doesn't have type definitions
 var clear_1 = __importDefault(require("clear"));
 var figlet_1 = __importDefault(require("figlet"));
-require("reflect-metadata");
 var constants_1 = require("../constants");
 var index_1 = require("../convert/index");
 var utils_1 = require("../utils");
+// Read package version
+var packageJsonPath = path.join(__dirname, '../../package.json');
+var packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+var PACKAGE_VERSION = packageJson.version;
 function readFile(path) {
     return __awaiter(this, void 0, void 0, function () {
         var data, error_1;
@@ -161,6 +165,7 @@ function cli() {
                     allowedTypes = (0, index_1.getConverterTypes)();
                     (0, clear_1.default)();
                     console.log(figlet_1.default.textSync('JSPF CLI', { horizontalLayout: 'full' }));
+                    console.log("Version: ".concat(PACKAGE_VERSION, "\n"));
                     argv = (0, helpers_1.hideBin)(process.argv);
                     return [4 /*yield*/, (0, yargs_1.default)(argv)
                             .scriptName('jspf-cli')

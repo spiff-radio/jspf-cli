@@ -27,7 +27,7 @@ function serializeXSPF(playlistData) {
             }
         },
         //add playlist attributes
-        playlist: __assign(__assign({}, jspf.playlist), { _attributes: {
+        playlist: __assign(__assign({}, jspf.playlist.toDTO()), { _attributes: {
                 version: constants_1.XSPF_VERSION,
                 xmlns: constants_1.XSPF_XMLNS
             } })

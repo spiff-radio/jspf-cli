@@ -1,4 +1,3 @@
-import { Schema } from 'jsonschema';
 export declare function cleanNestedObject(obj: Record<string, any>): Record<string, any>;
 export declare function getPathExtension(filePath: string): string | null;
 export declare function getPathFilename(filePath: string): string;
@@ -8,4 +7,3 @@ export declare function getPathFilename(filePath: string): string;
  * @returns true if the string appears to be a JSON string
  */
 export declare function isJsonString(str: string): boolean;
-export declare function getChildSchema(path: string, inputSchema?: Schema): Schema;

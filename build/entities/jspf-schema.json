@@ -111,7 +111,8 @@
                 },
                 "trackNum": {
                     "type": "integer",
-                    "minimum": 0
+                    "minimum": 1,
+                    "exclusiveMinimum": false
                 },
                 "duration": {
                     "type": "integer",

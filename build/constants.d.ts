@@ -6,4 +6,3 @@ export declare const ISSUES_URL: string;
 export declare const XSPF_URL = "https://www.xiph.org/";
 export declare const JSON_VALIDATOR_URL = "https://jsonlint.com";
 export declare const JSPF_SPECS_URL = "https://www.xspf.org/spec";
-export declare const DEFAULT_JSON_SCHEMA_VERSION = "https://json-schema.org/draft/2020-12/schema";

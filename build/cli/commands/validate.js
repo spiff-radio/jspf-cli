@@ -83,11 +83,11 @@ function validateCommand(argv) {
                     playlist = new models_1.JspfPlaylist(dto);
                     fileName = (0, utils_1.getPathFilename)(path_in);
                     try {
-                        playlist.isValid(); //will eventually throw a JSONValidationErrors
+                        playlist.isValid(); //will eventually throw a ZodValidationError
                     }
                     catch (e) {
-                        if (e instanceof models_1.JSONValidationErrors) {
-                            console.info(e.validation.errors);
+                        if (e instanceof models_1.ZodValidationError) {
+                            console.info(e.errors.issues);
                             console.log();
                             console.error("Your playlist '".concat(fileName, "' is not valid.  Check the JSPF specs here: ").concat(constants_1.JSPF_SPECS_URL));
                             console.log();

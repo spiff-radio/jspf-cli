@@ -42,11 +42,11 @@ var index_2 = require("../index");
 var allowedTypes = (0, index_1.getConverterTypes)();
 function convertCommand(argv) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, path_in, _b, path_out, _c, format_in, _d, format_out, _e, force, _f, strip, input_data, dto, output_data;
-        return __generator(this, function (_g) {
-            switch (_g.label) {
+        var _a, path_in, _b, path_out, _c, format_in, _d, format_out, _e, strict, _f, stripInvalid, _g, quiet, input_data, dto, result, groupedWarnings_1, output_data, result, groupedWarnings_2;
+        return __generator(this, function (_h) {
+            switch (_h.label) {
                 case 0:
-                    _a = argv.path_in, path_in = _a === void 0 ? '' : _a, _b = argv.path_out, path_out = _b === void 0 ? '' : _b, _c = argv.format_in, format_in = _c === void 0 ? '' : _c, _d = argv.format_out, format_out = _d === void 0 ? '' : _d, _e = argv.force, force = _e === void 0 ? false : _e, _f = argv.strip, strip = _f === void 0 ? true : _f;
+                    _a = argv.path_in, path_in = _a === void 0 ? '' : _a, _b = argv.path_out, path_out = _b === void 0 ? '' : _b, _c = argv.format_in, format_in = _c === void 0 ? '' : _c, _d = argv.format_out, format_out = _d === void 0 ? '' : _d, _e = argv.strict, strict = _e === void 0 ? false : _e, _f = argv.stripInvalid, stripInvalid = _f === void 0 ? true : _f, _g = argv.quiet, quiet = _g === void 0 ? false : _g;
                     //Check file paths
                     try {
                         path_in = (0, index_2.validateOptionPath)('path_in', path_in, true);
@@ -80,34 +80,74 @@ function convertCommand(argv) {
                     if (!path_in || !path_out || !format_in || !format_out) {
                         process.exit(1);
                     }
+                    // Check if input and output formats are the same
+                    if (format_in === format_out) {
+                        console.log("Input and output formats are the same (".concat(format_in, "). Skipping conversion."));
+                        console.log();
+                        process.exit(0);
+                    }
                     return [4 /*yield*/, (0, index_2.readFile)(path_in)];
                 case 1:
-                    input_data = _g.sent();
+                    input_data = _h.sent();
                     dto = {};
                     try {
-                        dto = (0, index_1.importPlaylist)(input_data, format_in, {
-                            ignoreValidationErrors: false,
-                            stripInvalid: strip
+                        result = (0, index_1.importPlaylistWithErrors)(input_data, format_in, {
+                            ignoreValidationErrors: !strict, // Default: ignore errors (show warnings), strict: abort
+                            stripInvalid: stripInvalid
                         });
+                        dto = result.data;
+                        // Show warnings if validation errors exist and not quiet
+                        if (result.validationErrors && !quiet) {
+                            console.warn("⚠️  Validation warnings for input playlist:");
+                            groupedWarnings_1 = new Map();
+                            result.validationErrors.issues.forEach(function (issue) {
+                                var path = issue.path.length > 0 ? issue.path.join('.') : 'root';
+                                var key = issue.message;
+                                if (!groupedWarnings_1.has(key)) {
+                                    groupedWarnings_1.set(key, []);
+                                }
+                                groupedWarnings_1.get(key).push(path);
+                            });
+                            // Display grouped warnings
+                            groupedWarnings_1.forEach(function (paths, message) {
+                                if (paths.length === 1) {
+                                    console.warn("  - ".concat(paths[0], ": ").concat(message));
+                                }
+                                else {
+                                    console.warn("  - ".concat(paths.length, " fields: ").concat(message));
+                                    // Show first few examples
+                                    var examples = paths.slice(0, 3);
+                                    examples.forEach(function (path) {
+                                        console.warn("    \u2022 ".concat(path));
+                                    });
+                                    if (paths.length > 3) {
+                                        console.warn("    ... and ".concat(paths.length - 3, " more"));
+                                    }
+                                }
+                            });
+                            console.log();
+                        }
                     }
                     catch (e) {
-                        if (e instanceof models_1.JSONValidationErrors) {
-                            //always log errors
-                            console.log(e.validation.errors);
-                            console.log();
-                            //throw error only if 'force' is not set
-                            if (!force) {
-                                console.error("The input playlist is not valid, conversion has been stopped.");
+                        if (e instanceof models_1.ZodValidationError) {
+                            // Abort only if --strict is set
+                            if (strict) {
+                                console.error("❌ The input playlist is not valid, conversion has been stopped.");
+                                if (!quiet) {
+                                    console.error("Validation errors:");
+                                    e.errors.issues.forEach(function (issue) {
+                                        var path = issue.path.length > 0 ? issue.path.join('.') : 'root';
+                                        console.error("  - ".concat(path, ": ").concat(issue.message));
+                                    });
+                                }
                                 console.log();
-                                console.error("You can use option '--force=true' to ignore this error.");
+                                console.error("Remove '--strict' to continue with warnings.");
                                 console.log();
                                 process.exit(1);
                             }
                             else {
-                                dto = (0, index_1.importPlaylist)(input_data, format_in, {
-                                    ignoreValidationErrors: true,
-                                    stripInvalid: strip
-                                });
+                                // This shouldn't happen in default mode, but handle it anyway
+                                throw (e);
                             }
                         }
                         else {
@@ -116,21 +156,63 @@ function convertCommand(argv) {
                     }
                     output_data = undefined;
                     try {
-                        output_data = (0, index_1.exportPlaylist)(dto, format_out, {
-                            ignoreValidationErrors: force,
-                            stripInvalid: strip
+                        result = (0, index_1.exportPlaylistWithErrors)(dto, format_out, {
+                            ignoreValidationErrors: !strict, // Default: ignore errors (show warnings), strict: abort
+                            stripInvalid: stripInvalid
                         });
+                        output_data = result.data;
+                        // Show warnings if validation errors exist and not quiet
+                        if (result.validationErrors && !quiet) {
+                            console.warn("⚠️  Validation warnings for output playlist:");
+                            groupedWarnings_2 = new Map();
+                            result.validationErrors.issues.forEach(function (issue) {
+                                var path = issue.path.length > 0 ? issue.path.join('.') : 'root';
+                                var key = issue.message;
+                                if (!groupedWarnings_2.has(key)) {
+                                    groupedWarnings_2.set(key, []);
+                                }
+                                groupedWarnings_2.get(key).push(path);
+                            });
+                            // Display grouped warnings
+                            groupedWarnings_2.forEach(function (paths, message) {
+                                if (paths.length === 1) {
+                                    console.warn("  - ".concat(paths[0], ": ").concat(message));
+                                }
+                                else {
+                                    console.warn("  - ".concat(paths.length, " fields: ").concat(message));
+                                    // Show first few examples
+                                    var examples = paths.slice(0, 3);
+                                    examples.forEach(function (path) {
+                                        console.warn("    \u2022 ".concat(path));
+                                    });
+                                    if (paths.length > 3) {
+                                        console.warn("    ... and ".concat(paths.length - 3, " more"));
+                                    }
+                                }
+                            });
+                            console.log();
+                        }
                     }
                     catch (e) {
-                        if (e instanceof models_1.JSONValidationErrors) {
-                            console.log(e.validation.errors);
-                            console.log();
-                            if (!force) {
-                                console.error("The output playlist is not valid, conversion has been stopped.");
+                        if (e instanceof models_1.ZodValidationError) {
+                            // Abort only if --strict is set
+                            if (strict) {
+                                console.error("❌ The output playlist is not valid, conversion has been stopped.");
+                                if (!quiet) {
+                                    console.error("Validation errors:");
+                                    e.errors.issues.forEach(function (issue) {
+                                        var path = issue.path.length > 0 ? issue.path.join('.') : 'root';
+                                        console.error("  - ".concat(path, ": ").concat(issue.message));
+                                    });
+                                }
                                 console.log();
-                                console.error("You can use option '--force=true' to ignore this error.");
+                                console.error("Remove '--strict' to continue with warnings.");
                                 console.log();
                                 process.exit(1);
+                            }
+                            else {
+                                // This shouldn't happen in default mode, but handle it anyway
+                                throw (e);
                             }
                         }
                         else {
@@ -145,7 +227,7 @@ function convertCommand(argv) {
                     return [4 /*yield*/, (0, index_2.writeFile)(path_out, output_data)];
                 case 2:
                     //output
-                    _g.sent();
+                    _h.sent();
                     console.log("\uD83D\uDDF8 SUCCESSFULLY CONVERTED FILE! ( ".concat(format_in, " > ").concat(format_out, ")"));
                     console.log();
                     console.log(path_out);
@@ -171,8 +253,18 @@ module.exports = {
             choices: allowedTypes,
             type: 'string'
         })
-            .option('force', {
-            describe: 'Force conversion even if validation fails. It will also remove values that do not conform to the JSPF specifications',
+            .option('strict', {
+            describe: 'Abort conversion if validation fails. By default, conversion continues with warnings.',
+            type: 'boolean',
+            default: false
+        })
+            .option('strip-invalid', {
+            describe: 'Strip invalid values that do not conform to the JSPF specifications',
+            type: 'boolean',
+            default: true
+        })
+            .option('quiet', {
+            describe: 'Suppress validation warnings. Only errors will be shown.',
             type: 'boolean',
             default: false
         });
