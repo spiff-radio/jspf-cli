@@ -9,7 +9,7 @@ import {
   JspfSchema,
 } from './schemas';
 import { JspfI, JspfPlaylistI, JspfTrackI, JspfAttributionI, JspfMetaI, JspfLinkI, JspfExtensionI } from './interfaces';
-import { cleanNestedObject } from '../utils';
+import cleanDeep from 'clean-deep';
 
 // Custom error class for Zod validation errors
 export class ZodValidationError extends Error {
@@ -40,7 +40,13 @@ export class JspfBase {
   // Export a DTO (data transfer object) - strip all empty and undefined values
   public toDTO(): Record<string, any> {
     const obj = this.toJSON();
-    return cleanNestedObject(obj);
+    return cleanDeep(obj, {
+      emptyArrays: true,
+      emptyObjects: true,
+      emptyStrings: true,
+      nullValues: true,
+      undefinedValues: true
+    });
   }
 
   // Export to string
