@@ -4,7 +4,7 @@ import { JSPF_SPECS_URL } from '../../constants';
 import { getPathFilename } from '../../utils';
 import { JspfPlaylistI } from '../../entities/interfaces';
 import { JspfPlaylist, ZodValidationError } from '../../entities/models';
-import { getConverterTypes, importPlaylist } from '../../convert/index';
+import { getAvailableFormats, importPlaylist } from '../../convert/index';
 import { readFile, validateOptionPath, validateOptionFormat } from '../index';
 
 type ValidateCommandOptions = {

@@ -6,7 +6,20 @@ export function cleanNestedObject(obj: Record<string, any>): Record<string, any>
       // Get this value and its type
       var value = obj[key];
       var type = typeof value;
-      if (type === "object" && value !== null && !Array.isArray(value)) {
+      if (Array.isArray(value)) {
+          // Handle arrays: clean each element if it's an object
+          value = value.map((item: any) => {
+            if (item && typeof item === "object" && !Array.isArray(item)) {
+              return cleanNestedObject(item);
+            }
+            return item;
+          }).filter((item: any) => item !== null && item !== undefined && item !== '');
+          obj[key] = value;
+          if (value.length === 0) {
+            delete obj[key];
+          }
+      }
+      else if (type === "object" && value !== null && !Array.isArray(value)) {
           cleanNestedObject(value);
           if (value === undefined || value === ''){
             delete obj[key];

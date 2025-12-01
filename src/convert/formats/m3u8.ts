@@ -4,7 +4,7 @@ import parseM3U8 from './m3u8-parser';
 import serializeM3U8 from './m3u8-serializer';
 
 export default class M3u8Converter extends DataConverter {
-  public static readonly type = 'm3u8';
+  public static readonly format = 'm3u8';
   public static readonly contentType = 'application/vnd.apple.mpegurl';
 
   public get(input:string):JspfPlaylistI{

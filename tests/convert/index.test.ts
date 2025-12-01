@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import {
-  getConverterTypes,
-  getConverterByType,
+  getAvailableFormats,
+  getConverterByFormat,
   importPlaylist,
   exportPlaylist,
   exportPlaylistAsBlob
@@ -14,15 +14,15 @@ import { ZodValidationError } from '../../src/entities/models';
 const testDataDir = join(__dirname, '../data');
 
 describe('convert/index', () => {
-  describe('getConverterTypes', () => {
+  describe('getAvailableFormats', () => {
     it('should return array of converter types', () => {
-      const types = getConverterTypes();
+      const types = getAvailableFormats();
       expect(Array.isArray(types)).toBe(true);
       expect(types.length).toBeGreaterThan(0);
     });
 
     it('should include expected formats', () => {
-      const types = getConverterTypes();
+      const types = getAvailableFormats();
       expect(types).toContain('jspf');
       expect(types).toContain('xspf');
       expect(types).toContain('m3u');
@@ -31,25 +31,25 @@ describe('convert/index', () => {
     });
   });
 
-  describe('getConverterByType', () => {
+  describe('getConverterByFormat', () => {
     it('should return converter for valid type', () => {
-      const converter = getConverterByType('jspf');
+      const converter = getConverterByFormat('jspf');
       expect(converter).toBeDefined();
-      expect(converter.type).toBe('jspf');
+      expect(converter.format).toBe('jspf');
     });
 
     it('should throw error for invalid type', () => {
       expect(() => {
-        getConverterByType('invalid');
+        getConverterByFormat('invalid');
       }).toThrow("Converter with type 'invalid' was not found.");
     });
 
     it('should return converter for all supported types', () => {
-      const types = getConverterTypes();
+      const types = getAvailableFormats();
       types.forEach(type => {
-        const converter = getConverterByType(type);
+        const converter = getConverterByFormat(type);
         expect(converter).toBeDefined();
-        expect(converter.type).toBe(type);
+        expect(converter.format).toBe(type);
       });
     });
   });

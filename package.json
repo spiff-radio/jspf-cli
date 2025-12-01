@@ -45,6 +45,10 @@
     "./lib/*": {
       "types": "./build/convert/*.d.ts",
       "default": "./build/convert/*.js"
+    },
+    "./build/entities/models.js": {
+      "types": "./build/entities/models.d.ts",
+      "default": "./build/entities/models.js"
     }
   },
   "bin": {

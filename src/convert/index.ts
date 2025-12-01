@@ -10,13 +10,13 @@ import XspfConverter from './formats/xspf';
 const converters = [JspfConverter, M3uConverter, M3u8Converter, PlsConverter, XspfConverter];
 
 // Get a flat array of all the converter types
-export function getConverterTypes(): string[] {
-  return converters.map((converter) => converter.type);
+export function getAvailableFormats(): string[] {
+  return converters.map((converter) => converter.format);
 }
 
 // Get a converter by a type
-export function getConverterByType(type: string) {
-  const converter = converters.find(converter => converter.type === type);
+export function getConverterByFormat(type: string) {
+  const converter = converters.find(converter => converter.format === type);
   if (converter) {
     return converter;
   } else {
@@ -25,7 +25,7 @@ export function getConverterByType(type: string) {
 }
 
 export function importPlaylist(data:string,format:string='jspf',options: ConvertOptionsI = {ignoreValidationErrors: false,stripInvalid:true}):JspfPlaylistI{
-  const converterClass = getConverterByType(format);
+  const converterClass = getConverterByFormat(format);
   const converter = new converterClass();
   const dto:JspfPlaylistI = converter.get(data);
 
@@ -43,7 +43,7 @@ export function importPlaylist(data:string,format:string='jspf',options: Convert
 }
 
 export function importPlaylistWithErrors(data:string,format:string='jspf',options: ConvertOptionsI = {ignoreValidationErrors: false,stripInvalid:true}):ConvertResult{
-  const converterClass = getConverterByType(format);
+  const converterClass = getConverterByFormat(format);
   const converter = new converterClass();
   const dto:JspfPlaylistI = converter.get(data);
 
@@ -71,7 +71,7 @@ export function exportPlaylist(dto:JspfPlaylistI,format:string='jspf',options: C
     }
   }
 
-  const converterClass = getConverterByType(format);
+  const converterClass = getConverterByFormat(format);
   const converter = new converterClass();
 
   dto = playlist.toDTO() as JspfPlaylistI;
@@ -88,12 +88,12 @@ export function exportPlaylistWithErrors(dto:JspfPlaylistI,format:string='jspf',
     throw new ZodValidationError('Validation failed', validationErrors);
   }
 
-  const converterClass = getConverterByType(format);
+  const converterClass = getConverterByFormat(format);
   const converter = new converterClass();
 
   dto = playlist.toDTO() as JspfPlaylistI;
   const data:string = converter.set(dto);
-  
+
   return {
     data: data,
     validationErrors: validationErrors || null
@@ -104,7 +104,7 @@ export function exportPlaylistWithErrors(dto:JspfPlaylistI,format:string='jspf',
  * Export playlist as a Blob-like object (for browser environments).
  * Note: In Node.js environments where Blob is not available, this returns a Buffer instead.
  * For Node.js usage, consider using exportPlaylist() directly and handling the string result.
- * 
+ *
  * @param dto - The playlist data transfer object
  * @param format - The output format (default: 'jspf')
  * @param options - Conversion options
@@ -112,7 +112,7 @@ export function exportPlaylistWithErrors(dto:JspfPlaylistI,format:string='jspf',
  */
 export function exportPlaylistAsBlob(dto:JspfPlaylistI,format:string='jspf',options: ConvertOptionsI = {ignoreValidationErrors: false,stripInvalid:true}):Blob | Buffer{
 
-  const converterClass = getConverterByType(format);
+  const converterClass = getConverterByFormat(format);
   let blobString:string = exportPlaylist(dto,format,options);
 
   // Check if we're in a Node.js environment without Blob support

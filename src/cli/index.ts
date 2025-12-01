@@ -8,7 +8,7 @@ import clear from 'clear';
 import figlet from 'figlet';
 
 import { REPO_URL, XSPF_URL, JSPF_VERSION, ISSUES_URL } from '../constants';
-import { getConverterTypes } from '../convert/index';
+import { getAvailableFormats } from '../convert/index';
 import { getPathExtension } from '../utils';
 
 // Read package version
@@ -37,7 +37,7 @@ export async function writeFile(path: string, fileData: string): Promise<void> {
 
 export function validateOptionFormat(name: string, value: string, path: string):string{
 
-  const allowedTypes = getConverterTypes();
+  const allowedFormats = getAvailableFormats();
 
   //if value is not set, try to get it from the file path extension
   if (!value && path){
@@ -47,8 +47,8 @@ export function validateOptionFormat(name: string, value: string, path: string):
   if (!value) {
     throw new Error(`❌ Please set a value for --${name}.`);
   }
-  if (!allowedTypes.includes(value)) {
-    throw new Error(`❌ Invalid value '${value}' for '--${name}'. Available formats: ${allowedTypes.join(', ')}.`);
+  if (!allowedFormats.includes(value)) {
+    throw new Error(`❌ Invalid value '${value}' for '--${name}'. Available formats: ${allowedFormats.join(', ')}.`);
   }
   return value as string;
 }
@@ -68,14 +68,13 @@ export function validateOptionPath(name:string,value:string,existsCheck:boolean=
 
 async function cli(){
 
-  const allowedTypes = getConverterTypes();
+  const allowedFormats = getAvailableFormats();
 
   clear();
 
   console.log(
     figlet.textSync('JSPF CLI', { horizontalLayout: 'full' })
   );
-  console.log(`Version: ${PACKAGE_VERSION}\n`);
 
   const argv = hideBin(process.argv);
   await yargs(argv)
@@ -92,11 +91,12 @@ async function cli(){
     })
     .option('format_in', {
       describe: `The input format for conversion. If '--path_in' has an extension, this can be omitted.`,
-      choices: allowedTypes,
+      choices: allowedFormats,
       type: 'string'
     })
     .help('h')
     .alias('h', 'help')
+    .epilogue(`Version: ${PACKAGE_VERSION}`)
     .epilogue(`JSPF version: ${JSPF_VERSION} - ${XSPF_URL}`)
     .epilogue(`for more information or issues, reach out ${REPO_URL}`)
     .parseAsync();

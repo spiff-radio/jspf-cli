@@ -1,11 +1,11 @@
 import yargs from 'yargs';
 
-import { getConverterTypes, importPlaylistWithErrors, exportPlaylistWithErrors } from '../../convert/index';
+import { getAvailableFormats, importPlaylistWithErrors, exportPlaylistWithErrors } from '../../convert/index';
 import { JspfPlaylistI } from '../../entities/interfaces';
 import { ZodValidationError } from '../../entities/models';
 import { readFile, writeFile, validateOptionPath, validateOptionFormat } from '../index';
 
-const allowedTypes = getConverterTypes();
+const allowedFormats = getAvailableFormats();
 
 type ConvertCommandOptions = {
   path_in:string,
@@ -63,13 +63,6 @@ async function convertCommand(argv: ConvertCommandOptions ) {
     process.exit(1);
   }
 
-  // Check if input and output formats are the same
-  if (format_in === format_out) {
-    console.log(`Input and output formats are the same (${format_in}). Skipping conversion.`);
-    console.log();
-    process.exit(0);
-  }
-
   ////
 
   const input_data: string = await readFile(path_in);
@@ -86,33 +79,9 @@ async function convertCommand(argv: ConvertCommandOptions ) {
     // Show warnings if validation errors exist and not quiet
     if (result.validationErrors && !quiet) {
       console.warn("⚠️  Validation warnings for input playlist:");
-
-      // Group warnings by type
-      const groupedWarnings = new Map<string, string[]>();
       result.validationErrors.issues.forEach(issue => {
         const path = issue.path.length > 0 ? issue.path.join('.') : 'root';
-        const key = issue.message;
-        if (!groupedWarnings.has(key)) {
-          groupedWarnings.set(key, []);
-        }
-        groupedWarnings.get(key)!.push(path);
-      });
-
-      // Display grouped warnings
-      groupedWarnings.forEach((paths, message) => {
-        if (paths.length === 1) {
-          console.warn(`  - ${paths[0]}: ${message}`);
-        } else {
-          console.warn(`  - ${paths.length} fields: ${message}`);
-          // Show first few examples
-          const examples = paths.slice(0, 3);
-          examples.forEach(path => {
-            console.warn(`    • ${path}`);
-          });
-          if (paths.length > 3) {
-            console.warn(`    ... and ${paths.length - 3} more`);
-          }
-        }
+        console.warn(`  - ${path}: ${issue.message}`);
       });
       console.log();
     }
@@ -155,33 +124,9 @@ async function convertCommand(argv: ConvertCommandOptions ) {
     // Show warnings if validation errors exist and not quiet
     if (result.validationErrors && !quiet) {
       console.warn("⚠️  Validation warnings for output playlist:");
-
-      // Group warnings by type
-      const groupedWarnings = new Map<string, string[]>();
       result.validationErrors.issues.forEach(issue => {
         const path = issue.path.length > 0 ? issue.path.join('.') : 'root';
-        const key = issue.message;
-        if (!groupedWarnings.has(key)) {
-          groupedWarnings.set(key, []);
-        }
-        groupedWarnings.get(key)!.push(path);
-      });
-
-      // Display grouped warnings
-      groupedWarnings.forEach((paths, message) => {
-        if (paths.length === 1) {
-          console.warn(`  - ${paths[0]}: ${message}`);
-        } else {
-          console.warn(`  - ${paths.length} fields: ${message}`);
-          // Show first few examples
-          const examples = paths.slice(0, 3);
-          examples.forEach(path => {
-            console.warn(`    • ${path}`);
-          });
-          if (paths.length > 3) {
-            console.warn(`    ... and ${paths.length - 3} more`);
-          }
-        }
+        console.warn(`  - ${path}: ${issue.message}`);
       });
       console.log();
     }
@@ -239,7 +184,7 @@ module.exports = {
       })
       .option('format_out', {
         describe: `The output format for conversion. If '--path_out' has an extension, this can be omitted.`,
-        choices: allowedTypes,
+        choices: allowedFormats,
         type: 'string'
       })
       .option('strict', {
@@ -259,10 +204,10 @@ module.exports = {
       })
       /*
       .check((argv) => {
-        if (argv.format_in && !allowedTypes.includes(argv.format_in)) {
+        if (argv.format_in && !allowedFormats.includes(argv.format_in)) {
           throw new Error(`Invalid input format: ${argv.format_in}`);
         }
-        if (argv.format_out && !allowedTypes.includes(argv.format_out)) {
+        if (argv.format_out && !allowedFormats.includes(argv.format_out)) {
           throw new Error(`Invalid output format: ${argv.format_out}`);
         }
         return true;
