@@ -39,10 +39,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("../../convert/index");
 var models_1 = require("../../entities/models");
 var index_2 = require("../index");
-var allowedTypes = (0, index_1.getConverterTypes)();
+var allowedFormats = (0, index_1.getAvailableFormats)();
 function convertCommand(argv) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, path_in, _b, path_out, _c, format_in, _d, format_out, _e, strict, _f, stripInvalid, _g, quiet, input_data, dto, result, groupedWarnings_1, output_data, result, groupedWarnings_2;
+        var _a, path_in, _b, path_out, _c, format_in, _d, format_out, _e, strict, _f, stripInvalid, _g, quiet, input_data, dto, result, output_data, result;
         return __generator(this, function (_h) {
             switch (_h.label) {
                 case 0:
@@ -80,12 +80,6 @@ function convertCommand(argv) {
                     if (!path_in || !path_out || !format_in || !format_out) {
                         process.exit(1);
                     }
-                    // Check if input and output formats are the same
-                    if (format_in === format_out) {
-                        console.log("Input and output formats are the same (".concat(format_in, "). Skipping conversion."));
-                        console.log();
-                        process.exit(0);
-                    }
                     return [4 /*yield*/, (0, index_2.readFile)(path_in)];
                 case 1:
                     input_data = _h.sent();
@@ -99,31 +93,9 @@ function convertCommand(argv) {
                         // Show warnings if validation errors exist and not quiet
                         if (result.validationErrors && !quiet) {
                             console.warn("⚠️  Validation warnings for input playlist:");
-                            groupedWarnings_1 = new Map();
                             result.validationErrors.issues.forEach(function (issue) {
                                 var path = issue.path.length > 0 ? issue.path.join('.') : 'root';
-                                var key = issue.message;
-                                if (!groupedWarnings_1.has(key)) {
-                                    groupedWarnings_1.set(key, []);
-                                }
-                                groupedWarnings_1.get(key).push(path);
-                            });
-                            // Display grouped warnings
-                            groupedWarnings_1.forEach(function (paths, message) {
-                                if (paths.length === 1) {
-                                    console.warn("  - ".concat(paths[0], ": ").concat(message));
-                                }
-                                else {
-                                    console.warn("  - ".concat(paths.length, " fields: ").concat(message));
-                                    // Show first few examples
-                                    var examples = paths.slice(0, 3);
-                                    examples.forEach(function (path) {
-                                        console.warn("    \u2022 ".concat(path));
-                                    });
-                                    if (paths.length > 3) {
-                                        console.warn("    ... and ".concat(paths.length - 3, " more"));
-                                    }
-                                }
+                                console.warn("  - ".concat(path, ": ").concat(issue.message));
                             });
                             console.log();
                         }
@@ -164,31 +136,9 @@ function convertCommand(argv) {
                         // Show warnings if validation errors exist and not quiet
                         if (result.validationErrors && !quiet) {
                             console.warn("⚠️  Validation warnings for output playlist:");
-                            groupedWarnings_2 = new Map();
                             result.validationErrors.issues.forEach(function (issue) {
                                 var path = issue.path.length > 0 ? issue.path.join('.') : 'root';
-                                var key = issue.message;
-                                if (!groupedWarnings_2.has(key)) {
-                                    groupedWarnings_2.set(key, []);
-                                }
-                                groupedWarnings_2.get(key).push(path);
-                            });
-                            // Display grouped warnings
-                            groupedWarnings_2.forEach(function (paths, message) {
-                                if (paths.length === 1) {
-                                    console.warn("  - ".concat(paths[0], ": ").concat(message));
-                                }
-                                else {
-                                    console.warn("  - ".concat(paths.length, " fields: ").concat(message));
-                                    // Show first few examples
-                                    var examples = paths.slice(0, 3);
-                                    examples.forEach(function (path) {
-                                        console.warn("    \u2022 ".concat(path));
-                                    });
-                                    if (paths.length > 3) {
-                                        console.warn("    ... and ".concat(paths.length - 3, " more"));
-                                    }
-                                }
+                                console.warn("  - ".concat(path, ": ").concat(issue.message));
                             });
                             console.log();
                         }
@@ -250,7 +200,7 @@ module.exports = {
         })
             .option('format_out', {
             describe: "The output format for conversion. If '--path_out' has an extension, this can be omitted.",
-            choices: allowedTypes,
+            choices: allowedFormats,
             type: 'string'
         })
             .option('strict', {
@@ -270,10 +220,10 @@ module.exports = {
         });
         /*
         .check((argv) => {
-          if (argv.format_in && !allowedTypes.includes(argv.format_in)) {
+          if (argv.format_in && !allowedFormats.includes(argv.format_in)) {
             throw new Error(`Invalid input format: ${argv.format_in}`);
           }
-          if (argv.format_out && !allowedTypes.includes(argv.format_out)) {
+          if (argv.format_out && !allowedFormats.includes(argv.format_out)) {
             throw new Error(`Invalid output format: ${argv.format_out}`);
           }
           return true;

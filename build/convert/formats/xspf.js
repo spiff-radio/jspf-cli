@@ -32,7 +32,7 @@ var XspfConverter = /** @class */ (function (_super) {
     XspfConverter.prototype.set = function (data) {
         return (0, xspf_serializer_1.default)(data);
     };
-    XspfConverter.type = 'xspf';
+    XspfConverter.format = 'xspf';
     XspfConverter.contentType = 'application/xspf+xml;charset=utf-8';
     return XspfConverter;
 }(models_1.DataConverter));

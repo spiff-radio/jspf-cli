@@ -32,7 +32,7 @@ var M3uConverter = /** @class */ (function (_super) {
     M3uConverter.prototype.set = function (dto) {
         return (0, m3u8_serializer_1.default)(dto);
     };
-    M3uConverter.type = 'm3u';
+    M3uConverter.format = 'm3u';
     M3uConverter.contentType = 'audio/mpegurl';
     return M3uConverter;
 }(models_1.DataConverter));

@@ -133,7 +133,7 @@ function writeFile(path, fileData) {
 }
 function validateOptionFormat(name, value, path) {
     var _a;
-    var allowedTypes = (0, index_1.getConverterTypes)();
+    var allowedFormats = (0, index_1.getAvailableFormats)();
     //if value is not set, try to get it from the file path extension
     if (!value && path) {
         value = (_a = (0, utils_1.getPathExtension)(path)) !== null && _a !== void 0 ? _a : '';
@@ -141,8 +141,8 @@ function validateOptionFormat(name, value, path) {
     if (!value) {
         throw new Error("\u274C Please set a value for --".concat(name, "."));
     }
-    if (!allowedTypes.includes(value)) {
-        throw new Error("\u274C Invalid value '".concat(value, "' for '--").concat(name, "'. Available formats: ").concat(allowedTypes.join(', '), "."));
+    if (!allowedFormats.includes(value)) {
+        throw new Error("\u274C Invalid value '".concat(value, "' for '--").concat(name, "'. Available formats: ").concat(allowedFormats.join(', '), "."));
     }
     return value;
 }
@@ -158,14 +158,13 @@ function validateOptionPath(name, value, existsCheck) {
 }
 function cli() {
     return __awaiter(this, void 0, void 0, function () {
-        var allowedTypes, argv;
+        var allowedFormats, argv;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    allowedTypes = (0, index_1.getConverterTypes)();
+                    allowedFormats = (0, index_1.getAvailableFormats)();
                     (0, clear_1.default)();
                     console.log(figlet_1.default.textSync('JSPF CLI', { horizontalLayout: 'full' }));
-                    console.log("Version: ".concat(PACKAGE_VERSION, "\n"));
                     argv = (0, helpers_1.hideBin)(process.argv);
                     return [4 /*yield*/, (0, yargs_1.default)(argv)
                             .scriptName('jspf-cli')
@@ -181,11 +180,12 @@ function cli() {
                         })
                             .option('format_in', {
                             describe: "The input format for conversion. If '--path_in' has an extension, this can be omitted.",
-                            choices: allowedTypes,
+                            choices: allowedFormats,
                             type: 'string'
                         })
                             .help('h')
                             .alias('h', 'help')
+                            .epilogue("Version: ".concat(PACKAGE_VERSION))
                             .epilogue("JSPF version: ".concat(constants_1.JSPF_VERSION, " - ").concat(constants_1.XSPF_URL))
                             .epilogue("for more information or issues, reach out ".concat(constants_1.REPO_URL))
                             .parseAsync()];

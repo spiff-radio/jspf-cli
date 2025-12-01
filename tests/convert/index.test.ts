@@ -15,7 +15,7 @@ const testDataDir = join(__dirname, '../data');
 
 describe('convert/index', () => {
   describe('getAvailableFormats', () => {
-    it('should return array of converter types', () => {
+    it('should return array of converter formats', () => {
       const types = getAvailableFormats();
       expect(Array.isArray(types)).toBe(true);
       expect(types.length).toBeGreaterThan(0);

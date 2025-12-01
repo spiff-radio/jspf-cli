@@ -8,14 +8,14 @@ var index_1 = require("./index");
 var models_1 = require("../entities/models");
 var testDataDir = (0, path_1.join)(__dirname, '../../tests/data');
 (0, vitest_1.describe)('convert/index', function () {
-    (0, vitest_1.describe)('getConverterTypes', function () {
-        (0, vitest_1.it)('should return array of converter types', function () {
-            var types = (0, index_1.getConverterTypes)();
+    (0, vitest_1.describe)('getAvailableFormats', function () {
+        (0, vitest_1.it)('should return array of converter formats', function () {
+            var types = (0, index_1.getAvailableFormats)();
             (0, vitest_1.expect)(Array.isArray(types)).toBe(true);
             (0, vitest_1.expect)(types.length).toBeGreaterThan(0);
         });
         (0, vitest_1.it)('should include expected formats', function () {
-            var types = (0, index_1.getConverterTypes)();
+            var types = (0, index_1.getAvailableFormats)();
             (0, vitest_1.expect)(types).toContain('jspf');
             (0, vitest_1.expect)(types).toContain('xspf');
             (0, vitest_1.expect)(types).toContain('m3u');
@@ -23,23 +23,23 @@ var testDataDir = (0, path_1.join)(__dirname, '../../tests/data');
             (0, vitest_1.expect)(types).toContain('pls');
         });
     });
-    (0, vitest_1.describe)('getConverterByType', function () {
+    (0, vitest_1.describe)('getConverterByFormat', function () {
         (0, vitest_1.it)('should return converter for valid type', function () {
-            var converter = (0, index_1.getConverterByType)('jspf');
+            var converter = (0, index_1.getConverterByFormat)('jspf');
             (0, vitest_1.expect)(converter).toBeDefined();
-            (0, vitest_1.expect)(converter.type).toBe('jspf');
+            (0, vitest_1.expect)(converter.format).toBe('jspf');
         });
         (0, vitest_1.it)('should throw error for invalid type', function () {
             (0, vitest_1.expect)(function () {
-                (0, index_1.getConverterByType)('invalid');
+                (0, index_1.getConverterByFormat)('invalid');
             }).toThrow("Converter with type 'invalid' was not found.");
         });
         (0, vitest_1.it)('should return converter for all supported types', function () {
-            var types = (0, index_1.getConverterTypes)();
+            var types = (0, index_1.getAvailableFormats)();
             types.forEach(function (type) {
-                var converter = (0, index_1.getConverterByType)(type);
+                var converter = (0, index_1.getConverterByFormat)(type);
                 (0, vitest_1.expect)(converter).toBeDefined();
-                (0, vitest_1.expect)(converter.type).toBe(type);
+                (0, vitest_1.expect)(converter.format).toBe(type);
             });
         });
     });

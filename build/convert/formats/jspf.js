@@ -40,7 +40,7 @@ var JspfConverter = /** @class */ (function (_super) {
         var cleaned = jspf.toDTO();
         return JSON.stringify(cleaned, null, 4);
     };
-    JspfConverter.type = 'jspf';
+    JspfConverter.format = 'jspf';
     JspfConverter.contentType = 'application/jspf+json;charset=utf-8';
     return JspfConverter;
 }(models_2.DataConverter));

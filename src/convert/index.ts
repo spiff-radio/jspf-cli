@@ -1,5 +1,5 @@
 import { ZodValidationError, JspfPlaylist } from '../entities/models';
-import { JspfPlaylistI } from '../entities/interfaces';
+import { ConverterInfoI,JspfPlaylistI } from '../entities/interfaces';
 import { ConvertOptionsI, ConvertResult } from './interfaces';
 import JspfConverter from './formats/jspf';
 import M3uConverter from './formats/m3u';
@@ -9,9 +9,18 @@ import XspfConverter from './formats/xspf';
 
 const converters = [JspfConverter, M3uConverter, M3u8Converter, PlsConverter, XspfConverter];
 
-// Get a flat array of all the converter types
+export function getConvertersList(): ConverterInfoI[] {
+  if (!Array.isArray(converters)) return [];
+
+  return converters.map(converter => ({
+    format: converter.format,
+    name: converter.name
+  }));
+}
+
 export function getAvailableFormats(): string[] {
-  return converters.map((converter) => converter.format);
+  if (!Array.isArray(converters)) return [];
+  return converters.map(converter => converter.format);
 }
 
 // Get a converter by a type

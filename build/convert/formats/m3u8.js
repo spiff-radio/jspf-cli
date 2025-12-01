@@ -32,7 +32,7 @@ var M3u8Converter = /** @class */ (function (_super) {
     M3u8Converter.prototype.set = function (dto) {
         return (0, m3u8_serializer_1.default)(dto);
     };
-    M3u8Converter.type = 'm3u8';
+    M3u8Converter.format = 'm3u8';
     M3u8Converter.contentType = 'application/vnd.apple.mpegurl';
     return M3u8Converter;
 }(models_1.DataConverter));

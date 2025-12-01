@@ -3,8 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getConverterTypes = getConverterTypes;
-exports.getConverterByType = getConverterByType;
+exports.getConvertersList = getConvertersList;
+exports.getAvailableFormats = getAvailableFormats;
+exports.getConverterByFormat = getConverterByFormat;
 exports.importPlaylist = importPlaylist;
 exports.importPlaylistWithErrors = importPlaylistWithErrors;
 exports.exportPlaylist = exportPlaylist;
@@ -17,13 +18,22 @@ var m3u8_1 = __importDefault(require("./formats/m3u8"));
 var pls_1 = __importDefault(require("./formats/pls"));
 var xspf_1 = __importDefault(require("./formats/xspf"));
 var converters = [jspf_1.default, m3u_1.default, m3u8_1.default, pls_1.default, xspf_1.default];
-// Get a flat array of all the converter types
-function getConverterTypes() {
-    return converters.map(function (converter) { return converter.type; });
+function getConvertersList() {
+    if (!Array.isArray(converters))
+        return [];
+    return converters.map(function (converter) { return ({
+        format: converter.format,
+        name: converter.name
+    }); });
+}
+function getAvailableFormats() {
+    if (!Array.isArray(converters))
+        return [];
+    return converters.map(function (converter) { return converter.format; });
 }
 // Get a converter by a type
-function getConverterByType(type) {
-    var converter = converters.find(function (converter) { return converter.type === type; });
+function getConverterByFormat(type) {
+    var converter = converters.find(function (converter) { return converter.format === type; });
     if (converter) {
         return converter;
     }
@@ -34,7 +44,7 @@ function getConverterByType(type) {
 function importPlaylist(data, format, options) {
     if (format === void 0) { format = 'jspf'; }
     if (options === void 0) { options = { ignoreValidationErrors: false, stripInvalid: true }; }
-    var converterClass = getConverterByType(format);
+    var converterClass = getConverterByFormat(format);
     var converter = new converterClass();
     var dto = converter.get(data);
     var playlist = new models_1.JspfPlaylist(dto);
@@ -49,7 +59,7 @@ function importPlaylist(data, format, options) {
 function importPlaylistWithErrors(data, format, options) {
     if (format === void 0) { format = 'jspf'; }
     if (options === void 0) { options = { ignoreValidationErrors: false, stripInvalid: true }; }
-    var converterClass = getConverterByType(format);
+    var converterClass = getConverterByFormat(format);
     var converter = new converterClass();
     var dto = converter.get(data);
     var playlist = new models_1.JspfPlaylist(dto);
@@ -72,7 +82,7 @@ function exportPlaylist(dto, format, options) {
             throw new models_1.ZodValidationError('Validation failed', validationErrors);
         }
     }
-    var converterClass = getConverterByType(format);
+    var converterClass = getConverterByFormat(format);
     var converter = new converterClass();
     dto = playlist.toDTO();
     var data = converter.set(dto);
@@ -86,7 +96,7 @@ function exportPlaylistWithErrors(dto, format, options) {
     if (validationErrors && !options.ignoreValidationErrors) {
         throw new models_1.ZodValidationError('Validation failed', validationErrors);
     }
-    var converterClass = getConverterByType(format);
+    var converterClass = getConverterByFormat(format);
     var converter = new converterClass();
     dto = playlist.toDTO();
     var data = converter.set(dto);
@@ -108,7 +118,7 @@ function exportPlaylistWithErrors(dto, format, options) {
 function exportPlaylistAsBlob(dto, format, options) {
     if (format === void 0) { format = 'jspf'; }
     if (options === void 0) { options = { ignoreValidationErrors: false, stripInvalid: true }; }
-    var converterClass = getConverterByType(format);
+    var converterClass = getConverterByFormat(format);
     var blobString = exportPlaylist(dto, format, options);
     // Check if we're in a Node.js environment without Blob support
     if (typeof Blob === 'undefined') {

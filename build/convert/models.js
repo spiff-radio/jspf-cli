@@ -4,7 +4,7 @@ exports.DataConverter = void 0;
 var DataConverter = /** @class */ (function () {
     function DataConverter() {
     }
-    DataConverter.types = [];
+    DataConverter.formats = [];
     DataConverter.contentType = '';
     return DataConverter;
 }());

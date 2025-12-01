@@ -1,12 +1,13 @@
-import { JspfPlaylistI } from '../entities/interfaces';
+import { ConverterInfoI, JspfPlaylistI } from '../entities/interfaces';
 import { ConvertOptionsI, ConvertResult } from './interfaces';
 import JspfConverter from './formats/jspf';
 import M3uConverter from './formats/m3u';
 import M3u8Converter from './formats/m3u8';
 import PlsConverter from './formats/pls';
 import XspfConverter from './formats/xspf';
-export declare function getConverterTypes(): string[];
-export declare function getConverterByType(type: string): typeof JspfConverter | typeof M3uConverter | typeof M3u8Converter | typeof PlsConverter | typeof XspfConverter;
+export declare function getConvertersList(): ConverterInfoI[];
+export declare function getAvailableFormats(): string[];
+export declare function getConverterByFormat(type: string): typeof JspfConverter | typeof M3uConverter | typeof M3u8Converter | typeof PlsConverter | typeof XspfConverter;
 export declare function importPlaylist(data: string, format?: string, options?: ConvertOptionsI): JspfPlaylistI;
 export declare function importPlaylistWithErrors(data: string, format?: string, options?: ConvertOptionsI): ConvertResult;
 export declare function exportPlaylist(dto: JspfPlaylistI, format?: string, options?: ConvertOptionsI): string;

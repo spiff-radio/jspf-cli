@@ -25,11 +25,14 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Jspf = exports.JspfPlaylist = exports.JspfTrack = exports.JspfExtension = exports.JspfLink = exports.JspfMeta = exports.JspfAttribution = exports.SinglePair = exports.JspfValidation = exports.JspfBase = exports.ZodValidationError = void 0;
 var zod_1 = require("zod");
 var schemas_1 = require("./schemas");
-var utils_1 = require("../utils");
+var clean_deep_1 = __importDefault(require("clean-deep"));
 // Custom error class for Zod validation errors
 var ZodValidationError = /** @class */ (function (_super) {
     __extends(ZodValidationError, _super);
@@ -55,7 +58,13 @@ var JspfBase = /** @class */ (function () {
     // Export a DTO (data transfer object) - strip all empty and undefined values
     JspfBase.prototype.toDTO = function () {
         var obj = this.toJSON();
-        return (0, utils_1.cleanNestedObject)(obj);
+        return (0, clean_deep_1.default)(obj, {
+            emptyArrays: true,
+            emptyObjects: true,
+            emptyStrings: true,
+            nullValues: true,
+            undefinedValues: true
+        });
     };
     // Export to string
     JspfBase.prototype.toString = function () {

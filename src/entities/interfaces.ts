@@ -50,3 +50,8 @@ export interface JspfPlaylistI {
 export interface JspfI {
   playlist?:Record<string, any>
 }
+
+export interface ConverterInfoI {
+  format: string;
+  name: string;
+}
