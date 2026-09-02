@@ -1,6 +1,30 @@
 import { describe, it, expect } from 'vitest';
 import { JspfTrack, JspfPlaylist, JspfMeta } from '../../src/entities/models';
 
+describe('JspfBase re-wrap safety', () => {
+  it('re-wrapping an existing JspfPlaylist instance does not leak _data/_schema into its DTO', () => {
+    // This is exactly the shape of a common caller pattern: passing an
+    // already-constructed instance back into the constructor (e.g. a store
+    // action typed as `setPlaylist(data)` receiving a JspfPlaylist instance
+    // instead of a plain object).
+    const original = new JspfPlaylist({ title: 'P1', track: [{ title: 'A' }] });
+    const rewrapped = new JspfPlaylist(original);
+    const dto = rewrapped.toDTO();
+    expect(dto).toEqual({ title: 'P1', track: [{ title: 'A' }] });
+    expect(dto).not.toHaveProperty('_data');
+    expect(dto).not.toHaveProperty('_schema');
+  });
+
+  it('re-wrapping an existing JspfTrack instance does not leak _data/_schema into its DTO', () => {
+    const original = new JspfTrack({ title: 'Song', creator: 'Artist' });
+    const rewrapped = new JspfTrack(original);
+    const dto = rewrapped.toDTO();
+    expect(dto).toEqual({ title: 'Song', creator: 'Artist' });
+    expect(dto).not.toHaveProperty('_data');
+    expect(dto).not.toHaveProperty('_schema');
+  });
+});
+
 describe('meta/link/attribution accessor normalization', () => {
   it('assigning a plain object post-construction still round-trips through toJSON/toDTO', () => {
     const track = new JspfTrack({ title: 'Song', creator: 'Artist' });

@@ -29,7 +29,11 @@ export class JspfBase {
   protected _data: Record<string, any>;
 
   constructor(data?: any) {
-    this._data = data ? { ...data } : {};
+    // Re-wrapping an existing JspfBase instance (e.g. `new JspfPlaylist(existingPlaylist)`)
+    // must use its plain data, not the instance itself - otherwise internal
+    // bookkeeping fields (_data, _schema) get copied onto the new instance too.
+    const plainData = data instanceof JspfBase ? data.toJSON() : data;
+    this._data = plainData ? { ...plainData } : {};
   }
 
   // Export to JSON
