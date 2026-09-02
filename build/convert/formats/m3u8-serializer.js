@@ -61,24 +61,24 @@ function serializeM3U8(input) {
     return lines.join('\n');
 }
 function serializeTrack(input) {
-    var _a;
     var lines = [];
-    var duration = (_a = input.duration) !== null && _a !== void 0 ? _a : -1;
+    // JSPF's duration is in milliseconds; M3U8's EXTINF duration is in seconds.
+    var duration = input.duration !== undefined ? input.duration / 1000 : -1;
     // Build title for EXTINF tag (standard format: duration,title)
     var title = buildExtinfTitle(input.creator, input.title);
     // Standard EXTINF format: #EXTINF:duration,title
     lines.push("#EXTINF:".concat(duration, ",").concat(title));
     // Add track locations (URIs)
     if (input.location && input.location.length > 0) {
-        for (var _i = 0, _b = input.location; _i < _b.length; _i++) {
-            var location = _b[_i];
+        for (var _i = 0, _a = input.location; _i < _a.length; _i++) {
+            var location = _a[_i];
             lines.push(location);
         }
     }
     // Add metadata (VLC-specific, non-standard but commonly used)
     if (input.meta) {
-        for (var _c = 0, _d = input.meta; _c < _d.length; _c++) {
-            var meta = _d[_c];
+        for (var _b = 0, _c = input.meta; _b < _c.length; _b++) {
+            var meta = _c[_b];
             for (var key in meta) {
                 var value = String(meta[key]);
                 lines.push("#EXTVLCOPT:meta-".concat(key, "=").concat(escapeM3U8Value(value)));

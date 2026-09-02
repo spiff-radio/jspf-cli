@@ -81,8 +81,6 @@ var fs = __importStar(require("fs"));
 var path = __importStar(require("path"));
 var yargs_1 = __importDefault(require("yargs"));
 var helpers_1 = require("yargs/helpers");
-// @ts-ignore - clear module doesn't have type definitions
-var clear_1 = __importDefault(require("clear"));
 var figlet_1 = __importDefault(require("figlet"));
 var constants_1 = require("../constants");
 var index_1 = require("../convert/index");
@@ -163,7 +161,7 @@ function cli() {
             switch (_a.label) {
                 case 0:
                     allowedFormats = (0, index_1.getAvailableFormats)();
-                    (0, clear_1.default)();
+                    console.clear();
                     console.log(figlet_1.default.textSync('JSPF CLI', { horizontalLayout: 'full' }));
                     argv = (0, helpers_1.hideBin)(process.argv);
                     return [4 /*yield*/, (0, yargs_1.default)(argv)

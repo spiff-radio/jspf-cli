@@ -39,7 +39,8 @@ function serializeTrack(input, index) {
         lines.push("Title".concat(index, "=").concat(escapePLSValue(input.title)));
     }
     if ((input === null || input === void 0 ? void 0 : input.duration) !== undefined) {
-        lines.push("Length".concat(index, "=").concat(input.duration));
+        // JSPF's duration is in milliseconds; PLS's Length is in seconds.
+        lines.push("Length".concat(index, "=").concat(Math.round(input.duration / 1000)));
     }
     if (input === null || input === void 0 ? void 0 : input.creator) {
         lines.push("Artist".concat(index, "=").concat(escapePLSValue(input.creator)));
