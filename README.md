@@ -23,17 +23,19 @@ $ npm install -g jspf-cli
 ## Convert a playlist
 
 ```sh
-jspf-cli convert [options] <path_in> <path_out>
+jspf-cli convert [options]
 ```
 
 ### Options
 
 
-- `-i <file>`: Path to the input file [required].
-- `-o <file>`: Path to the output file [required].
-- `--force <boolean>`: Force conversion even if the validation fails.  Invalid values will be stripped [default is `false`].
+- `-i, --path_in <file>`: Path to the input file [required].
+- `-o, --path_out <file>`: Path to the output file [required].
 - `--format_in <format>`: The input format. If omitted, the tool will use the extension of the input file.
 - `--format_out <format>`: The output format. If omitted, the tool will use the extension of the output file.
+- `--strict`: Abort the conversion if validation fails, instead of continuing with warnings [default is `false`].
+- `--strip-invalid <boolean>`: Strip values that don't conform to the JSPF specification instead of failing on them [default is `true`].
+- `--quiet`: Suppress validation warnings; only errors are shown [default is `false`].
 
 ### Example
 
@@ -46,7 +48,7 @@ jspf-cli convert -i "path-to-input-file.m3u8" -o "path-to-output-file.xspf"
 ## Validate a playlist
 
 ```sh
-jspf-cli validate [options] <path>
+jspf-cli validate [options]
 ```
 
 ### Options
@@ -60,6 +62,37 @@ jspf-cli validate [options] <path>
 jspf-cli  validate -i "path-to-input-file.xspf"
 ```
 
+## Using it as a library
+
+The conversion functions are also usable directly from JavaScript/TypeScript, without going through the CLI:
+
+```js
+const { importPlaylist, exportPlaylist } = require('jspf-cli/lib');
+
+const jspfPlaylist = importPlaylist(m3u8FileContent, 'm3u8');
+const xspfFileContent = exportPlaylist(jspfPlaylist, 'xspf');
+```
+
+Both functions accept the same `--strict`/`--strip-invalid` behavior as options:
+
+```js
+importPlaylist(data, 'jspf', { ignoreValidationErrors: true, stripInvalid: true });
+```
+
+Validation is done with [Zod](https://zod.dev/). When a conversion is rejected (`ignoreValidationErrors: false`), the thrown error is a `ZodValidationError` whose `.errors.issues` array describes what failed:
+
+```js
+const { ZodValidationError } = require('jspf-cli/build/entities/models.js');
+
+try {
+  exportPlaylist(playlist, 'jspf', { ignoreValidationErrors: false });
+} catch (e) {
+  if (e instanceof ZodValidationError) {
+    console.error(e.errors.issues);
+  }
+}
+```
+
 ## License
 
-This tool is licensed under the [GNU General Public License (GPL)](https://www.gnu.org/licenses/gpl-3.0.en.html).
+This tool is licensed under the [GNU General Public License v3.0 or later](https://www.gnu.org/licenses/gpl-3.0.en.html) — see [LICENSE](./LICENSE).
