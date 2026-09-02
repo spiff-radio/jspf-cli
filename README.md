@@ -1,7 +1,7 @@
 # JSPF CLI — A command-line tool to convert and validate music playlists
 
 **JSPF CLI** is a robust command-line tool (CLI) for converting and validating playlist files.  
-It relies on the open **JSPF** format (JSON Scalable Playlist Format) as an internal model to ensure consistency and correctness.
+It relies on the open **JSPF** format (JSON Scalable Playlist Format) as an internal model to ensure consistency and correctness.  Validation is made using [Zod](https://zod.dev/).  
 
 ### Supported playlist formats
 `jspf` · `xspf` · `m3u8` · `m3u` · `pls`
