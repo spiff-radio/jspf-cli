@@ -44,7 +44,8 @@ function serializeTrack(input: JspfTrackI, index: number): string[] {
   }
 
   if (input?.duration !== undefined) {
-    lines.push(`Length${index}=${input.duration}`);
+    // JSPF's duration is in milliseconds; PLS's Length is in seconds.
+    lines.push(`Length${index}=${Math.round(input.duration / 1000)}`);
   }
 
   if (input?.creator) {

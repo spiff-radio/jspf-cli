@@ -67,7 +67,8 @@ export default function serializeM3U8(input: JspfPlaylistI): string {
 function serializeTrack(input: JspfTrackI): string {
   const lines: string[] = [];
 
-  const duration = input.duration ?? -1;
+  // JSPF's duration is in milliseconds; M3U8's EXTINF duration is in seconds.
+  const duration = input.duration !== undefined ? input.duration / 1000 : -1;
   
   // Build title for EXTINF tag (standard format: duration,title)
   const title = buildExtinfTitle(input.creator, input.title);

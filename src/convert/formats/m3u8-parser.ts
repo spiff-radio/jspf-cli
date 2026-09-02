@@ -52,8 +52,9 @@ function parseTrackTitle(title: string): { creator?: string; title?: string } {
 function parseTrack(segment: any): JspfTrackI {
   const trackData: JspfTrackI = {
     location: [segment.uri],
-    // Convert -1 (unknown duration) to undefined for JSPF format
-    duration: segment.duration !== undefined && segment.duration !== -1 ? segment.duration : undefined,
+    // M3U8's EXTINF duration is in seconds; JSPF's duration is in milliseconds.
+    // -1 means "unknown duration" in HLS and has no JSPF equivalent.
+    duration: segment.duration !== undefined && segment.duration !== -1 ? Math.round(segment.duration * 1000) : undefined,
     extension: {},
   };
 

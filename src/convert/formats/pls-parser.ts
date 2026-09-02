@@ -42,7 +42,10 @@ function parseTrack(input:Record<string, any>):JspfTrackI{
   }
 
   if (input.length){
-    output.duration = Number(input.length);
+    // PLS's Length is in seconds; JSPF's duration is in milliseconds.
+    // -1 means "unknown duration" in PLS and has no JSPF equivalent.
+    const length = Number(input.length);
+    output.duration = length !== -1 ? Math.round(length * 1000) : undefined;
   }
 
   return output;
