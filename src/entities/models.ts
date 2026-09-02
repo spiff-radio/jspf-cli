@@ -102,9 +102,13 @@ export class SinglePair extends JspfValidation {
   [key: string]: any;
 
   constructor(data?: any, schema?: z.ZodSchema) {
-    super(data, schema || z.record(z.string(), z.any()));
-    if (data) {
-      Object.assign(this, data);
+    // Re-wrapping an existing SinglePair instance (e.g. `new JspfMeta(existingMeta)`)
+    // must use its plain data, not the instance itself - otherwise internal
+    // bookkeeping fields (_data, _schema) get copied onto the new instance too.
+    const plainData = data instanceof SinglePair ? data.toJSON() : data;
+    super(plainData, schema || z.record(z.string(), z.any()));
+    if (plainData) {
+      Object.assign(this, plainData);
     }
   }
 
@@ -168,6 +172,23 @@ export class JspfExtension extends JspfValidation implements JspfExtensionI {
   }
 }
 
+// meta/link/attribution are all "arrays of single-key pair objects" per the
+// XSPF/JSPF spec. Accessors on JspfTrack/JspfPlaylist route every assignment
+// (not just constructor-time data) through this normalizer, so the field can
+// never end up in a shape toJSON() can't handle - e.g. a plain object instead
+// of an array, or an array of un-wrapped plain objects.
+function normalizePairArray<T extends SinglePair>(
+  value: any,
+  Ctor: new (data?: any) => T
+): T[] | undefined {
+  if (value === undefined || value === null) return undefined;
+  const arr = Array.isArray(value) ? value : [value];
+  const normalized = arr
+    .filter((item) => item !== undefined && item !== null)
+    .map((item) => (item instanceof Ctor ? item : new Ctor(item)));
+  return normalized.length ? normalized : undefined;
+}
+
 export class JspfTrack extends JspfValidation implements JspfTrackI {
   location?: string[];
   identifier?: string[];
@@ -179,13 +200,14 @@ export class JspfTrack extends JspfValidation implements JspfTrackI {
   album?: string;
   trackNum?: number;
   duration?: number;
-  link?: JspfLink[];
-  meta?: JspfMeta[];
   extension?: JspfExtension;
+
+  private _link?: JspfLink[];
+  private _meta?: JspfMeta[];
 
   constructor(data?: any) {
     super(data, JspfTrackSchema);
-    
+
     // Populate properties from data
     if (data) {
       this.location = data.location;
@@ -198,10 +220,26 @@ export class JspfTrack extends JspfValidation implements JspfTrackI {
       this.album = data.album;
       this.trackNum = data.trackNum;
       this.duration = data.duration;
-      this.link = Array.isArray(data.link) ? data.link.map((l: any) => new JspfLink(l)) : undefined;
-      this.meta = Array.isArray(data.meta) ? data.meta.map((m: any) => new JspfMeta(m)) : undefined;
+      this.link = data.link;
+      this.meta = data.meta;
       this.extension = data.extension ? new JspfExtension(data.extension) : undefined;
     }
+  }
+
+  get link(): JspfLink[] | undefined {
+    return this._link;
+  }
+
+  set link(value: any) {
+    this._link = normalizePairArray(value, JspfLink);
+  }
+
+  get meta(): JspfMeta[] | undefined {
+    return this._meta;
+  }
+
+  set meta(value: any) {
+    this._meta = normalizePairArray(value, JspfMeta);
   }
 
   public isValid(): boolean {
@@ -209,9 +247,17 @@ export class JspfTrack extends JspfValidation implements JspfTrackI {
   }
 
   public toJSON(): JspfTrackI {
-    const base = super.toJSON();
     return {
-      ...base,
+      location: this.location,
+      identifier: this.identifier,
+      title: this.title,
+      creator: this.creator,
+      annotation: this.annotation,
+      info: this.info,
+      image: this.image,
+      album: this.album,
+      trackNum: this.trackNum,
+      duration: this.duration,
       link: this.link?.map(l => l.toJSON()),
       meta: this.meta?.map(m => m.toJSON()),
       extension: this.extension?.toJSON(),
@@ -229,15 +275,16 @@ export class JspfPlaylist extends JspfValidation implements JspfPlaylistI {
   image?: string;
   date?: string;
   license?: string;
-  attribution?: JspfAttribution[];
-  link?: JspfLink[];
-  meta?: JspfMeta[];
   extension?: JspfExtension;
   track?: JspfTrack[];
 
+  private _attribution?: JspfAttribution[];
+  private _link?: JspfLink[];
+  private _meta?: JspfMeta[];
+
   constructor(data?: any) {
     super(data, JspfPlaylistSchema);
-    
+
     // Populate properties from data
     if (data) {
       this.title = data.title;
@@ -249,12 +296,36 @@ export class JspfPlaylist extends JspfValidation implements JspfPlaylistI {
       this.image = data.image;
       this.date = data.date;
       this.license = data.license;
-      this.attribution = Array.isArray(data.attribution) ? data.attribution.map((a: any) => new JspfAttribution(a)) : undefined;
-      this.link = Array.isArray(data.link) ? data.link.map((l: any) => new JspfLink(l)) : undefined;
-      this.meta = Array.isArray(data.meta) ? data.meta.map((m: any) => new JspfMeta(m)) : undefined;
+      this.attribution = data.attribution;
+      this.link = data.link;
+      this.meta = data.meta;
       this.extension = data.extension ? new JspfExtension(data.extension) : undefined;
       this.track = Array.isArray(data.track) ? data.track.map((t: any) => new JspfTrack(t)) : undefined;
     }
+  }
+
+  get attribution(): JspfAttribution[] | undefined {
+    return this._attribution;
+  }
+
+  set attribution(value: any) {
+    this._attribution = normalizePairArray(value, JspfAttribution);
+  }
+
+  get link(): JspfLink[] | undefined {
+    return this._link;
+  }
+
+  set link(value: any) {
+    this._link = normalizePairArray(value, JspfLink);
+  }
+
+  get meta(): JspfMeta[] | undefined {
+    return this._meta;
+  }
+
+  set meta(value: any) {
+    this._meta = normalizePairArray(value, JspfMeta);
   }
 
   public isValid(): boolean {
