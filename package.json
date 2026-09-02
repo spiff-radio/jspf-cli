@@ -30,7 +30,14 @@
     "url": "https://github.com/spiff-radio/jspf-cli/issues"
   },
   "homepage": "https://github.com/spiff-radio/jspf-cli#readme",
-  "license": "GPL",
+  "license": "GPL-3.0-or-later",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "build",
+    "CHANGELOG.md"
+  ],
   "main": "./build/cli/index.js",
   "types": "./build/cli/index.d.ts",
   "exports": {
