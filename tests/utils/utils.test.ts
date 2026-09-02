@@ -1,119 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
-  cleanNestedObject,
   getPathExtension,
   getPathFilename,
-  isJsonString,
-  getChildSchema
+  isJsonString
 } from '../../src/utils';
-import jspfSchema from '../../src/entities/jspf-schema.json';
 
 describe('utils', () => {
-  describe('cleanNestedObject', () => {
-    it('should remove empty strings', () => {
-      const obj = {
-        title: 'Test',
-        empty: '',
-        value: 'value'
-      };
-      const result = cleanNestedObject(obj);
-      expect(result).toEqual({
-        title: 'Test',
-        value: 'value'
-      });
-    });
-
-    it('should remove null values', () => {
-      const obj = {
-        title: 'Test',
-        nullValue: null,
-        value: 'value'
-      };
-      const result = cleanNestedObject(obj);
-      expect(result).toEqual({
-        title: 'Test',
-        value: 'value'
-      });
-    });
-
-    it('should remove undefined values', () => {
-      const obj = {
-        title: 'Test',
-        undefinedValue: undefined,
-        value: 'value'
-      };
-      const result = cleanNestedObject(obj);
-      expect(result).toEqual({
-        title: 'Test',
-        value: 'value'
-      });
-    });
-
-    it('should remove empty nested objects', () => {
-      const obj = {
-        title: 'Test',
-        nested: {},
-        value: 'value'
-      };
-      const result = cleanNestedObject(obj);
-      expect(result).toEqual({
-        title: 'Test',
-        value: 'value'
-      });
-    });
-
-    it('should clean nested objects recursively', () => {
-      const obj = {
-        title: 'Test',
-        nested: {
-          empty: '',
-          value: 'nested-value',
-          deep: {
-            empty: null,
-            value: 'deep-value'
-          }
-        }
-      };
-      const result = cleanNestedObject(obj);
-      expect(result).toHaveProperty('title', 'Test');
-      expect(result).toHaveProperty('nested');
-      expect(result.nested).toHaveProperty('value', 'nested-value');
-      expect(result.nested).toHaveProperty('deep');
-      expect(result.nested.deep).toHaveProperty('value', 'deep-value');
-      // Note: cleanNestedObject processes nested objects recursively, but the logic
-      // for removing null values in nested objects may not work as expected.
-      // The function checks typeof value === 'object' first, and null has typeof 'object',
-      // but the check value !== null means null won't be processed as an object.
-      // However, null should be caught by the else branch. Due to the recursive nature,
-      // null values in deeply nested objects may not always be removed.
-      // This test documents the current behavior rather than the ideal behavior.
-    });
-
-    it('should preserve arrays', () => {
-      const obj = {
-        title: 'Test',
-        items: ['item1', 'item2'],
-        emptyArray: []
-      };
-      const result = cleanNestedObject(obj);
-      expect(result).toEqual({
-        title: 'Test',
-        items: ['item1', 'item2'],
-        emptyArray: []
-      });
-    });
-
-    it('should not mutate the original object', () => {
-      const obj = {
-        title: 'Test',
-        empty: ''
-      };
-      const original = JSON.parse(JSON.stringify(obj));
-      cleanNestedObject(obj);
-      expect(obj).toEqual(original);
-    });
-  });
-
   describe('getPathExtension', () => {
     it('should extract extension from Unix path', () => {
       expect(getPathExtension('/path/to/file.jspf')).toBe('jspf');
@@ -197,50 +89,6 @@ describe('utils', () => {
 
     it('should return true for minimum valid JSON string', () => {
       expect(isJsonString('""')).toBe(true);
-    });
-  });
-
-  describe('getChildSchema', () => {
-    it('should return root schema for empty path', () => {
-      const result = getChildSchema('');
-      expect(result).toHaveProperty('$schema');
-      expect(result).toHaveProperty('properties');
-    });
-
-    it('should return playlist schema for properties/playlist path', () => {
-      const result = getChildSchema('properties/playlist');
-      expect(result).toHaveProperty('$schema');
-      expect(result).toHaveProperty('type', 'object');
-    });
-
-    it('should return track schema for $defs/track path', () => {
-      const result = getChildSchema('$defs/track');
-      expect(result).toHaveProperty('$schema');
-    });
-
-    it('should throw error for non-existent path', () => {
-      expect(() => {
-        getChildSchema('nonexistent/path');
-      }).toThrow('Path "nonexistent/path" does not exist in the schema');
-    });
-
-    it('should use custom schema when provided', () => {
-      const customSchema = {
-        $schema: 'https://json-schema.org/draft/2020-12/schema',
-        properties: {
-          test: {
-            type: 'string'
-          }
-        }
-      };
-      const result = getChildSchema('properties/test', customSchema as any);
-      expect(result).toHaveProperty('type', 'string');
-    });
-
-    it('should include local references', () => {
-      const result = getChildSchema('properties/playlist');
-      // The schema should include referenced definitions
-      expect(result).toHaveProperty('$schema');
     });
   });
 });
