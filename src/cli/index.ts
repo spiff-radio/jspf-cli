@@ -3,8 +3,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-// @ts-ignore - clear module doesn't have type definitions
-import clear from 'clear';
 import figlet from 'figlet';
 
 import { REPO_URL, XSPF_URL, JSPF_VERSION, ISSUES_URL } from '../constants';
@@ -70,7 +68,7 @@ async function cli(){
 
   const allowedFormats = getAvailableFormats();
 
-  clear();
+  console.clear();
 
   console.log(
     figlet.textSync('JSPF CLI', { horizontalLayout: 'full' })
