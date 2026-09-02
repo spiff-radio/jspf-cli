@@ -1,24 +1,13 @@
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = serializeXSPF;
-var xml_js_1 = require("xml-js");
-var constants_1 = require("../../constants");
-var models_1 = require("../../entities/models");
+const xml_js_1 = require("xml-js");
+const constants_1 = require("../../constants");
+const models_1 = require("../../entities/models");
 function serializeXSPF(playlistData) {
-    var jspf = new models_1.Jspf();
+    const jspf = new models_1.Jspf();
     jspf.playlist = new models_1.JspfPlaylist(playlistData);
-    var xspfJSON = {
+    let xspfJSON = {
         //add XML declaration
         _declaration: {
             _attributes: {
@@ -27,10 +16,13 @@ function serializeXSPF(playlistData) {
             }
         },
         //add playlist attributes
-        playlist: __assign(__assign({}, jspf.playlist.toDTO()), { _attributes: {
+        playlist: {
+            ...jspf.playlist.toDTO(),
+            _attributes: {
                 version: constants_1.XSPF_VERSION,
                 xmlns: constants_1.XSPF_XMLNS
-            } })
+            }
+        }
     };
     // Move tracks within a trackList node
     if (xspfJSON.playlist) {
@@ -42,38 +34,44 @@ function serializeXSPF(playlistData) {
     // Update some of the single nodes recursively
     updateNodes(xspfJSON.playlist);
     // Use json2xml to convert JspfJson to XML
-    var xml = (0, xml_js_1.json2xml)(JSON.stringify(xspfJSON), { compact: true, spaces: 4 });
+    const xml = (0, xml_js_1.json2xml)(JSON.stringify(xspfJSON), { compact: true, spaces: 4 });
     return xml;
 }
 function updateNodes(data) {
     if (Array.isArray(data)) {
-        for (var i = 0; i < data.length; i++) {
+        for (let i = 0; i < data.length; i++) {
             updateNodes(data[i]);
         }
     }
     else if (typeof data === 'object') {
-        var _loop_1 = function (key) {
-            //process the content of those nodes
-            if (['link', 'meta', 'extension', 'attribution'].includes(key)) {
+        for (let key in data) {
+            //link/meta: arrays of single-key {rel: value} pairs -> repeated sibling elements with attributes
+            if (['link', 'meta'].includes(key)) {
                 if (Array.isArray(data[key])) {
-                    data[key] = data[key].map(function (item) { return updateSingle(item, key); });
+                    data[key] = data[key].map((item) => { return updateSingle(item, key); });
                 }
                 else {
                     data[key] = updateSingle(data[key], key);
                 }
             }
+            //attribution: an array of single-key {location|identifier: value} pairs -> one <attribution>
+            //wrapper element whose children are the location/identifier tags themselves
+            else if (key === 'attribution' && Array.isArray(data[key])) {
+                data[key] = buildAttributionNode(data[key]);
+            }
+            //extension: a single {applicationUri: [rawNode]} map -> one or more sibling <extension> elements
+            else if (key === 'extension' && data[key] && !Array.isArray(data[key])) {
+                data[key] = buildExtensionNodes(data[key]);
+            }
             updateNodes(data[key]);
-        };
-        for (var key in data) {
-            _loop_1(key);
         }
     }
 }
 function updateSingle(data, type) {
     if (!data)
         return;
-    var prop_name = Object.keys(data)[0];
-    var prop_value = data[prop_name];
+    const prop_name = Object.keys(data)[0];
+    const prop_value = data[prop_name];
     switch (type) {
         case 'link':
             return {
@@ -91,13 +89,35 @@ function updateSingle(data, type) {
                 }
             };
             break;
-        case 'extension':
-            //TOUFIX
-            break;
-        case 'attribution':
-            //TOUFIX
-            break;
         default:
             return data;
     }
+}
+// Attribution is a single <attribution> element whose children are, in order,
+// the <location>/<identifier> tags themselves (not attributes on <attribution>).
+// Group by tag name since xml-js compact form needs an array for repeated siblings.
+function buildAttributionNode(items) {
+    const grouped = {};
+    items.forEach((item) => {
+        const tagName = Object.keys(item)[0];
+        if (!tagName)
+            return;
+        if (!grouped[tagName])
+            grouped[tagName] = [];
+        grouped[tagName].push({ _text: item[tagName] });
+    });
+    const node = {};
+    for (const [tagName, values] of Object.entries(grouped)) {
+        node[tagName] = values.length === 1 ? values[0] : values;
+    }
+    return node;
+}
+// Extension is one or more sibling <extension application="..."> elements, each
+// carrying back the raw child nodes captured on import (application attribute stripped).
+function buildExtensionNodes(data) {
+    const nodes = Object.entries(data).map(([application, value]) => ({
+        ...(Array.isArray(value) ? value[0] : value),
+        _attributes: { application }
+    }));
+    return nodes.length ? nodes : undefined;
 }

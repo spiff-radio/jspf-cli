@@ -1,15 +1,4 @@
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = parsePLS;
 /**
@@ -20,20 +9,20 @@ function unescapePLSValue(value) {
     return value.replace(/\\\\/g, '\\');
 }
 function stripPLSHeader(input) {
-    var lines = input.split('\n');
+    const lines = input.split('\n');
     if (lines[0].toLowerCase() === '[playlist]') {
         lines.splice(0, 1);
     }
     return lines.join('\n');
 }
 function getTrackIndexFromPropName(str) {
-    var matches = str.match(/\d+$/);
+    const matches = str.match(/\d+$/);
     if (!matches)
         return undefined;
     return parseInt(matches[0]);
 }
 function parseTrack(input) {
-    var output = {};
+    let output = {};
     if (input.title) {
         output.title = input.title;
     }
@@ -49,51 +38,55 @@ function parseTrack(input) {
     if (input.length) {
         // PLS's Length is in seconds; JSPF's duration is in milliseconds.
         // -1 means "unknown duration" in PLS and has no JSPF equivalent.
-        var length = Number(input.length);
+        const length = Number(input.length);
         output.duration = length !== -1 ? Math.round(length * 1000) : undefined;
     }
     return output;
 }
 function parsePLS(input) {
-    var _a, _b;
-    var output = {};
+    let output = {};
     // Remove header
-    var entries = input = stripPLSHeader(input);
+    const entries = input = stripPLSHeader(input);
     // Split entries into an array
-    var lines = entries.split('\n');
+    const lines = entries.split('\n');
     // Remove any empty lines and trim whitespace
-    var cleanedLines = lines.filter(function (line) { return line.trim() !== ''; }).map(function (line) { return line.trim(); });
+    const cleanedLines = lines.filter(line => line.trim() !== '').map(line => line.trim());
     // Create a new object for storing the key-value pairs
-    var propsList = {};
+    const propsList = {};
     // Loop through each line and extract the key-value pair
     // Handle values that may contain '=' by splitting only on the first '='
-    cleanedLines.forEach(function (line) {
-        var equalIndex = line.indexOf('=');
+    cleanedLines.forEach(line => {
+        const equalIndex = line.indexOf('=');
         if (equalIndex === -1) {
             // Skip lines without '='
             return;
         }
-        var key = line.substring(0, equalIndex).trim();
-        var value = line.substring(equalIndex + 1).trim();
+        const key = line.substring(0, equalIndex).trim();
+        const value = line.substring(equalIndex + 1).trim();
         // Unescape the value
         propsList[key] = unescapePLSValue(value);
     });
-    var tracksPropsObj = {};
+    let tracksPropsObj = {};
     //fill an array of tracks where properties have their key stripped of their suffix
-    for (var _i = 0, _c = Object.entries(propsList); _i < _c.length; _i++) {
-        var _d = _c[_i], key = _d[0], value = _d[1];
-        var trackIndex = getTrackIndexFromPropName(key);
+    for (let [key, value] of Object.entries(propsList)) {
+        const trackIndex = getTrackIndexFromPropName(key);
         if (trackIndex) {
-            var itemProps = {};
+            const itemProps = {};
             //strip number from key
-            var newKey = key.slice(0, -trackIndex.toString().length).toLowerCase();
+            const newKey = key.slice(0, -trackIndex.toString().length).toLowerCase();
             //add to tracks props
-            tracksPropsObj = __assign(__assign({}, tracksPropsObj), (_a = {}, _a[trackIndex] = __assign(__assign({}, tracksPropsObj[trackIndex]), (_b = {}, _b[newKey] = value, _b)), _a));
+            tracksPropsObj = {
+                ...tracksPropsObj,
+                [trackIndex]: {
+                    ...tracksPropsObj[trackIndex],
+                    [newKey]: value
+                }
+            };
             //remove from main props
             delete propsList[key];
         }
     }
     //fill tracks
-    output.track = Object.values(tracksPropsObj).map(function (el) { return parseTrack(el); });
+    output.track = Object.values(tracksPropsObj).map(el => parseTrack(el));
     return output;
 }

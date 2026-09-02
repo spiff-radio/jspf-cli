@@ -9,44 +9,41 @@ exports.default = serializePLS;
  */
 function escapePLSValue(value) {
     // Replace newlines with spaces (PLS doesn't support multi-line values)
-    var normalized = value.replace(/\n/g, ' ').replace(/\r/g, '');
+    const normalized = value.replace(/\n/g, ' ').replace(/\r/g, '');
     // Escape backslashes
     return normalized.replace(/\\/g, '\\\\');
 }
 function serializePLS(input) {
-    var _a;
-    var lines = [];
-    var tracks = (_a = input.track) !== null && _a !== void 0 ? _a : [];
-    var trackCount = tracks.length;
+    const lines = [];
+    const tracks = input.track ?? [];
+    const trackCount = tracks.length;
     lines.push('[playlist]');
-    lines.push("NumberOfEntries=".concat(trackCount));
-    var i = 1;
-    for (var _i = 0, tracks_1 = tracks; _i < tracks_1.length; _i++) {
-        var track = tracks_1[_i];
-        var trackLines = serializeTrack(track, i);
-        lines.push.apply(lines, trackLines);
+    lines.push(`NumberOfEntries=${trackCount}`);
+    let i = 1;
+    for (const track of tracks) {
+        const trackLines = serializeTrack(track, i);
+        lines.push(...trackLines);
         i++;
     }
     return lines.join('\n') + '\n';
 }
 function serializeTrack(input, index) {
-    var _a;
-    var lines = [];
-    if ((_a = input === null || input === void 0 ? void 0 : input.location) === null || _a === void 0 ? void 0 : _a[0]) {
-        lines.push("File".concat(index, "=").concat(escapePLSValue(input.location[0])));
+    const lines = [];
+    if (input?.location?.[0]) {
+        lines.push(`File${index}=${escapePLSValue(input.location[0])}`);
     }
-    if (input === null || input === void 0 ? void 0 : input.title) {
-        lines.push("Title".concat(index, "=").concat(escapePLSValue(input.title)));
+    if (input?.title) {
+        lines.push(`Title${index}=${escapePLSValue(input.title)}`);
     }
-    if ((input === null || input === void 0 ? void 0 : input.duration) !== undefined) {
+    if (input?.duration !== undefined) {
         // JSPF's duration is in milliseconds; PLS's Length is in seconds.
-        lines.push("Length".concat(index, "=").concat(Math.round(input.duration / 1000)));
+        lines.push(`Length${index}=${Math.round(input.duration / 1000)}`);
     }
-    if (input === null || input === void 0 ? void 0 : input.creator) {
-        lines.push("Artist".concat(index, "=").concat(escapePLSValue(input.creator)));
+    if (input?.creator) {
+        lines.push(`Artist${index}=${escapePLSValue(input.creator)}`);
     }
-    if (input === null || input === void 0 ? void 0 : input.album) {
-        lines.push("Album".concat(index, "=").concat(escapePLSValue(input.album)));
+    if (input?.album) {
+        lines.push(`Album${index}=${escapePLSValue(input.album)}`);
     }
     return lines;
 }

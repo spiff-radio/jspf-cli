@@ -1,11 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataConverter = void 0;
-var DataConverter = /** @class */ (function () {
-    function DataConverter() {
-    }
-    DataConverter.formats = [];
-    DataConverter.contentType = '';
-    return DataConverter;
-}());
+class DataConverter {
+}
 exports.DataConverter = DataConverter;

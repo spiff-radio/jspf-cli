@@ -11,99 +11,86 @@ exports.importPlaylistWithErrors = importPlaylistWithErrors;
 exports.exportPlaylist = exportPlaylist;
 exports.exportPlaylistWithErrors = exportPlaylistWithErrors;
 exports.exportPlaylistAsBlob = exportPlaylistAsBlob;
-var models_1 = require("../entities/models");
-var jspf_1 = __importDefault(require("./formats/jspf"));
-var m3u_1 = __importDefault(require("./formats/m3u"));
-var m3u8_1 = __importDefault(require("./formats/m3u8"));
-var pls_1 = __importDefault(require("./formats/pls"));
-var xspf_1 = __importDefault(require("./formats/xspf"));
-var converters = [jspf_1.default, m3u_1.default, m3u8_1.default, pls_1.default, xspf_1.default];
+const models_1 = require("../entities/models");
+const utils_1 = require("../utils");
+const jspf_1 = __importDefault(require("./formats/jspf"));
+const m3u_1 = __importDefault(require("./formats/m3u"));
+const m3u8_1 = __importDefault(require("./formats/m3u8"));
+const pls_1 = __importDefault(require("./formats/pls"));
+const xspf_1 = __importDefault(require("./formats/xspf"));
+// Typing this list against DataConverterStaticI is what enforces the `format`/`contentType`
+// contract: a converter missing either one fails to compile here instead of failing at runtime.
+const converters = [jspf_1.default, m3u_1.default, m3u8_1.default, pls_1.default, xspf_1.default];
 function getConvertersList() {
     if (!Array.isArray(converters))
         return [];
-    return converters.map(function (converter) { return ({
+    return converters.map(converter => ({
         format: converter.format,
         name: converter.name
-    }); });
+    }));
 }
 function getAvailableFormats() {
     if (!Array.isArray(converters))
         return [];
-    return converters.map(function (converter) { return converter.format; });
+    return converters.map(converter => converter.format);
 }
 // Get a converter by a type
 function getConverterByFormat(type) {
-    var converter = converters.find(function (converter) { return converter.format === type; });
+    const converter = converters.find(converter => converter.format === type);
     if (converter) {
         return converter;
     }
     else {
-        throw new Error("Converter with type '".concat(type, "' was not found."));
+        throw new Error(`Converter with type '${type}' was not found.`);
     }
 }
-function importPlaylist(data, format, options) {
-    if (format === void 0) { format = 'jspf'; }
-    if (options === void 0) { options = { ignoreValidationErrors: false, stripInvalid: true }; }
-    var converterClass = getConverterByFormat(format);
-    var converter = new converterClass();
-    var dto = converter.get(data);
-    var playlist = new models_1.JspfPlaylist(dto);
-    var validationErrors = playlist.getValidationErrors();
-    if (validationErrors) {
-        if (!options.ignoreValidationErrors) {
-            throw new models_1.ZodValidationError('Validation failed', validationErrors);
-        }
-    }
-    return playlist.toDTO();
+function importPlaylist(data, format = 'jspf', options = { ignoreValidationErrors: false, stripInvalid: true }) {
+    return importPlaylistWithErrors(data, format, options).data;
 }
-function importPlaylistWithErrors(data, format, options) {
-    if (format === void 0) { format = 'jspf'; }
-    if (options === void 0) { options = { ignoreValidationErrors: false, stripInvalid: true }; }
-    var converterClass = getConverterByFormat(format);
-    var converter = new converterClass();
-    var dto = converter.get(data);
-    var playlist = new models_1.JspfPlaylist(dto);
-    var validationErrors = playlist.getValidationErrors();
-    if (validationErrors && !options.ignoreValidationErrors) {
-        throw new models_1.ZodValidationError('Validation failed', validationErrors);
-    }
+function importPlaylistWithErrors(data, format = 'jspf', options = { ignoreValidationErrors: false, stripInvalid: true }) {
+    const converterClass = getConverterByFormat(format);
+    const converter = new converterClass();
+    const dto = converter.get(data);
+    const { playlist, validationErrors } = validateAndClean(new models_1.JspfPlaylist(dto), dto, options);
     return {
         data: playlist.toDTO(),
-        validationErrors: validationErrors || null
+        validationErrors
     };
 }
-function exportPlaylist(dto, format, options) {
-    if (format === void 0) { format = 'jspf'; }
-    if (options === void 0) { options = { ignoreValidationErrors: false, stripInvalid: true }; }
-    var playlist = new models_1.JspfPlaylist(dto);
-    var validationErrors = playlist.getValidationErrors();
-    if (validationErrors) {
-        if (!options.ignoreValidationErrors) {
-            throw new models_1.ZodValidationError('Validation failed', validationErrors);
-        }
-    }
-    var converterClass = getConverterByFormat(format);
-    var converter = new converterClass();
-    dto = playlist.toDTO();
-    var data = converter.set(dto);
-    return data;
+function exportPlaylist(dto, format = 'jspf', options = { ignoreValidationErrors: false, stripInvalid: true }) {
+    return exportPlaylistWithErrors(dto, format, options).data;
 }
-function exportPlaylistWithErrors(dto, format, options) {
-    if (format === void 0) { format = 'jspf'; }
-    if (options === void 0) { options = { ignoreValidationErrors: false, stripInvalid: true }; }
-    var playlist = new models_1.JspfPlaylist(dto);
-    var validationErrors = playlist.getValidationErrors();
-    if (validationErrors && !options.ignoreValidationErrors) {
-        throw new models_1.ZodValidationError('Validation failed', validationErrors);
-    }
-    var converterClass = getConverterByFormat(format);
-    var converter = new converterClass();
-    dto = playlist.toDTO();
-    var data = converter.set(dto);
+function exportPlaylistWithErrors(dto, format = 'jspf', options = { ignoreValidationErrors: false, stripInvalid: true }) {
+    const { playlist, validationErrors } = validateAndClean(new models_1.JspfPlaylist(dto), dto, options);
+    const converterClass = getConverterByFormat(format);
+    const converter = new converterClass();
+    const data = converter.set(playlist.toDTO());
     return {
         data: data,
-        validationErrors: validationErrors || null
+        validationErrors
     };
+}
+// Shared by import/export: if the playlist is invalid and `stripInvalid` is set, rebuild it
+// from a copy with the offending paths removed (see stripInvalidPaths) instead of the raw
+// data - the original error is still reported so the caller knows what was dropped.
+function validateAndClean(playlist, dto, options) {
+    const validationErrors = playlist.getValidationErrors();
+    if (!validationErrors) {
+        return { playlist, validationErrors: null };
+    }
+    if (options.stripInvalid) {
+        const strippedDto = (0, utils_1.stripInvalidPaths)(dto, validationErrors.issues);
+        const cleaned = new models_1.JspfPlaylist(strippedDto);
+        const remainingErrors = cleaned.getValidationErrors();
+        if (remainingErrors && !options.ignoreValidationErrors) {
+            throw new models_1.ZodValidationError('Validation failed', remainingErrors);
+        }
+        return { playlist: cleaned, validationErrors };
+    }
+    if (!options.ignoreValidationErrors) {
+        throw new models_1.ZodValidationError('Validation failed', validationErrors);
+    }
+    return { playlist, validationErrors };
 }
 /**
  * Export playlist as a Blob-like object (for browser environments).
@@ -115,11 +102,9 @@ function exportPlaylistWithErrors(dto, format, options) {
  * @param options - Conversion options
  * @returns Blob in browser environments, Buffer in Node.js environments without Blob support
  */
-function exportPlaylistAsBlob(dto, format, options) {
-    if (format === void 0) { format = 'jspf'; }
-    if (options === void 0) { options = { ignoreValidationErrors: false, stripInvalid: true }; }
-    var converterClass = getConverterByFormat(format);
-    var blobString = exportPlaylist(dto, format, options);
+function exportPlaylistAsBlob(dto, format = 'jspf', options = { ignoreValidationErrors: false, stripInvalid: true }) {
+    const converterClass = getConverterByFormat(format);
+    let blobString = exportPlaylist(dto, format, options);
     // Check if we're in a Node.js environment without Blob support
     if (typeof Blob === 'undefined') {
         // Node.js environment - return Buffer instead
@@ -127,7 +112,7 @@ function exportPlaylistAsBlob(dto, format, options) {
         return Buffer.from(blobString, 'utf8');
     }
     // Browser environment or Node.js 18+ - use native Blob
-    var blob = new Blob([blobString], {
+    let blob = new Blob([blobString], {
         type: converterClass.contentType
     });
     return blob;

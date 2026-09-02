@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JspfSchema = exports.JspfPlaylistSchema = exports.JspfTrackSchema = exports.JspfExtensionSchema = exports.JspfMetaSchema = exports.JspfLinkSchema = exports.JspfAttributionSchema = void 0;
-var zod_1 = require("zod");
+const zod_1 = require("zod");
 /**
  * JSPF (JSON Shareable Playlist Format) Schemas
  *
@@ -10,15 +10,15 @@ var zod_1 = require("zod");
  *
  */
 // URI validation helper
-var uriSchema = zod_1.z.string().url();
+const uriSchema = zod_1.z.string().url();
 // Attribution: single property object with URI value
-exports.JspfAttributionSchema = zod_1.z.record(zod_1.z.string(), uriSchema).refine(function (obj) { return Object.keys(obj).length <= 1; }, { message: "Attribution must have at most one property" });
+exports.JspfAttributionSchema = zod_1.z.record(zod_1.z.string(), uriSchema).refine((obj) => Object.keys(obj).length <= 1, { message: "Attribution must have at most one property" });
 // Link: single property object
 // According to XSPF spec: rel attribute MUST be a URI, content MUST be a URI
-exports.JspfLinkSchema = zod_1.z.record(uriSchema, uriSchema).refine(function (obj) { return Object.keys(obj).length <= 1; }, { message: "Link must have at most one property" });
+exports.JspfLinkSchema = zod_1.z.record(uriSchema, uriSchema).refine((obj) => Object.keys(obj).length <= 1, { message: "Link must have at most one property" });
 // Meta: single property object
 // According to XSPF spec: rel attribute MUST be a URI, content is plain text
-exports.JspfMetaSchema = zod_1.z.record(uriSchema, zod_1.z.string()).refine(function (obj) { return Object.keys(obj).length <= 1; }, { message: "Meta must have at most one property" });
+exports.JspfMetaSchema = zod_1.z.record(uriSchema, zod_1.z.string()).refine((obj) => Object.keys(obj).length <= 1, { message: "Meta must have at most one property" });
 // Extension: object with URI keys and array values
 // According to XSPF spec: application attribute MUST be a URI
 exports.JspfExtensionSchema = zod_1.z.record(uriSchema, zod_1.z.array(zod_1.z.any()));

@@ -1,3 +1,9 @@
+## [2.0.6]
+Claude audit and fixes:
+- added a license
+- cleaned and improved tests
+- duration bug fixed
+- removed dead deps
 ## [2.0.5]
 - Fix SinglePair re-wrapping and normalize meta/link arrays; update deps
 ## [2.0.4]

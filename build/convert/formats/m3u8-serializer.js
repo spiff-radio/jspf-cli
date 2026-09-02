@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = serializeM3U8;
-var jsesc_1 = __importDefault(require("jsesc"));
+const jsesc_1 = __importDefault(require("jsesc"));
 /**
  * Escape a value for use in M3U8 format.
  * Uses jsesc for proper JavaScript string escaping (quotes, backslashes, etc.)
@@ -14,8 +14,8 @@ function escapeM3U8Value(value) {
     // If value contains commas, quotes, backslashes, or newlines, quote it
     if (value.includes(',') || value.includes('"') || value.includes('\\') || value.includes('\n')) {
         // Use jsesc for proper escaping, then wrap in quotes
-        var escaped = (0, jsesc_1.default)(value, { quotes: 'double', wrap: false });
-        return "\"".concat(escaped, "\"");
+        const escaped = (0, jsesc_1.default)(value, { quotes: 'double', wrap: false });
+        return `"${escaped}"`;
     }
     return value;
 }
@@ -26,7 +26,7 @@ function escapeM3U8Value(value) {
  */
 function buildExtinfTitle(creator, title) {
     if (creator && title) {
-        var combined = "".concat(creator, " - ").concat(title);
+        const combined = `${creator} - ${title}`;
         return escapeM3U8Value(combined);
     }
     if (title) {
@@ -38,50 +38,47 @@ function buildExtinfTitle(creator, title) {
     return '';
 }
 function serializeM3U8(input) {
-    var lines = [];
+    const lines = [];
     // M3U8 header
     lines.push('#EXTM3U');
     // Playlist-level metadata (using comments, not EXTINF which is track-specific)
     // Note: M3U8 doesn't have standard playlist-level metadata tags
     // VLC-specific tags are kept for compatibility but are non-standard
     if (input.image) {
-        lines.push("#EXTVLCOPT:artworkURL=".concat(escapeM3U8Value(input.image)));
+        lines.push(`#EXTVLCOPT:artworkURL=${escapeM3U8Value(input.image)}`);
     }
     if (input.date) {
-        lines.push("#EXTVLCOPT:meta-date=".concat(escapeM3U8Value(input.date)));
+        lines.push(`#EXTVLCOPT:meta-date=${escapeM3U8Value(input.date)}`);
     }
     // Add tracks
     if (input.track && input.track.length > 0) {
-        for (var _i = 0, _a = input.track; _i < _a.length; _i++) {
-            var trackInput = _a[_i];
-            var track = serializeTrack(trackInput);
+        for (const trackInput of input.track) {
+            const track = serializeTrack(trackInput);
             lines.push(track);
         }
     }
     return lines.join('\n');
 }
 function serializeTrack(input) {
-    var lines = [];
+    const lines = [];
     // JSPF's duration is in milliseconds; M3U8's EXTINF duration is in seconds.
-    var duration = input.duration !== undefined ? input.duration / 1000 : -1;
+    const duration = input.duration !== undefined ? input.duration / 1000 : -1;
     // Build title for EXTINF tag (standard format: duration,title)
-    var title = buildExtinfTitle(input.creator, input.title);
+    const title = buildExtinfTitle(input.creator, input.title);
     // Standard EXTINF format: #EXTINF:duration,title
-    lines.push("#EXTINF:".concat(duration, ",").concat(title));
+    lines.push(`#EXTINF:${duration},${title}`);
     // Add track locations (URIs)
     if (input.location && input.location.length > 0) {
-        for (var _i = 0, _a = input.location; _i < _a.length; _i++) {
-            var location = _a[_i];
+        for (const location of input.location) {
             lines.push(location);
         }
     }
     // Add metadata (VLC-specific, non-standard but commonly used)
     if (input.meta) {
-        for (var _b = 0, _c = input.meta; _b < _c.length; _b++) {
-            var meta = _c[_b];
-            for (var key in meta) {
-                var value = String(meta[key]);
-                lines.push("#EXTVLCOPT:meta-".concat(key, "=").concat(escapeM3U8Value(value)));
+        for (const meta of input.meta) {
+            for (const key in meta) {
+                const value = String(meta[key]);
+                lines.push(`#EXTVLCOPT:meta-${key}=${escapeM3U8Value(value)}`);
             }
         }
     }

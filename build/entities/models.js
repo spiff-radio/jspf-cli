@@ -1,63 +1,37 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Jspf = exports.JspfPlaylist = exports.JspfTrack = exports.JspfExtension = exports.JspfLink = exports.JspfMeta = exports.JspfAttribution = exports.SinglePair = exports.JspfValidation = exports.JspfBase = exports.ZodValidationError = void 0;
-var zod_1 = require("zod");
-var schemas_1 = require("./schemas");
-var clean_deep_1 = __importDefault(require("clean-deep"));
+const zod_1 = require("zod");
+const schemas_1 = require("./schemas");
+const clean_deep_1 = __importDefault(require("clean-deep"));
 // Custom error class for Zod validation errors
-var ZodValidationError = /** @class */ (function (_super) {
-    __extends(ZodValidationError, _super);
-    function ZodValidationError(message, errors) {
-        var _this = _super.call(this, message) || this;
-        Object.setPrototypeOf(_this, ZodValidationError.prototype);
-        _this.errors = errors;
-        _this.name = 'ZodValidationError';
-        return _this;
+class ZodValidationError extends Error {
+    errors;
+    name;
+    constructor(message, errors) {
+        super(message);
+        Object.setPrototypeOf(this, ZodValidationError.prototype);
+        this.errors = errors;
+        this.name = 'ZodValidationError';
     }
-    return ZodValidationError;
-}(Error));
+}
 exports.ZodValidationError = ZodValidationError;
 // Base class with common functionality
-var JspfBase = /** @class */ (function () {
-    function JspfBase(data) {
-        this._data = data ? __assign({}, data) : {};
+class JspfBase {
+    _data;
+    constructor(data) {
+        this._data = data ? { ...data } : {};
     }
     // Export to JSON
-    JspfBase.prototype.toJSON = function () {
-        return __assign({}, this._data);
-    };
+    toJSON() {
+        return { ...this._data };
+    }
     // Export a DTO (data transfer object) - strip all empty and undefined values
-    JspfBase.prototype.toDTO = function () {
-        var obj = this.toJSON();
+    toDTO() {
+        const obj = this.toJSON();
         return (0, clean_deep_1.default)(obj, {
             emptyArrays: true,
             emptyObjects: true,
@@ -65,124 +39,108 @@ var JspfBase = /** @class */ (function () {
             nullValues: true,
             undefinedValues: true
         });
-    };
+    }
     // Export to string
-    JspfBase.prototype.toString = function () {
+    toString() {
         return JSON.stringify(this.toJSON(), null, 4);
-    };
-    return JspfBase;
-}());
+    }
+}
 exports.JspfBase = JspfBase;
 // Validation base class
-var JspfValidation = /** @class */ (function (_super) {
-    __extends(JspfValidation, _super);
-    function JspfValidation(data, schema) {
-        var _this = _super.call(this, data) || this;
+class JspfValidation extends JspfBase {
+    _schema;
+    constructor(data, schema) {
+        super(data);
         if (!schema) {
             throw new Error('Schema is required for JspfValidation');
         }
-        _this._schema = schema;
-        return _this;
+        this._schema = schema;
     }
     // Validate against Zod schema
-    JspfValidation.prototype.isValid = function () {
-        var result = this._schema.safeParse(this._data);
+    isValid() {
+        const result = this._schema.safeParse(this._data);
         if (!result.success) {
             throw new ZodValidationError('Validation failed', result.error);
         }
         return true;
-    };
+    }
     // Get validation errors without throwing
-    JspfValidation.prototype.getValidationErrors = function () {
-        var result = this._schema.safeParse(this._data);
+    getValidationErrors() {
+        const result = this._schema.safeParse(this._data);
         if (!result.success) {
             return result.error;
         }
         return null;
-    };
+    }
     // Parse and validate data, returning the validated data
-    JspfValidation.prototype.parse = function () {
+    parse() {
         return this._schema.parse(this._data);
-    };
+    }
     // Safe parse - returns success/error without throwing
-    JspfValidation.prototype.safeParse = function () {
+    safeParse() {
         return this._schema.safeParse(this._data);
-    };
-    return JspfValidation;
-}(JspfBase));
+    }
+}
 exports.JspfValidation = JspfValidation;
 // Single pair classes (for attribution, link, meta)
 // These need index signatures to match the interfaces
-var SinglePair = /** @class */ (function (_super) {
-    __extends(SinglePair, _super);
-    function SinglePair(data, schema) {
-        var _this = this;
+class SinglePair extends JspfValidation {
+    constructor(data, schema) {
         // Re-wrapping an existing SinglePair instance (e.g. `new JspfMeta(existingMeta)`)
         // must use its plain data, not the instance itself - otherwise internal
         // bookkeeping fields (_data, _schema) get copied onto the new instance too.
-        var plainData = data instanceof SinglePair ? data.toJSON() : data;
-        _this = _super.call(this, plainData, schema || zod_1.z.record(zod_1.z.string(), zod_1.z.any())) || this;
+        const plainData = data instanceof SinglePair ? data.toJSON() : data;
+        super(plainData, schema || zod_1.z.record(zod_1.z.string(), zod_1.z.any()));
         if (plainData) {
-            Object.assign(_this, plainData);
+            Object.assign(this, plainData);
         }
-        return _this;
     }
-    SinglePair.prototype.toJSON = function () {
-        return _super.prototype.toJSON.call(this);
-    };
-    SinglePair.prototype.toString = function () {
+    toJSON() {
+        return super.toJSON();
+    }
+    toString() {
         return JSON.stringify(this.toJSON());
-    };
-    return SinglePair;
-}(JspfValidation));
+    }
+}
 exports.SinglePair = SinglePair;
-var JspfAttribution = /** @class */ (function (_super) {
-    __extends(JspfAttribution, _super);
-    function JspfAttribution(data) {
-        return _super.call(this, data, schemas_1.JspfAttributionSchema) || this;
+class JspfAttribution extends SinglePair {
+    constructor(data) {
+        super(data, schemas_1.JspfAttributionSchema);
     }
-    JspfAttribution.prototype.isValid = function () {
-        return _super.prototype.isValid.call(this);
-    };
-    return JspfAttribution;
-}(SinglePair));
+    isValid() {
+        return super.isValid();
+    }
+}
 exports.JspfAttribution = JspfAttribution;
-var JspfMeta = /** @class */ (function (_super) {
-    __extends(JspfMeta, _super);
-    function JspfMeta(data) {
-        return _super.call(this, data, schemas_1.JspfMetaSchema) || this;
+class JspfMeta extends SinglePair {
+    constructor(data) {
+        super(data, schemas_1.JspfMetaSchema);
     }
-    JspfMeta.prototype.isValid = function () {
-        return _super.prototype.isValid.call(this);
-    };
-    return JspfMeta;
-}(SinglePair));
+    isValid() {
+        return super.isValid();
+    }
+}
 exports.JspfMeta = JspfMeta;
-var JspfLink = /** @class */ (function (_super) {
-    __extends(JspfLink, _super);
-    function JspfLink(data) {
-        return _super.call(this, data, schemas_1.JspfLinkSchema) || this;
+class JspfLink extends SinglePair {
+    constructor(data) {
+        super(data, schemas_1.JspfLinkSchema);
     }
-    JspfLink.prototype.isValid = function () {
-        return _super.prototype.isValid.call(this);
-    };
-    return JspfLink;
-}(SinglePair));
+    isValid() {
+        return super.isValid();
+    }
+}
 exports.JspfLink = JspfLink;
-var JspfExtension = /** @class */ (function (_super) {
-    __extends(JspfExtension, _super);
-    function JspfExtension(data) {
-        var _this = _super.call(this, data, schemas_1.JspfExtensionSchema) || this;
+class JspfExtension extends JspfValidation {
+    constructor(data) {
+        super(data, schemas_1.JspfExtensionSchema);
         if (data) {
-            Object.assign(_this, data);
+            Object.assign(this, data);
         }
-        return _this;
     }
-    JspfExtension.prototype.isValid = function () {
-        return _super.prototype.isValid.call(this);
-    };
-    return JspfExtension;
-}(JspfValidation));
+    isValid() {
+        return super.isValid();
+    }
+}
 exports.JspfExtension = JspfExtension;
 // meta/link/attribution are all "arrays of single-key pair objects" per the
 // XSPF/JSPF spec. Accessors on JspfTrack/JspfPlaylist route every assignment
@@ -192,59 +150,61 @@ exports.JspfExtension = JspfExtension;
 function normalizePairArray(value, Ctor) {
     if (value === undefined || value === null)
         return undefined;
-    var arr = Array.isArray(value) ? value : [value];
-    var normalized = arr
-        .filter(function (item) { return item !== undefined && item !== null; })
-        .map(function (item) { return (item instanceof Ctor ? item : new Ctor(item)); });
+    const arr = Array.isArray(value) ? value : [value];
+    const normalized = arr
+        .filter((item) => item !== undefined && item !== null)
+        .map((item) => (item instanceof Ctor ? item : new Ctor(item)));
     return normalized.length ? normalized : undefined;
 }
-var JspfTrack = /** @class */ (function (_super) {
-    __extends(JspfTrack, _super);
-    function JspfTrack(data) {
-        var _this = _super.call(this, data, schemas_1.JspfTrackSchema) || this;
+class JspfTrack extends JspfValidation {
+    location;
+    identifier;
+    title;
+    creator;
+    annotation;
+    info;
+    image;
+    album;
+    trackNum;
+    duration;
+    extension;
+    _link;
+    _meta;
+    constructor(data) {
+        super(data, schemas_1.JspfTrackSchema);
         // Populate properties from data
         if (data) {
-            _this.location = data.location;
-            _this.identifier = data.identifier;
-            _this.title = data.title;
-            _this.creator = data.creator;
-            _this.annotation = data.annotation;
-            _this.info = data.info;
-            _this.image = data.image;
-            _this.album = data.album;
-            _this.trackNum = data.trackNum;
-            _this.duration = data.duration;
-            _this.link = data.link;
-            _this.meta = data.meta;
-            _this.extension = data.extension ? new JspfExtension(data.extension) : undefined;
+            this.location = data.location;
+            this.identifier = data.identifier;
+            this.title = data.title;
+            this.creator = data.creator;
+            this.annotation = data.annotation;
+            this.info = data.info;
+            this.image = data.image;
+            this.album = data.album;
+            this.trackNum = data.trackNum;
+            this.duration = data.duration;
+            this.link = data.link;
+            this.meta = data.meta;
+            this.extension = data.extension ? new JspfExtension(data.extension) : undefined;
         }
-        return _this;
     }
-    Object.defineProperty(JspfTrack.prototype, "link", {
-        get: function () {
-            return this._link;
-        },
-        set: function (value) {
-            this._link = normalizePairArray(value, JspfLink);
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JspfTrack.prototype, "meta", {
-        get: function () {
-            return this._meta;
-        },
-        set: function (value) {
-            this._meta = normalizePairArray(value, JspfMeta);
-        },
-        enumerable: false,
-        configurable: true
-    });
-    JspfTrack.prototype.isValid = function () {
-        return _super.prototype.isValid.call(this);
-    };
-    JspfTrack.prototype.toJSON = function () {
-        var _a, _b, _c;
+    get link() {
+        return this._link;
+    }
+    set link(value) {
+        this._link = normalizePairArray(value, JspfLink);
+    }
+    get meta() {
+        return this._meta;
+    }
+    set meta(value) {
+        this._meta = normalizePairArray(value, JspfMeta);
+    }
+    isValid() {
+        return super.isValid();
+    }
+    toJSON() {
         return {
             location: this.location,
             identifier: this.identifier,
@@ -256,98 +216,100 @@ var JspfTrack = /** @class */ (function (_super) {
             album: this.album,
             trackNum: this.trackNum,
             duration: this.duration,
-            link: (_a = this.link) === null || _a === void 0 ? void 0 : _a.map(function (l) { return l.toJSON(); }),
-            meta: (_b = this.meta) === null || _b === void 0 ? void 0 : _b.map(function (m) { return m.toJSON(); }),
-            extension: (_c = this.extension) === null || _c === void 0 ? void 0 : _c.toJSON(),
+            link: this.link?.map(l => l.toJSON()),
+            meta: this.meta?.map(m => m.toJSON()),
+            extension: this.extension?.toJSON(),
         };
-    };
-    return JspfTrack;
-}(JspfValidation));
+    }
+}
 exports.JspfTrack = JspfTrack;
-var JspfPlaylist = /** @class */ (function (_super) {
-    __extends(JspfPlaylist, _super);
-    function JspfPlaylist(data) {
-        var _this = _super.call(this, data, schemas_1.JspfPlaylistSchema) || this;
+class JspfPlaylist extends JspfValidation {
+    title;
+    creator;
+    annotation;
+    info;
+    location;
+    identifier;
+    image;
+    date;
+    license;
+    extension;
+    track;
+    _attribution;
+    _link;
+    _meta;
+    constructor(data) {
+        super(data, schemas_1.JspfPlaylistSchema);
         // Populate properties from data
         if (data) {
-            _this.title = data.title;
-            _this.creator = data.creator;
-            _this.annotation = data.annotation;
-            _this.info = data.info;
-            _this.location = data.location;
-            _this.identifier = data.identifier;
-            _this.image = data.image;
-            _this.date = data.date;
-            _this.license = data.license;
-            _this.attribution = data.attribution;
-            _this.link = data.link;
-            _this.meta = data.meta;
-            _this.extension = data.extension ? new JspfExtension(data.extension) : undefined;
-            _this.track = Array.isArray(data.track) ? data.track.map(function (t) { return new JspfTrack(t); }) : undefined;
+            this.title = data.title;
+            this.creator = data.creator;
+            this.annotation = data.annotation;
+            this.info = data.info;
+            this.location = data.location;
+            this.identifier = data.identifier;
+            this.image = data.image;
+            this.date = data.date;
+            this.license = data.license;
+            this.attribution = data.attribution;
+            this.link = data.link;
+            this.meta = data.meta;
+            this.extension = data.extension ? new JspfExtension(data.extension) : undefined;
+            this.track = Array.isArray(data.track) ? data.track.map((t) => new JspfTrack(t)) : undefined;
         }
-        return _this;
     }
-    Object.defineProperty(JspfPlaylist.prototype, "attribution", {
-        get: function () {
-            return this._attribution;
-        },
-        set: function (value) {
-            this._attribution = normalizePairArray(value, JspfAttribution);
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JspfPlaylist.prototype, "link", {
-        get: function () {
-            return this._link;
-        },
-        set: function (value) {
-            this._link = normalizePairArray(value, JspfLink);
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(JspfPlaylist.prototype, "meta", {
-        get: function () {
-            return this._meta;
-        },
-        set: function (value) {
-            this._meta = normalizePairArray(value, JspfMeta);
-        },
-        enumerable: false,
-        configurable: true
-    });
-    JspfPlaylist.prototype.isValid = function () {
-        return _super.prototype.isValid.call(this);
-    };
-    JspfPlaylist.prototype.toJSON = function () {
-        var _a, _b, _c, _d, _e;
-        var base = _super.prototype.toJSON.call(this);
-        return __assign(__assign({}, base), { attribution: (_a = this.attribution) === null || _a === void 0 ? void 0 : _a.map(function (a) { return a.toJSON(); }), link: (_b = this.link) === null || _b === void 0 ? void 0 : _b.map(function (l) { return l.toJSON(); }), meta: (_c = this.meta) === null || _c === void 0 ? void 0 : _c.map(function (m) { return m.toJSON(); }), extension: (_d = this.extension) === null || _d === void 0 ? void 0 : _d.toJSON(), track: (_e = this.track) === null || _e === void 0 ? void 0 : _e.map(function (t) { return t.toJSON(); }) });
-    };
-    return JspfPlaylist;
-}(JspfValidation));
+    get attribution() {
+        return this._attribution;
+    }
+    set attribution(value) {
+        this._attribution = normalizePairArray(value, JspfAttribution);
+    }
+    get link() {
+        return this._link;
+    }
+    set link(value) {
+        this._link = normalizePairArray(value, JspfLink);
+    }
+    get meta() {
+        return this._meta;
+    }
+    set meta(value) {
+        this._meta = normalizePairArray(value, JspfMeta);
+    }
+    isValid() {
+        return super.isValid();
+    }
+    toJSON() {
+        const base = super.toJSON();
+        return {
+            ...base,
+            attribution: this.attribution?.map(a => a.toJSON()),
+            link: this.link?.map(l => l.toJSON()),
+            meta: this.meta?.map(m => m.toJSON()),
+            extension: this.extension?.toJSON(),
+            track: this.track?.map(t => t.toJSON()),
+        };
+    }
+}
 exports.JspfPlaylist = JspfPlaylist;
-var Jspf = /** @class */ (function (_super) {
-    __extends(Jspf, _super);
-    function Jspf(data) {
-        var _this = _super.call(this, data, schemas_1.JspfSchema) || this;
-        if (data === null || data === void 0 ? void 0 : data.playlist) {
-            _this.playlist = new JspfPlaylist(data.playlist);
+class Jspf extends JspfValidation {
+    playlist;
+    constructor(data) {
+        super(data, schemas_1.JspfSchema);
+        if (data?.playlist) {
+            this.playlist = new JspfPlaylist(data.playlist);
         }
         else {
-            _this.playlist = new JspfPlaylist();
+            this.playlist = new JspfPlaylist();
         }
-        return _this;
     }
-    Jspf.prototype.isValid = function () {
-        return _super.prototype.isValid.call(this);
-    };
-    Jspf.prototype.toJSON = function () {
+    isValid() {
+        return super.isValid();
+    }
+    toJSON() {
         return {
             playlist: this.playlist.toJSON(),
         };
-    };
-    return Jspf;
-}(JspfValidation));
+    }
+}
 exports.Jspf = Jspf;
