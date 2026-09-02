@@ -57,10 +57,14 @@ export declare class JspfTrack extends JspfValidation implements JspfTrackI {
     album?: string;
     trackNum?: number;
     duration?: number;
-    link?: JspfLink[];
-    meta?: JspfMeta[];
     extension?: JspfExtension;
+    private _link?;
+    private _meta?;
     constructor(data?: any);
+    get link(): JspfLink[] | undefined;
+    set link(value: any);
+    get meta(): JspfMeta[] | undefined;
+    set meta(value: any);
     isValid(): boolean;
     toJSON(): JspfTrackI;
 }
@@ -74,12 +78,18 @@ export declare class JspfPlaylist extends JspfValidation implements JspfPlaylist
     image?: string;
     date?: string;
     license?: string;
-    attribution?: JspfAttribution[];
-    link?: JspfLink[];
-    meta?: JspfMeta[];
     extension?: JspfExtension;
     track?: JspfTrack[];
+    private _attribution?;
+    private _link?;
+    private _meta?;
     constructor(data?: any);
+    get attribution(): JspfAttribution[] | undefined;
+    set attribution(value: any);
+    get link(): JspfLink[] | undefined;
+    set link(value: any);
+    get meta(): JspfMeta[] | undefined;
+    set meta(value: any);
     isValid(): boolean;
     toJSON(): JspfPlaylistI;
 }

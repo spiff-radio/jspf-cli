@@ -116,9 +116,14 @@ exports.JspfValidation = JspfValidation;
 var SinglePair = /** @class */ (function (_super) {
     __extends(SinglePair, _super);
     function SinglePair(data, schema) {
-        var _this = _super.call(this, data, schema || zod_1.z.record(zod_1.z.string(), zod_1.z.any())) || this;
-        if (data) {
-            Object.assign(_this, data);
+        var _this = this;
+        // Re-wrapping an existing SinglePair instance (e.g. `new JspfMeta(existingMeta)`)
+        // must use its plain data, not the instance itself - otherwise internal
+        // bookkeeping fields (_data, _schema) get copied onto the new instance too.
+        var plainData = data instanceof SinglePair ? data.toJSON() : data;
+        _this = _super.call(this, plainData, schema || zod_1.z.record(zod_1.z.string(), zod_1.z.any())) || this;
+        if (plainData) {
+            Object.assign(_this, plainData);
         }
         return _this;
     }
@@ -179,6 +184,20 @@ var JspfExtension = /** @class */ (function (_super) {
     return JspfExtension;
 }(JspfValidation));
 exports.JspfExtension = JspfExtension;
+// meta/link/attribution are all "arrays of single-key pair objects" per the
+// XSPF/JSPF spec. Accessors on JspfTrack/JspfPlaylist route every assignment
+// (not just constructor-time data) through this normalizer, so the field can
+// never end up in a shape toJSON() can't handle - e.g. a plain object instead
+// of an array, or an array of un-wrapped plain objects.
+function normalizePairArray(value, Ctor) {
+    if (value === undefined || value === null)
+        return undefined;
+    var arr = Array.isArray(value) ? value : [value];
+    var normalized = arr
+        .filter(function (item) { return item !== undefined && item !== null; })
+        .map(function (item) { return (item instanceof Ctor ? item : new Ctor(item)); });
+    return normalized.length ? normalized : undefined;
+}
 var JspfTrack = /** @class */ (function (_super) {
     __extends(JspfTrack, _super);
     function JspfTrack(data) {
@@ -195,19 +214,52 @@ var JspfTrack = /** @class */ (function (_super) {
             _this.album = data.album;
             _this.trackNum = data.trackNum;
             _this.duration = data.duration;
-            _this.link = Array.isArray(data.link) ? data.link.map(function (l) { return new JspfLink(l); }) : undefined;
-            _this.meta = Array.isArray(data.meta) ? data.meta.map(function (m) { return new JspfMeta(m); }) : undefined;
+            _this.link = data.link;
+            _this.meta = data.meta;
             _this.extension = data.extension ? new JspfExtension(data.extension) : undefined;
         }
         return _this;
     }
+    Object.defineProperty(JspfTrack.prototype, "link", {
+        get: function () {
+            return this._link;
+        },
+        set: function (value) {
+            this._link = normalizePairArray(value, JspfLink);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(JspfTrack.prototype, "meta", {
+        get: function () {
+            return this._meta;
+        },
+        set: function (value) {
+            this._meta = normalizePairArray(value, JspfMeta);
+        },
+        enumerable: false,
+        configurable: true
+    });
     JspfTrack.prototype.isValid = function () {
         return _super.prototype.isValid.call(this);
     };
     JspfTrack.prototype.toJSON = function () {
         var _a, _b, _c;
-        var base = _super.prototype.toJSON.call(this);
-        return __assign(__assign({}, base), { link: (_a = this.link) === null || _a === void 0 ? void 0 : _a.map(function (l) { return l.toJSON(); }), meta: (_b = this.meta) === null || _b === void 0 ? void 0 : _b.map(function (m) { return m.toJSON(); }), extension: (_c = this.extension) === null || _c === void 0 ? void 0 : _c.toJSON() });
+        return {
+            location: this.location,
+            identifier: this.identifier,
+            title: this.title,
+            creator: this.creator,
+            annotation: this.annotation,
+            info: this.info,
+            image: this.image,
+            album: this.album,
+            trackNum: this.trackNum,
+            duration: this.duration,
+            link: (_a = this.link) === null || _a === void 0 ? void 0 : _a.map(function (l) { return l.toJSON(); }),
+            meta: (_b = this.meta) === null || _b === void 0 ? void 0 : _b.map(function (m) { return m.toJSON(); }),
+            extension: (_c = this.extension) === null || _c === void 0 ? void 0 : _c.toJSON(),
+        };
     };
     return JspfTrack;
 }(JspfValidation));
@@ -227,14 +279,44 @@ var JspfPlaylist = /** @class */ (function (_super) {
             _this.image = data.image;
             _this.date = data.date;
             _this.license = data.license;
-            _this.attribution = Array.isArray(data.attribution) ? data.attribution.map(function (a) { return new JspfAttribution(a); }) : undefined;
-            _this.link = Array.isArray(data.link) ? data.link.map(function (l) { return new JspfLink(l); }) : undefined;
-            _this.meta = Array.isArray(data.meta) ? data.meta.map(function (m) { return new JspfMeta(m); }) : undefined;
+            _this.attribution = data.attribution;
+            _this.link = data.link;
+            _this.meta = data.meta;
             _this.extension = data.extension ? new JspfExtension(data.extension) : undefined;
             _this.track = Array.isArray(data.track) ? data.track.map(function (t) { return new JspfTrack(t); }) : undefined;
         }
         return _this;
     }
+    Object.defineProperty(JspfPlaylist.prototype, "attribution", {
+        get: function () {
+            return this._attribution;
+        },
+        set: function (value) {
+            this._attribution = normalizePairArray(value, JspfAttribution);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(JspfPlaylist.prototype, "link", {
+        get: function () {
+            return this._link;
+        },
+        set: function (value) {
+            this._link = normalizePairArray(value, JspfLink);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(JspfPlaylist.prototype, "meta", {
+        get: function () {
+            return this._meta;
+        },
+        set: function (value) {
+            this._meta = normalizePairArray(value, JspfMeta);
+        },
+        enumerable: false,
+        configurable: true
+    });
     JspfPlaylist.prototype.isValid = function () {
         return _super.prototype.isValid.call(this);
     };
