@@ -316,6 +316,10 @@ describe('convert/index', () => {
       const reimported = importPlaylist(exported, 'm3u8', { ignoreValidationErrors: true });
 
       expect(reimported.track?.length).toBe(playlist.track?.length);
+      expect(reimported.track?.map(t => t.duration)).toEqual(playlist.track?.map(t => t.duration));
+
+      const timedTrack = playlist.track?.find(t => t.duration !== undefined);
+      expect(timedTrack?.duration).toBe(240000);
     });
 
     it('should round-trip convert PLS to PLS', () => {
@@ -325,6 +329,10 @@ describe('convert/index', () => {
       const reimported = importPlaylist(exported, 'pls', { ignoreValidationErrors: true });
 
       expect(reimported.track?.length).toBe(playlist.track?.length);
+      expect(reimported.track?.map(t => t.duration)).toEqual(playlist.track?.map(t => t.duration));
+
+      const timedTrack = playlist.track?.find(t => t.duration !== undefined);
+      expect(timedTrack?.duration).toBe(240000);
     });
   });
 

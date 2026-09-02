@@ -69,11 +69,11 @@ function parseLinks(input: ElementCompact | ElementCompact[]): JspfLinkI[] {
   const output: JspfLinkI[] = [];
 
   input.forEach((el:ElementCompact) => {
-    const key = String(el._attributes?.rel);
+    const key = el._attributes?.rel;
     const value = String(el._text);
     if (!key || !value) return;
     const item: JspfLinkI = {
-      [key] : value
+      [String(key)] : value
     };
     output.push(item);
   })
@@ -92,11 +92,11 @@ function parseMetas(input: ElementCompact | ElementCompact[]): JspfMetaI[] {
   const output: JspfMetaI[] = [];
 
   input.forEach((el:ElementCompact) => {
-    const key = String(el._attributes?.rel);
+    const key = el._attributes?.rel;
     const value = String(el._text);
     if (!key || !value) return;
     const item: JspfMetaI = {
-      [key] : value
+      [String(key)] : value
     };
     output.push(item);
   })
@@ -115,10 +115,11 @@ function parseExtension(input:ElementCompact): JspfExtensionI {
   const output: JspfExtensionI = {};
 
   input.forEach((el:ElementCompact) => {
-    const key = String(el._attributes?.application);
+    const key = el._attributes?.application;
+    if (!key) return;
     delete el._attributes;//ignore '_attributes'
     const value:any[] = [el];
-    output[key] = value;
+    output[String(key)] = value;
   })
 
   return output;
