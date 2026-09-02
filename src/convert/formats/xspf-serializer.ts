@@ -1,7 +1,7 @@
 import { json2xml } from 'xml-js';
 
 import { XSPF_VERSION, XSPF_XMLNS } from '../../constants';
-import { JspfI, JspfPlaylistI } from '../../entities/interfaces';
+import { JspfI, JspfPlaylistI, JspfAttributionI, JspfExtensionI } from '../../entities/interfaces';
 import { Jspf, JspfPlaylist } from '../../entities/models';
 
 export interface XSPFDataI extends JspfI {
@@ -61,15 +61,24 @@ function updateNodes(data: any) {
   } else if (typeof data === 'object') {
     for (let key in data) {
 
-      //process the content of those nodes
-      if (['link', 'meta', 'extension', 'attribution'].includes(key)) {
-
+      //link/meta: arrays of single-key {rel: value} pairs -> repeated sibling elements with attributes
+      if (['link', 'meta'].includes(key)) {
         if ( Array.isArray(data[key]) ){
           data[key] = data[key].map((item:any) => {return updateSingle(item,key)});
         }else{
           data[key] = updateSingle(data[key],key);
         }
+      }
 
+      //attribution: an array of single-key {location|identifier: value} pairs -> one <attribution>
+      //wrapper element whose children are the location/identifier tags themselves
+      else if (key === 'attribution' && Array.isArray(data[key])) {
+        data[key] = buildAttributionNode(data[key]);
+      }
+
+      //extension: a single {applicationUri: [rawNode]} map -> one or more sibling <extension> elements
+      else if (key === 'extension' && data[key] && !Array.isArray(data[key])) {
+        data[key] = buildExtensionNodes(data[key]);
       }
 
       updateNodes(data[key]);
@@ -105,14 +114,38 @@ function updateSingle(data:any,type:string){
       }
 
     break;
-    case 'extension':
-      //TOUFIX
-    break;
-    case 'attribution':
-      //TOUFIX
-    break;
     default:
       return data;
   }
 
+}
+
+// Attribution is a single <attribution> element whose children are, in order,
+// the <location>/<identifier> tags themselves (not attributes on <attribution>).
+// Group by tag name since xml-js compact form needs an array for repeated siblings.
+function buildAttributionNode(items: JspfAttributionI[]): Record<string, any> {
+  const grouped: Record<string, any[]> = {};
+
+  items.forEach((item) => {
+    const tagName = Object.keys(item)[0];
+    if (!tagName) return;
+    if (!grouped[tagName]) grouped[tagName] = [];
+    grouped[tagName].push({ _text: item[tagName] });
+  });
+
+  const node: Record<string, any> = {};
+  for (const [tagName, values] of Object.entries(grouped)) {
+    node[tagName] = values.length === 1 ? values[0] : values;
+  }
+  return node;
+}
+
+// Extension is one or more sibling <extension application="..."> elements, each
+// carrying back the raw child nodes captured on import (application attribute stripped).
+function buildExtensionNodes(data: JspfExtensionI): any[] | undefined {
+  const nodes = Object.entries(data).map(([application, value]) => ({
+    ...(Array.isArray(value) ? value[0] : value),
+    _attributes: { application }
+  }));
+  return nodes.length ? nodes : undefined;
 }

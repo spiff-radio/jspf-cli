@@ -157,7 +157,7 @@ describe('convert/index', () => {
       expect(playlist).toBeDefined();
     });
 
-    it('should strip invalid values when stripInvalid is true', () => {
+    it('should strip an unrecognized field when stripInvalid is true, instead of just ignoring the error', () => {
       const invalidData = JSON.stringify({
         playlist: {
           title: 'Test',
@@ -170,8 +170,34 @@ describe('convert/index', () => {
         stripInvalid: true
       });
 
-      expect(playlist).toBeDefined();
       expect(playlist.title).toBe('Test');
+      expect(playlist).not.toHaveProperty('invalidField');
+    });
+
+    it('should strip only the invalid field of a track, keeping the rest of that track', () => {
+      const invalidData = JSON.stringify({
+        playlist: {
+          track: [{ title: 'Track', trackNum: -5 }]
+        }
+      });
+
+      const playlist = importPlaylist(invalidData, 'jspf', {
+        ignoreValidationErrors: true,
+        stripInvalid: true
+      });
+
+      expect(playlist.track?.[0].title).toBe('Track');
+      expect(playlist.track?.[0]).not.toHaveProperty('trackNum');
+    });
+
+    it('should not throw when stripInvalid cleans the data enough to pass validation, even with ignoreValidationErrors false', () => {
+      const invalidData = JSON.stringify({
+        playlist: { title: 'Test', invalidField: 'invalid' }
+      });
+
+      expect(() => {
+        importPlaylist(invalidData, 'jspf', { ignoreValidationErrors: false, stripInvalid: true });
+      }).not.toThrow();
     });
   });
 

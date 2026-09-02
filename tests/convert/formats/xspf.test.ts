@@ -1,5 +1,27 @@
 import { describe, it, expect } from 'vitest';
 import parseXSPF from '../../../src/convert/formats/xspf-parser';
+import serializeXSPF from '../../../src/convert/formats/xspf-serializer';
+
+describe('convert/formats/xspf serializeXSPF', () => {
+  it('round-trips attribution and extension instead of dropping them', () => {
+    const playlist = {
+      attribution: [
+        { location: 'http://example.com/original.xspf' },
+        { identifier: 'http://example.com/step2' }
+      ],
+      extension: {
+        'http://example.com/app1': [{ foo: { _text: 'bar' } }],
+        'http://example.com/app2': [{ baz: { _text: 'qux' } }]
+      }
+    };
+
+    const xml = serializeXSPF(playlist as any);
+    const reimported = parseXSPF(xml);
+
+    expect(reimported.attribution).toEqual(playlist.attribution);
+    expect(reimported.extension).toEqual(playlist.extension);
+  });
+});
 
 describe('convert/formats/xspf parseXSPF', () => {
   it('ignores a <link> with no rel attribute instead of using the key "undefined"', () => {

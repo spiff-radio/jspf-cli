@@ -1,13 +1,17 @@
+import { ZodError } from 'zod';
 import { ZodValidationError, JspfPlaylist } from '../entities/models';
 import { ConverterInfoI,JspfPlaylistI } from '../entities/interfaces';
-import { ConvertOptionsI, ConvertResult } from './interfaces';
+import { ConvertOptionsI, ConvertResult, DataConverterStaticI } from './interfaces';
+import { stripInvalidPaths } from '../utils';
 import JspfConverter from './formats/jspf';
 import M3uConverter from './formats/m3u';
 import M3u8Converter from './formats/m3u8';
 import PlsConverter from './formats/pls';
 import XspfConverter from './formats/xspf';
 
-const converters = [JspfConverter, M3uConverter, M3u8Converter, PlsConverter, XspfConverter];
+// Typing this list against DataConverterStaticI is what enforces the `format`/`contentType`
+// contract: a converter missing either one fails to compile here instead of failing at runtime.
+const converters: DataConverterStaticI[] = [JspfConverter, M3uConverter, M3u8Converter, PlsConverter, XspfConverter];
 
 export function getConvertersList(): ConverterInfoI[] {
   if (!Array.isArray(converters)) return [];
@@ -34,21 +38,7 @@ export function getConverterByFormat(type: string) {
 }
 
 export function importPlaylist(data:string,format:string='jspf',options: ConvertOptionsI = {ignoreValidationErrors: false,stripInvalid:true}):JspfPlaylistI{
-  const converterClass = getConverterByFormat(format);
-  const converter = new converterClass();
-  const dto:JspfPlaylistI = converter.get(data);
-
-  const playlist = new JspfPlaylist(dto);
-
-  const validationErrors = playlist.getValidationErrors();
-  if (validationErrors) {
-    if (!options.ignoreValidationErrors){
-      throw new ZodValidationError('Validation failed', validationErrors);
-    }
-  }
-
-  return playlist.toDTO() as JspfPlaylistI;
-
+  return importPlaylistWithErrors(data, format, options).data as JspfPlaylistI;
 }
 
 export function importPlaylistWithErrors(data:string,format:string='jspf',options: ConvertOptionsI = {ignoreValidationErrors: false,stripInvalid:true}):ConvertResult{
@@ -56,57 +46,56 @@ export function importPlaylistWithErrors(data:string,format:string='jspf',option
   const converter = new converterClass();
   const dto:JspfPlaylistI = converter.get(data);
 
-  const playlist = new JspfPlaylist(dto);
-
-  const validationErrors = playlist.getValidationErrors();
-  if (validationErrors && !options.ignoreValidationErrors){
-    throw new ZodValidationError('Validation failed', validationErrors);
-  }
+  const { playlist, validationErrors } = validateAndClean(new JspfPlaylist(dto), dto, options);
 
   return {
     data: playlist.toDTO() as JspfPlaylistI,
-    validationErrors: validationErrors || null
+    validationErrors
   };
 }
 
 export function exportPlaylist(dto:JspfPlaylistI,format:string='jspf',options: ConvertOptionsI = {ignoreValidationErrors: false,stripInvalid:true}):string{
-
-  const playlist = new JspfPlaylist(dto);
-
-  const validationErrors = playlist.getValidationErrors();
-  if (validationErrors) {
-    if (!options.ignoreValidationErrors){
-      throw new ZodValidationError('Validation failed', validationErrors);
-    }
-  }
-
-  const converterClass = getConverterByFormat(format);
-  const converter = new converterClass();
-
-  dto = playlist.toDTO() as JspfPlaylistI;
-  const data:string = converter.set(dto);
-  return data;
+  return exportPlaylistWithErrors(dto, format, options).data as string;
 }
 
 export function exportPlaylistWithErrors(dto:JspfPlaylistI,format:string='jspf',options: ConvertOptionsI = {ignoreValidationErrors: false,stripInvalid:true}):ConvertResult{
 
-  const playlist = new JspfPlaylist(dto);
-
-  const validationErrors = playlist.getValidationErrors();
-  if (validationErrors && !options.ignoreValidationErrors){
-    throw new ZodValidationError('Validation failed', validationErrors);
-  }
+  const { playlist, validationErrors } = validateAndClean(new JspfPlaylist(dto), dto, options);
 
   const converterClass = getConverterByFormat(format);
   const converter = new converterClass();
 
-  dto = playlist.toDTO() as JspfPlaylistI;
-  const data:string = converter.set(dto);
+  const data:string = converter.set(playlist.toDTO() as JspfPlaylistI);
 
   return {
     data: data,
-    validationErrors: validationErrors || null
+    validationErrors
   };
+}
+
+// Shared by import/export: if the playlist is invalid and `stripInvalid` is set, rebuild it
+// from a copy with the offending paths removed (see stripInvalidPaths) instead of the raw
+// data - the original error is still reported so the caller knows what was dropped.
+function validateAndClean(playlist: JspfPlaylist, dto: JspfPlaylistI, options: ConvertOptionsI): { playlist: JspfPlaylist; validationErrors: ZodError | null } {
+  const validationErrors = playlist.getValidationErrors();
+  if (!validationErrors) {
+    return { playlist, validationErrors: null };
+  }
+
+  if (options.stripInvalid) {
+    const strippedDto = stripInvalidPaths(dto, validationErrors.issues);
+    const cleaned = new JspfPlaylist(strippedDto);
+    const remainingErrors = cleaned.getValidationErrors();
+    if (remainingErrors && !options.ignoreValidationErrors) {
+      throw new ZodValidationError('Validation failed', remainingErrors);
+    }
+    return { playlist: cleaned, validationErrors };
+  }
+
+  if (!options.ignoreValidationErrors) {
+    throw new ZodValidationError('Validation failed', validationErrors);
+  }
+  return { playlist, validationErrors };
 }
 
 /**
