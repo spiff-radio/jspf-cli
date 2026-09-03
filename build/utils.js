@@ -38,7 +38,11 @@ function isJsonString(str) {
  * at each key individually - that case is handled separately from the rest.
  */
 function stripInvalidPaths(data, issues) {
-    const cleaned = structuredClone(data);
+    // JSPF data is always JSON-shaped (no Date/Map/Set/etc.), so a JSON round-trip
+    // clones it just as well as structuredClone() - and unlike structuredClone(),
+    // it isn't thrown off by non-plain-but-JSON-serializable input, like a Proxy
+    // from a UI framework's reactivity system (e.g. Vue refs/reactive()).
+    const cleaned = JSON.parse(JSON.stringify(data));
     for (const issue of issues) {
         const isUnrecognizedKeys = issue.code === 'unrecognized_keys';
         const parentPath = isUnrecognizedKeys ? issue.path : issue.path.slice(0, -1);

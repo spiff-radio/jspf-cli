@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   getPathExtension,
   getPathFilename,
-  isJsonString
+  isJsonString,
+  stripInvalidPaths
 } from '../../src/utils';
 
 describe('utils', () => {
@@ -89,6 +90,29 @@ describe('utils', () => {
 
     it('should return true for minimum valid JSON string', () => {
       expect(isJsonString('""')).toBe(true);
+    });
+  });
+
+  describe('stripInvalidPaths', () => {
+    it('removes an invalid property at a top-level path', () => {
+      const data = { title: 'Playlist', track: 'not-an-array' };
+      const issues = [{ code: 'invalid_type', path: ['track'] }];
+      const result = stripInvalidPaths(data, issues);
+      expect(result).toEqual({ title: 'Playlist' });
+      // the original is left untouched
+      expect(data).toEqual({ title: 'Playlist', track: 'not-an-array' });
+    });
+
+    it('accepts a Proxy-wrapped input (e.g. a Vue reactive ref) without throwing', () => {
+      // structuredClone() throws DataCloneError on any Proxy, even one wrapping
+      // plain, JSON-safe data - this is exactly what a UI framework's
+      // reactivity system (Vue's ref()/reactive(), etc.) hands the library
+      // when a consumer forwards its state directly.
+      const data = new Proxy({ title: 'Playlist', track: [{ title: 'A', extra: 'bad' }] }, {});
+      const issues = [{ code: 'unrecognized_keys', path: ['track', 0], keys: ['extra'] }];
+      expect(() => stripInvalidPaths(data, issues)).not.toThrow();
+      const result = stripInvalidPaths(data, issues) as any;
+      expect(result.track[0]).toEqual({ title: 'A' });
     });
   });
 });
