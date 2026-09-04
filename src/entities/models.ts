@@ -15,7 +15,7 @@ import cleanDeep from 'clean-deep';
 export class ZodValidationError extends Error {
   errors: z.ZodError;
   name: string;
-  
+
   constructor(message: string, errors: z.ZodError) {
     super(message);
     Object.setPrototypeOf(this, ZodValidationError.prototype);
@@ -193,9 +193,17 @@ function normalizePairArray<T extends SinglePair>(
   return normalized.length ? normalized : undefined;
 }
 
+// A track's location/identifier are ALWAYS an arrays of URIs
+function normalizeUriArray(value: any): string[] | undefined {
+  if (value === undefined || value === null) return undefined;
+  const arr = Array.isArray(value) ? value : [value];
+  const normalized = arr.filter(
+    (item): item is string => typeof item === 'string' && item.trim() !== ''
+  );
+  return normalized.length ? normalized : undefined;
+}
+
 export class JspfTrack extends JspfValidation implements JspfTrackI {
-  location?: string[];
-  identifier?: string[];
   title?: string;
   creator?: string;
   annotation?: string;
@@ -206,6 +214,8 @@ export class JspfTrack extends JspfValidation implements JspfTrackI {
   duration?: number;
   extension?: JspfExtension;
 
+  private _location?: string[];
+  private _identifier?: string[];
   private _link?: JspfLink[];
   private _meta?: JspfMeta[];
 
@@ -228,6 +238,22 @@ export class JspfTrack extends JspfValidation implements JspfTrackI {
       this.meta = data.meta;
       this.extension = data.extension ? new JspfExtension(data.extension) : undefined;
     }
+  }
+
+  get location(): string[] | undefined {
+    return this._location;
+  }
+
+  set location(value: any) {
+    this._location = normalizeUriArray(value);
+  }
+
+  get identifier(): string[] | undefined {
+    return this._identifier;
+  }
+
+  set identifier(value: any) {
+    this._identifier = normalizeUriArray(value);
   }
 
   get link(): JspfLink[] | undefined {
@@ -377,7 +403,7 @@ export class Jspf extends JspfValidation implements JspfI {
 
   constructor(data?: any) {
     super(data, JspfSchema);
-    
+
     if (data?.playlist) {
       this.playlist = new JspfPlaylist(data.playlist);
     } else {
@@ -395,4 +421,3 @@ export class Jspf extends JspfValidation implements JspfI {
     };
   }
 }
-
