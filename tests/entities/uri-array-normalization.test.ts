@@ -68,3 +68,40 @@ describe('JspfTrack location/identifier normalization', () => {
     expect(playlist.location).toBe('https://example.com/p.jspf');
   });
 });
+
+// `extension` is where callers legitimately stash app-specific data under a namespace key, so
+// they write plain objects into it. Before the accessor, that replaced the JspfExtension
+// instance and toJSON() then called .toJSON() on a plain object - the whole playlist failed to
+// serialize. This is the same unguarded-field bug as location/identifier above.
+describe('JspfTrack/JspfPlaylist extension normalization', () => {
+  const NS = 'https://example.org/ns/app';
+
+  it('wraps a plain object assigned after construction', () => {
+    const track = new JspfTrack({ title: 'A' });
+    track.extension = { [NS]: [{ note: 'hi' }] };
+    expect(typeof (track.extension as any).toJSON).toBe('function');
+    expect(track.toDTO().extension).toEqual({ [NS]: [{ note: 'hi' }] });
+  });
+
+  it('keeps a playlist serializable after a plain-object extension assignment', () => {
+    const playlist = new JspfPlaylist({ title: 'P', track: [{ title: 'A' }] });
+    playlist.track![0].extension = { [NS]: [{ note: 'hi' }] };
+    playlist.extension = { [NS]: [{ scope: 'playlist' }] };
+    expect(() => playlist.toDTO()).not.toThrow();
+    expect(playlist.toDTO().track[0].extension).toEqual({ [NS]: [{ note: 'hi' }] });
+  });
+
+  it('accepts an existing JspfExtension instance unchanged', () => {
+    const first = new JspfTrack({ title: 'A', extension: { [NS]: [{ n: 1 }] } });
+    const second = new JspfTrack({ title: 'B' });
+    second.extension = first.extension;
+    expect(second.extension).toBe(first.extension);
+  });
+
+  it('clears on undefined', () => {
+    const track = new JspfTrack({ title: 'A', extension: { [NS]: [{ n: 1 }] } });
+    track.extension = undefined;
+    expect(track.extension).toBeUndefined();
+    expect(track.toDTO().extension).toBeUndefined();
+  });
+});

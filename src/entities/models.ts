@@ -229,6 +229,18 @@ export function mergeMeta(...metaArrays: (JspfMeta[] | Record<string, any>[] | u
   return result;
 }
 
+/**
+ * `extension` is a single JspfExtension, not an array, but it needs the same accessor
+ * treatment as link/meta for the same reason: assigning a plain object left `toJSON()` calling
+ * `this.extension.toJSON()` on something that has no such method, and the whole playlist failed
+ * to serialize. Callers legitimately write plain objects here - storing app data under a
+ * namespace key is what `extension` is *for* - so wrapping belongs in the setter.
+ */
+function normalizeExtension(value: any): JspfExtension | undefined {
+  if (value === undefined || value === null) return undefined;
+  return value instanceof JspfExtension ? value : new JspfExtension(value);
+}
+
 // A track's location/identifier are ALWAYS an arrays of URIs
 function normalizeUriArray(value: any): string[] | undefined {
   if (value === undefined || value === null) return undefined;
@@ -248,8 +260,8 @@ export class JspfTrack extends JspfValidation implements JspfTrackI {
   album?: string;
   trackNum?: number;
   duration?: number;
-  extension?: JspfExtension;
 
+  private _extension?: JspfExtension;
   private _location?: string[];
   private _identifier?: string[];
   private _link?: JspfLink[];
@@ -272,8 +284,16 @@ export class JspfTrack extends JspfValidation implements JspfTrackI {
       this.duration = data.duration;
       this.link = data.link;
       this.meta = data.meta;
-      this.extension = data.extension ? new JspfExtension(data.extension) : undefined;
+      this.extension = data.extension;
     }
+  }
+
+  get extension(): JspfExtension | undefined {
+    return this._extension;
+  }
+
+  set extension(value: any) {
+    this._extension = normalizeExtension(value);
   }
 
   get location(): string[] | undefined {
@@ -364,9 +384,9 @@ export class JspfPlaylist extends JspfValidation implements JspfPlaylistI {
   image?: string;
   date?: string;
   license?: string;
-  extension?: JspfExtension;
   track?: JspfTrack[];
 
+  private _extension?: JspfExtension;
   private _attribution?: JspfAttribution[];
   private _link?: JspfLink[];
   private _meta?: JspfMeta[];
@@ -388,9 +408,17 @@ export class JspfPlaylist extends JspfValidation implements JspfPlaylistI {
       this.attribution = data.attribution;
       this.link = data.link;
       this.meta = data.meta;
-      this.extension = data.extension ? new JspfExtension(data.extension) : undefined;
+      this.extension = data.extension;
       this.track = Array.isArray(data.track) ? data.track.map((t: any) => new JspfTrack(t)) : undefined;
     }
+  }
+
+  get extension(): JspfExtension | undefined {
+    return this._extension;
+  }
+
+  set extension(value: any) {
+    this._extension = normalizeExtension(value);
   }
 
   get attribution(): JspfAttribution[] | undefined {
