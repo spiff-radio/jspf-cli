@@ -193,6 +193,42 @@ function normalizePairArray<T extends SinglePair>(
   return normalized.length ? normalized : undefined;
 }
 
+// JSPF's `meta` is an array of single-key pair objects whose key must be a URI. These helpers
+// do the key-based lookup/merge on top of that shape; they deliberately don't validate the key,
+// but note that a non-URI key (`dateAdded` rather than `https://example.org/ns/dateAdded`) fails
+// JspfMetaSchema and is silently discarded by `stripInvalid` on export.
+function metaEntries(meta: JspfMeta[] | undefined): Record<string, any>[] {
+  if (!Array.isArray(meta)) return [];
+  return meta.map((m) => (m && typeof (m as any).toJSON === 'function' ? m.toJSON() : m)) as Record<string, any>[];
+}
+
+function readMeta(meta: JspfMeta[] | undefined, key: string): any {
+  const entry = metaEntries(meta).find((m) => Object.prototype.hasOwnProperty.call(m, key));
+  return entry ? entry[key] : undefined;
+}
+
+function writeMeta(meta: JspfMeta[] | undefined, key: string, value: any): Record<string, any>[] | undefined {
+  const kept = metaEntries(meta).filter((m) => !Object.prototype.hasOwnProperty.call(m, key));
+  if (value !== undefined && value !== null) kept.push({ [key]: value });
+  return kept.length ? kept : undefined;
+}
+
+/** Merge meta arrays left to right; a later entry replaces an earlier one with the same key. */
+export function mergeMeta(...metaArrays: (JspfMeta[] | Record<string, any>[] | undefined)[]): Record<string, any>[] {
+  const result: Record<string, any>[] = [];
+  for (const meta of metaArrays) {
+    for (const entry of metaEntries(meta as JspfMeta[] | undefined)) {
+      if (!entry) continue;
+      const key = Object.keys(entry)[0];
+      if (key === undefined) continue;
+      const index = result.findIndex((m) => key in m);
+      if (index !== -1) result[index] = entry;
+      else result.push(entry);
+    }
+  }
+  return result;
+}
+
 // A track's location/identifier are ALWAYS an arrays of URIs
 function normalizeUriArray(value: any): string[] | undefined {
   if (value === undefined || value === null) return undefined;
@@ -274,6 +310,16 @@ export class JspfTrack extends JspfValidation implements JspfTrackI {
 
   public isValid(): boolean {
     return super.isValid();
+  }
+
+  /** Read a `meta` value by its (URI) key. */
+  public getMeta(key: string): any {
+    return readMeta(this.meta, key);
+  }
+
+  /** Set a `meta` value by its (URI) key; `undefined`/`null` removes the entry. */
+  public setMeta(key: string, value: any): void {
+    this.meta = writeMeta(this.meta, key, value);
   }
 
   /**
@@ -383,6 +429,115 @@ export class JspfPlaylist extends JspfValidation implements JspfPlaylistI {
     if (!this.track) return [];
     const key = track.matchKey();
     return this.track.filter(t => t !== track && t.matchKey() === key);
+  }
+
+  /** Read a `meta` value by its (URI) key. */
+  public getMeta(key: string): any {
+    return readMeta(this.meta, key);
+  }
+
+  /** Set a `meta` value by its (URI) key; `undefined`/`null` removes the entry. */
+  public setMeta(key: string, value: any): void {
+    this.meta = writeMeta(this.meta, key, value);
+  }
+
+  public ensureTrackList(): JspfTrack[] {
+    if (!Array.isArray(this.track)) this.track = [];
+    return this.track;
+  }
+
+  /**
+   * Renumber every track by its position (1-based).
+   *
+   * Only the reordering operations below call this. Notably `appendTrack` does **not**: a
+   * playlist imported from an album carries meaningful track numbers, and appending to it
+   * shouldn't renumber the whole thing from its positions.
+   */
+  public reindexTracks(): void {
+    if (!this.track) return;
+    this.track.forEach((track, index) => {
+      track.trackNum = index + 1;
+    });
+  }
+
+  public appendTrack(track: any = {}): JspfTrack {
+    const list = this.ensureTrackList();
+    const newTrack = track instanceof JspfTrack ? track : new JspfTrack(track);
+    list.push(newTrack);
+    return newTrack;
+  }
+
+  /**
+   * Merge `data` into the track at `index`. A key explicitly set to `undefined` is removed
+   * rather than merged over.
+   *
+   * If the merge sets a `trackNum` that doesn't match the track's current position, the track
+   * is *moved* there rather than just relabeled - editing the number is how a user reorders.
+   *
+   * @returns the track's index after the update, which differs from `index` if it moved.
+   */
+  public updateTrack(index: number, data: any = {}): number {
+    if (!this.track || !this.track[index]) return index;
+
+    const merged: Record<string, any> = { ...this.track[index].toDTO(), ...data };
+    for (const key of Object.keys(data)) {
+      if (data[key] === undefined) delete merged[key];
+    }
+
+    const updated = new JspfTrack(merged);
+    this.track[index] = updated;
+
+    let newIndex = index;
+    const requested = updated.trackNum;
+    if (Number.isFinite(requested) && (requested as number) > 0) {
+      const target = Math.max(0, Math.min(this.track.length - 1, (requested as number) - 1));
+      if (target !== index) {
+        this.track.splice(index, 1);
+        this.track.splice(target, 0, updated);
+        newIndex = target;
+      }
+    }
+
+    this.reindexTracks();
+    return newIndex;
+  }
+
+  public deleteTrack(index: number): void {
+    if (!this.track) return;
+    this.track.splice(index, 1);
+    this.reindexTracks();
+  }
+
+  public moveTrack(fromIndex: number, toIndex: number): void {
+    if (!this.track || fromIndex === toIndex) return;
+    const clamped = Math.max(0, Math.min(this.track.length - 1, toIndex));
+    const [track] = this.track.splice(fromIndex, 1);
+    if (!track) return;
+    this.track.splice(clamped, 0, track);
+    this.reindexTracks();
+  }
+
+  /**
+   * Combine playlists into a new one: the first playlist's metadata, every playlist's tracks
+   * concatenated in order, and `meta` merged key by key with later playlists winning.
+   */
+  public static merge(playlists: (JspfPlaylist | any)[] = []): JspfPlaylist {
+    if (!playlists.length) return new JspfPlaylist({ title: 'Merged Playlist', track: [] });
+
+    const dtos = playlists.map((p) =>
+      (p instanceof JspfPlaylist ? p : new JspfPlaylist(p)).toDTO()
+    );
+
+    const merged: Record<string, any> = {
+      ...dtos[0],
+      track: dtos.flatMap((dto) => dto.track || []),
+    };
+
+    const mergedMeta = mergeMeta(...dtos.map((dto) => dto.meta));
+    if (mergedMeta.length) merged.meta = mergedMeta;
+    else delete merged.meta;
+
+    return new JspfPlaylist(merged);
   }
 
   public toJSON(): JspfPlaylistI {
