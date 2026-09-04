@@ -66,6 +66,12 @@ export declare class JspfTrack extends JspfValidation implements JspfTrackI {
     get meta(): JspfMeta[] | undefined;
     set meta(value: any);
     isValid(): boolean;
+    /**
+     * Identity key for duplicate matching (title + creator + album) - two
+     * tracks with the same matchKey are considered duplicates of each other,
+     * regardless of location, duration, or trackNum.
+     */
+    matchKey(): string;
     toJSON(): JspfTrackI;
 }
 export declare class JspfPlaylist extends JspfValidation implements JspfPlaylistI {
@@ -91,6 +97,11 @@ export declare class JspfPlaylist extends JspfValidation implements JspfPlaylist
     get meta(): JspfMeta[] | undefined;
     set meta(value: any);
     isValid(): boolean;
+    /**
+     * Find tracks in this playlist that are duplicates of the given track
+     * (same matchKey - title + creator + album), excluding the track itself.
+     */
+    findDuplicatesOf(track: JspfTrack): JspfTrack[];
     toJSON(): JspfPlaylistI;
 }
 export declare class Jspf extends JspfValidation implements JspfI {

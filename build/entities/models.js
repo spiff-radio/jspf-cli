@@ -208,6 +208,18 @@ class JspfTrack extends JspfValidation {
     isValid() {
         return super.isValid();
     }
+    /**
+     * Identity key for duplicate matching (title + creator + album) - two
+     * tracks with the same matchKey are considered duplicates of each other,
+     * regardless of location, duration, or trackNum.
+     */
+    matchKey() {
+        let key = `'${this.title || ''}' by '${this.creator || ''}'`;
+        if (this.album) {
+            key += ` on '${this.album}'`;
+        }
+        return key;
+    }
     toJSON() {
         return {
             location: this.location,
@@ -282,6 +294,16 @@ class JspfPlaylist extends JspfValidation {
     }
     isValid() {
         return super.isValid();
+    }
+    /**
+     * Find tracks in this playlist that are duplicates of the given track
+     * (same matchKey - title + creator + album), excluding the track itself.
+     */
+    findDuplicatesOf(track) {
+        if (!this.track)
+            return [];
+        const key = track.matchKey();
+        return this.track.filter(t => t !== track && t.matchKey() === key);
     }
     toJSON() {
         const base = super.toJSON();
