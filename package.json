@@ -62,6 +62,7 @@
     "jspf-cli": "./build/cli/index.js"
   },
   "scripts": {
+    "prepare": "npm run build",
     "start": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/cli/index.ts",
     "start:windows": "nodemon --watch 'src/**/*.ts' --exec \"npx ts-node\" src/cli/index.ts",
     "create": "npm run build && npm run test",

@@ -9,6 +9,10 @@ node_modules/
 coverage/
 
 # production
+# Not committed: `package.json`'s "files" field already lists build/ explicitly (so npm
+# publish includes it regardless of git tracking), and `prepare` rebuilds it fresh on
+# `npm publish`/`npm pack` and on `npm install` for git/`file:` dependencies.
+build/
 
 # misc
 README.private
