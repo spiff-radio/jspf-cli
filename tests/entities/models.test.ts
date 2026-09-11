@@ -133,6 +133,28 @@ describe('entities/models', () => {
       const track = new JspfTrack(data);
       expect(track.location).toHaveLength(2);
     });
+
+    describe('getLabel', () => {
+      it('should combine title and creator', () => {
+        const track = new JspfTrack({ title: 'Song 1', creator: 'Artist 1' });
+        expect(track.getLabel()).toBe('Song 1 — Artist 1');
+      });
+
+      it('should fall back to title alone', () => {
+        const track = new JspfTrack({ title: 'Song 1' });
+        expect(track.getLabel()).toBe('Song 1');
+      });
+
+      it('should fall back to creator alone', () => {
+        const track = new JspfTrack({ creator: 'Artist 1' });
+        expect(track.getLabel()).toBe('Artist 1');
+      });
+
+      it('should fall back to a placeholder when there is nothing to show', () => {
+        const track = new JspfTrack({});
+        expect(track.getLabel()).toBe('Untitled track');
+      });
+    });
   });
 
   describe('JspfLink', () => {
@@ -295,7 +317,7 @@ describe('entities/models', () => {
       const { z } = require('zod');
       const schema = z.object({ title: z.string() });
       const result = schema.safeParse({ invalid: 'data' });
-      
+
       if (!result.success) {
         const error = new ZodValidationError('Test error', result.error);
         expect(error).toBeInstanceOf(Error);
@@ -308,4 +330,3 @@ describe('entities/models', () => {
     });
   });
 });
-

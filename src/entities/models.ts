@@ -355,6 +355,19 @@ export class JspfTrack extends JspfValidation implements JspfTrackI {
     return key;
   }
 
+  /**
+   * Human-readable label for display - a tab title, a log line, a CLI prompt. Not an identity
+   * key (see matchKey() for that): falls back to the first location, then a generic
+   * placeholder, so it is always a non-empty string even for a track with no metadata yet.
+   * TO FIX TO CHECK : can we have a track without a title or creator ?  Can we return just a title or artist ?
+   */
+  public getLabel(): string {
+    if (this.title && this.creator) return `${this.title} — ${this.creator}`;
+    if (this.title) return this.title;
+    if (this.creator) return this.creator;
+    return 'Untitled track';
+  }
+
   public toJSON(): JspfTrackI {
     return {
       location: this.location,
