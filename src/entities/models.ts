@@ -251,6 +251,20 @@ function normalizeUriArray(value: any): string[] | undefined {
   return normalized.length ? normalized : undefined;
 }
 
+/**
+ * Human-readable label for a track - a tab title, a log line, a CLI prompt. Not an identity
+ * key (see matchKey() for that). Works on a plain JSPF-shaped object (a DTO from
+ * importPlaylist()/toDTO()) as well as a JspfTrack instance, so callers never need to
+ * construct a class instance just to get a label - JspfTrack.getLabel() itself delegates here.
+ */
+export function getTrackLabel(track: Pick<JspfTrackI, 'title' | 'creator' | 'location'>): string {
+  if (track.title && track.creator) return `${track.title} — ${track.creator}`;
+  if (track.title) return track.title;
+  if (track.creator) return track.creator;
+  if (track.location?.[0]) return track.location[0];
+  return 'Untitled track';
+}
+
 export class JspfTrack extends JspfValidation implements JspfTrackI {
   title?: string;
   creator?: string;
@@ -355,17 +369,9 @@ export class JspfTrack extends JspfValidation implements JspfTrackI {
     return key;
   }
 
-  /**
-   * Human-readable label for display - a tab title, a log line, a CLI prompt. Not an identity
-   * key (see matchKey() for that): falls back to the first location, then a generic
-   * placeholder, so it is always a non-empty string even for a track with no metadata yet.
-   * TO FIX TO CHECK : can we have a track without a title or creator ?  Can we return just a title or artist ?
-   */
+  /** See getTrackLabel() - this just applies it to `this`. */
   public getLabel(): string {
-    if (this.title && this.creator) return `${this.title} — ${this.creator}`;
-    if (this.title) return this.title;
-    if (this.creator) return this.creator;
-    return 'Untitled track';
+    return getTrackLabel(this);
   }
 
   public toJSON(): JspfTrackI {
