@@ -71,9 +71,23 @@ export class JspfValidation extends JspfBase {
     this._schema = schema;
   }
 
+  /**
+   * What validation runs against: whatever this object would export *now*.
+   *
+   * Not `_data`, which is the constructor's input and nothing else. Subclasses expose their
+   * fields as properties and serialize those (see JspfTrack/JspfPlaylist.toJSON), so a value
+   * set after construction lives in the property and never reaches `_data`. Validating `_data`
+   * meant validating what the object was built from rather than what it holds - so an edit could
+   * be rejected for a problem it had fixed, or pass for one it had introduced, and either way
+   * the answer described a different object than `toJSON()` would hand over.
+   */
+  protected validationTarget(): Record<string, any> {
+    return this.toJSON();
+  }
+
   // Validate against Zod schema
   public isValid(): boolean {
-    const result = this._schema.safeParse(this._data);
+    const result = this._schema.safeParse(this.validationTarget());
     if (!result.success) {
       throw new ZodValidationError('Validation failed', result.error);
     }
@@ -82,7 +96,7 @@ export class JspfValidation extends JspfBase {
 
   // Get validation errors without throwing
   public getValidationErrors(): z.ZodError | null {
-    const result = this._schema.safeParse(this._data);
+    const result = this._schema.safeParse(this.validationTarget());
     if (!result.success) {
       return result.error;
     }
@@ -91,12 +105,12 @@ export class JspfValidation extends JspfBase {
 
   // Parse and validate data, returning the validated data
   public parse(): any {
-    return this._schema.parse(this._data);
+    return this._schema.parse(this.validationTarget());
   }
 
   // Safe parse - returns success/error without throwing
   public safeParse() {
-    return this._schema.safeParse(this._data);
+    return this._schema.safeParse(this.validationTarget());
   }
 }
 
@@ -587,10 +601,31 @@ export class JspfPlaylist extends JspfValidation implements JspfPlaylistI {
     return new JspfPlaylist(merged);
   }
 
+  /**
+   * Every field read from the object itself - the same shape JspfTrack.toJSON() has always had.
+   *
+   * It used to spread `_data` for the plain fields (title, creator, annotation, ...) and read only
+   * the accessor-backed ones from the instance. `_data` is the constructor's input, so assigning
+   * `playlist.title = 'X'` changed what the object read back as and nothing about what it
+   * exported: the new title was silently dropped by every `toJSON`, `toDTO`, `toString` and
+   * conversion. Tracks never had the bug, which is why it went unnoticed - and why the fix is to
+   * make the playlist behave like the track rather than to invent anything.
+   *
+   * The one behaviour change: a field that is not part of JSPF and was passed to the constructor
+   * anyway is no longer echoed back. Tracks have always dropped those, and the schema strips them
+   * on validation regardless.
+   */
   public toJSON(): JspfPlaylistI {
-    const base = super.toJSON();
     return {
-      ...base,
+      title: this.title,
+      creator: this.creator,
+      annotation: this.annotation,
+      info: this.info,
+      location: this.location,
+      identifier: this.identifier,
+      image: this.image,
+      date: this.date,
+      license: this.license,
       attribution: this.attribution?.map(a => a.toJSON()),
       link: this.link?.map(l => l.toJSON()),
       meta: this.meta?.map(m => m.toJSON()),

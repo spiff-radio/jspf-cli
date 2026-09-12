@@ -1,3 +1,11 @@
+## [2.0.13]
+- JspfPlaylist serializes its own fields instead of the constructor's input: a title (or creator,
+  annotation, image, ...) assigned after construction was silently dropped by toJSON/toDTO and
+  every conversion built on them. Tracks were never affected.
+- Validation (isValid/getValidationErrors/parse/safeParse) now runs against what the object would
+  export rather than what it was built from, so an edit cannot be judged on the old value.
+- Note: a non-JSPF field passed to the JspfPlaylist constructor is no longer echoed back by
+  toJSON. Tracks have always dropped those.
 ## [2.0.6]
 Claude audit and fixes:
 - added a license
