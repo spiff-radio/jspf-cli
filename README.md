@@ -9,7 +9,7 @@ It relies on the open **JSPF** format (JSON Scalable Playlist Format) as an inte
 JSPF is an open, JSON-based playlist format created by [Xiph](https://xiph.org/).  
 It is simple, flexible, and well-suited for programmatic processing—making it an ideal pivot format.
 
-This module was originally developed for [Spiff Radio](https://spiff-radio.org/), where JSPF plays a key role in the platform’s architecture.
+This module was originally developed for [Spiff Radio](https://www.spiff.cool/), where JSPF plays a key role in the platform’s architecture.
 
 ---
 
