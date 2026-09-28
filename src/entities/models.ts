@@ -279,6 +279,27 @@ export function getTrackLabel(track: Pick<JspfTrackI, 'title' | 'creator' | 'loc
   return 'Untitled track';
 }
 
+/**
+ * Identity key for duplicate matching (title + creator) - two tracks with the same key are
+ * considered duplicates of each other, regardless of location, duration, trackNum, or album. Not
+ * a human-readable label (see getTrackLabel() for that).
+ *
+ * Album is deliberately not part of this: the same recording turns up on a single, the parent
+ * album and a compilation with three different album names attached, and none of that makes it a
+ * different song - keeping it in the key made those read as duplicates of *nothing*, each an only
+ * child. Two genuinely different recordings that happen to share a title and artist (a remix, a
+ * live take) almost always say so in the title itself, which is already part of the key.
+ *
+ * A plain function for the same reason getTrackLabel() is one: works on a plain JSPF-shaped
+ * object (a DTO from importPlaylist()/toDTO()) as well as a JspfTrack instance, so a caller that
+ * only ever holds plain DTOs - as the frontend's stores deliberately do - never needs to
+ * construct a class instance just to compare two tracks' identity. JspfTrack.matchKey() itself
+ * delegates here.
+ */
+export function trackMatchKey(track: Pick<JspfTrackI, 'title' | 'creator'>): string {
+  return `'${track.title || ''}' by '${track.creator || ''}'`;
+}
+
 export class JspfTrack extends JspfValidation implements JspfTrackI {
   title?: string;
   creator?: string;
@@ -370,17 +391,9 @@ export class JspfTrack extends JspfValidation implements JspfTrackI {
     this.meta = writeMeta(this.meta, key, value);
   }
 
-  /**
-   * Identity key for duplicate matching (title + creator + album) - two
-   * tracks with the same matchKey are considered duplicates of each other,
-   * regardless of location, duration, or trackNum.
-   */
+  /** See trackMatchKey() - this just applies it to `this`. */
   public matchKey(): string {
-    let key = `'${this.title || ''}' by '${this.creator || ''}'`;
-    if (this.album) {
-      key += ` on '${this.album}'`;
-    }
-    return key;
+    return trackMatchKey(this);
   }
 
   /** See getTrackLabel() - this just applies it to `this`. */
@@ -484,7 +497,7 @@ export class JspfPlaylist extends JspfValidation implements JspfPlaylistI {
 
   /**
    * Find tracks in this playlist that are duplicates of the given track
-   * (same matchKey - title + creator + album), excluding the track itself.
+   * (same matchKey - title + creator), excluding the track itself.
    */
   public findDuplicatesOf(track: JspfTrack): JspfTrack[] {
     if (!this.track) return [];
