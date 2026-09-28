@@ -31,9 +31,8 @@ export const JspfMetaSchema = z.record(uriSchema, z.string()).refine(
   { message: "Meta must have at most one property" }
 );
 
-// Extension: object with URI keys and array values
-// According to XSPF spec: application attribute MUST be a URI
-export const JspfExtensionSchema = z.record(uriSchema, z.array(z.any()));
+// Extension: object with URI keys.
+export const JspfExtensionSchema = z.record(uriSchema, z.union([z.array(z.any()), z.record(z.string(), z.any())]));
 
 // Track schema
 export const JspfTrackSchema = z.object({

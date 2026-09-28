@@ -11,7 +11,7 @@ export interface JspfMetaI {
 }
 
 export interface JspfExtensionI {
-  [key: string]: any[];
+  [key: string]: any[] | Record<string, any>;
 }
 
 export interface JspfTrackI {
