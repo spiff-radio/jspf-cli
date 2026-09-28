@@ -7,7 +7,8 @@ import {
   JspfMeta,
   JspfAttribution,
   JspfExtension,
-  ZodValidationError
+  ZodValidationError,
+  trackMatchKey
 } from '../../src/entities/models';
 import { JspfPlaylistI, JspfTrackI } from '../../src/entities/interfaces';
 
@@ -153,6 +154,43 @@ describe('entities/models', () => {
       it('should fall back to a placeholder when there is nothing to show', () => {
         const track = new JspfTrack({});
         expect(track.getLabel()).toBe('Untitled track');
+      });
+    });
+
+    describe('matchKey', () => {
+      it('ignores case', () => {
+        const a = trackMatchKey({ title: 'Song 1', creator: 'Artist 1' });
+        const b = trackMatchKey({ title: 'SONG 1', creator: 'artist 1' });
+        expect(a).toBe(b);
+      });
+
+      it('ignores accents', () => {
+        const a = trackMatchKey({ title: 'Café', creator: 'Artist' });
+        const b = trackMatchKey({ title: 'Cafe', creator: 'Artist' });
+        expect(a).toBe(b);
+      });
+
+      it('ignores punctuation', () => {
+        const a = trackMatchKey({ title: "Don't Stop", creator: 'Artist' });
+        const b = trackMatchKey({ title: 'Dont Stop', creator: 'Artist' });
+        expect(a).toBe(b);
+      });
+
+      it('still tells a remix apart from the original', () => {
+        const original = trackMatchKey({ title: 'Song 1', creator: 'Artist 1' });
+        const remix = trackMatchKey({ title: 'Song 1 (Remix)', creator: 'Artist 1' });
+        expect(original).not.toBe(remix);
+      });
+
+      it('still tells different songs apart', () => {
+        const a = trackMatchKey({ title: 'Song 1', creator: 'Artist 1' });
+        const b = trackMatchKey({ title: 'Song 2', creator: 'Artist 1' });
+        expect(a).not.toBe(b);
+      });
+
+      it('JspfTrack#matchKey() delegates to trackMatchKey()', () => {
+        const track = new JspfTrack({ title: 'CAFÉ', creator: 'Artist' });
+        expect(track.matchKey()).toBe(trackMatchKey({ title: 'cafe', creator: 'Artist' }));
       });
     });
   });

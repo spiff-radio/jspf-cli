@@ -280,6 +280,33 @@ export function getTrackLabel(track: Pick<JspfTrackI, 'title' | 'creator' | 'loc
 }
 
 /**
+ * Fold a string for duplicate matching: casefold, strip accents/diacritics, and collapse
+ * punctuation to whitespace - so 'Café', 'CAFE' and 'Ca-fé!' all fold to the same key.
+ *
+ * Words are left alone, deliberately: this only strips punctuation and diacritics, never
+ * letters, so a parenthetical like "(Remix)" or "(Live)" still reads as its own words after
+ * folding. That is what keeps trackMatchKey()'s own promise below - "a remix or a live take
+ * almost always says so in the title itself" only holds if the words that say so survive.
+ *
+ * Apostrophes are the one mark dropped outright rather than turned into a space: "Don't Stop"
+ * and "Dont Stop" are the same title typed two ways, and turning the apostrophe into a space
+ * would fold them to "don t stop" / "dont stop" - still two different keys. Every other mark
+ * (hyphens, slashes, parentheses, ...) becomes a space instead, so it still separates words
+ * that would otherwise glue together (e.g. a hyphenated "Blue-Monday" folding into a single
+ * "bluemonday" token that no other title could ever match).
+ */
+function foldForMatching(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // combining diacritical marks, once NFD has split them out
+    .toLowerCase()
+    .replace(/['\u2019]/g, '') // apostrophes vanish outright - see above
+    .replace(/[^a-z0-9\s]/g, ' ') // remaining punctuation -> space; same ASCII-only rule relevance.ts uses
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+/**
  * Identity key for duplicate matching (title + creator) - two tracks with the same key are
  * considered duplicates of each other, regardless of location, duration, trackNum, or album. Not
  * a human-readable label (see getTrackLabel() for that).
@@ -290,6 +317,10 @@ export function getTrackLabel(track: Pick<JspfTrackI, 'title' | 'creator' | 'loc
  * child. Two genuinely different recordings that happen to share a title and artist (a remix, a
  * live take) almost always say so in the title itself, which is already part of the key.
  *
+ * Case, accents and punctuation are folded away the same way (foldForMatching()) - 'Café',
+ * 'CAFE' and 'Cafe!' are one song, not three, and a straight string key was catching remixes
+ * that said so in their title but missing duplicates that differed only in how they were typed.
+ *
  * A plain function for the same reason getTrackLabel() is one: works on a plain JSPF-shaped
  * object (a DTO from importPlaylist()/toDTO()) as well as a JspfTrack instance, so a caller that
  * only ever holds plain DTOs - as the frontend's stores deliberately do - never needs to
@@ -297,7 +328,7 @@ export function getTrackLabel(track: Pick<JspfTrackI, 'title' | 'creator' | 'loc
  * delegates here.
  */
 export function trackMatchKey(track: Pick<JspfTrackI, 'title' | 'creator'>): string {
-  return `'${track.title || ''}' by '${track.creator || ''}'`;
+  return `'${foldForMatching(track.title || '')}' by '${foldForMatching(track.creator || '')}'`;
 }
 
 export class JspfTrack extends JspfValidation implements JspfTrackI {
