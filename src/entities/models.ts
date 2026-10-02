@@ -573,11 +573,40 @@ export class JspfPlaylist extends JspfValidation implements JspfPlaylistI {
   }
 
   /**
+   * Put `track` at `index`, honouring a `trackNum` that asks it to move somewhere else, then
+   * renumber. Shared by `updateTrack` and `replaceTrack`, which differ only in what they put there.
+   *
+   * @returns the track's index afterwards, which differs from `index` if it moved.
+   */
+  private placeTrack(index: number, track: JspfTrack): number {
+    if (!this.track) return index;
+    this.track[index] = track;
+
+    let newIndex = index;
+    const requested = track.trackNum;
+    if (Number.isFinite(requested) && (requested as number) > 0) {
+      const target = Math.max(0, Math.min(this.track.length - 1, (requested as number) - 1));
+      if (target !== index) {
+        this.track.splice(index, 1);
+        this.track.splice(target, 0, track);
+        newIndex = target;
+      }
+    }
+
+    this.reindexTracks();
+    return newIndex;
+  }
+
+  /**
    * Merge `data` into the track at `index`. A key explicitly set to `undefined` is removed
    * rather than merged over.
    *
    * If the merge sets a `trackNum` that doesn't match the track's current position, the track
    * is *moved* there rather than just relabeled - editing the number is how a user reorders.
+   *
+   * **Reach for `replaceTrack` when the caller holds the whole track**, which is the common case
+   * for an editor and for anything that clears a field: see its own note for why a merge cannot
+   * express "this field is now empty".
    *
    * @returns the track's index after the update, which differs from `index` if it moved.
    */
@@ -589,22 +618,30 @@ export class JspfPlaylist extends JspfValidation implements JspfPlaylistI {
       if (data[key] === undefined) delete merged[key];
     }
 
-    const updated = new JspfTrack(merged);
-    this.track[index] = updated;
+    return this.placeTrack(index, new JspfTrack(merged));
+  }
 
-    let newIndex = index;
-    const requested = updated.trackNum;
-    if (Number.isFinite(requested) && (requested as number) > 0) {
-      const target = Math.max(0, Math.min(this.track.length - 1, (requested as number) - 1));
-      if (target !== index) {
-        this.track.splice(index, 1);
-        this.track.splice(target, 0, updated);
-        newIndex = target;
-      }
-    }
-
-    this.reindexTracks();
-    return newIndex;
+  /**
+   * **Replace** the track at `index`: it becomes `data`, and nothing of the old one survives.
+   * Moves and renumbers exactly as `updateTrack` does, so editing `trackNum` still reorders.
+   *
+   * It exists because a *merge* cannot say that a field is now empty, and a caller holding a whole
+   * track usually needs to. The obvious thing to pass `updateTrack` is a DTO, and `toDTO()` strips
+   * every empty value by design (`clean-deep`: empty strings, arrays, objects, nulls) - so "the
+   * user cleared the title" and "I have nothing to say about the title" arrive identically, and the
+   * old title survives. Measured in a consumer before this method existed: emptying `title`,
+   * `creator`, `album`, `annotation`, `image`, `info`, `location`, `link`, `identifier` and `meta`
+   * through `updateTrack` left all ten in place.
+   *
+   * The workaround was `toJSON()` - the serialization that keeps every field with `undefined` where
+   * there is nothing - which works and reads as a riddle at the call site. Two methods say which is
+   * meant: **merge a patch, replace a track.**
+   *
+   * @returns the track's index afterwards, which differs from `index` if it moved.
+   */
+  public replaceTrack(index: number, data: any = {}): number {
+    if (!this.track || !this.track[index]) return index;
+    return this.placeTrack(index, data instanceof JspfTrack ? data : new JspfTrack(data));
   }
 
   public deleteTrack(index: number): void {

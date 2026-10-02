@@ -77,6 +77,44 @@ describe('JspfPlaylist track manipulation', () => {
     expect(p.updateTrack(1, { title: 'B2' })).toBe(1);
   });
 
+  it('replaceTrack drops what the new track does not carry', () => {
+    // The reason this method exists: a merge cannot say "this field is now empty", because the DTO
+    // a caller naturally builds has had its empty values stripped. Replacing says it by construction.
+    const p = new JspfPlaylist({
+      title: 'P',
+      track: [{ title: 'A', creator: 'C', album: 'Al', location: ['a.mp3'], identifier: ['isrc:X'] }],
+    });
+    p.replaceTrack(0, { title: 'A' });
+    const after = p.track![0].toDTO();
+    expect(after.title).toBe('A');
+    expect(after.creator).toBeUndefined();
+    expect(after.album).toBeUndefined();
+    expect(after.location).toBeUndefined();
+    expect(after.identifier).toBeUndefined();
+  });
+
+  it('replaceTrack accepts an instance as well as a plain object, and renumbers', () => {
+    const p = new JspfPlaylist({ title: 'P', track: [{ title: 'A' }, { title: 'B' }] });
+    p.replaceTrack(1, new JspfTrack({ title: 'B2' }));
+    expect(titles(p)).toBe('A,B2');
+    expect(nums(p)).toBe('1,2');
+  });
+
+  it('replaceTrack repositions the track when the new one asks for another trackNum', () => {
+    // Same rule as updateTrack's: editing the number is how a user reorders, whichever write it is.
+    const p = new JspfPlaylist({ title: 'P', track: [{ title: 'A' }, { title: 'B' }, { title: 'C' }] });
+    const newIndex = p.replaceTrack(2, { title: 'C', trackNum: 1 });
+    expect(newIndex).toBe(0);
+    expect(titles(p)).toBe('C,A,B');
+    expect(nums(p)).toBe('1,2,3');
+  });
+
+  it('replaceTrack on a missing index is a no-op', () => {
+    const p = new JspfPlaylist({ title: 'P', track: [{ title: 'A' }] });
+    expect(p.replaceTrack(5, { title: 'Z' })).toBe(5);
+    expect(titles(p)).toBe('A');
+  });
+
   it('updateTrack on a missing index is a no-op', () => {
     const p = new JspfPlaylist({ title: 'P', track: [{ title: 'A' }] });
     expect(p.updateTrack(5, { title: 'X' })).toBe(5);
