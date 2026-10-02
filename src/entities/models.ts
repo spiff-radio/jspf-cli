@@ -576,21 +576,38 @@ export class JspfPlaylist extends JspfValidation implements JspfPlaylistI {
    * Put `track` at `index`, honouring a `trackNum` that asks it to move somewhere else, then
    * renumber. Shared by `updateTrack` and `replaceTrack`, which differ only in what they put there.
    *
+   * **Only a *changed* `trackNum` is a move request.** A number that merely disagrees with the
+   * position is not: this library is explicit that numbering need not be positional (see
+   * `appendTrack`, which refuses to renumber an album for exactly that reason), so a write that
+   * carries the track's existing number along - which every background write does, echoing the
+   * fields it was given - must leave it where it is. It used not to, and the consequence was a
+   * track *teleporting*: on a playlist numbered 1590, 42, 7 (a selection borrowed from a longer
+   * one), writing anything to the first track sent it to the end of the list and renumbered the
+   * rest. The caller had asked to store a link.
+   *
+   * Renumbering is tied to the same question, for the same reason: a write nobody intended as a
+   * reorder must not rewrite the whole playlist's numbering as a side effect.
+   *
    * @returns the track's index afterwards, which differs from `index` if it moved.
    */
   private placeTrack(index: number, track: JspfTrack): number {
     if (!this.track) return index;
+
+    // Read before overwriting: this is what makes "changed" answerable without a parameter.
+    const previous = this.track[index]?.trackNum;
     this.track[index] = track;
 
-    let newIndex = index;
     const requested = track.trackNum;
-    if (Number.isFinite(requested) && (requested as number) > 0) {
-      const target = Math.max(0, Math.min(this.track.length - 1, (requested as number) - 1));
-      if (target !== index) {
-        this.track.splice(index, 1);
-        this.track.splice(target, 0, track);
-        newIndex = target;
-      }
+    const asksToMove =
+      Number.isFinite(requested) && (requested as number) > 0 && requested !== previous;
+    if (!asksToMove) return index;
+
+    let newIndex = index;
+    const target = Math.max(0, Math.min(this.track.length - 1, (requested as number) - 1));
+    if (target !== index) {
+      this.track.splice(index, 1);
+      this.track.splice(target, 0, track);
+      newIndex = target;
     }
 
     this.reindexTracks();

@@ -1,6 +1,6 @@
 {
   "name": "@spiff-radio/jspf-cli",
-  "version": "2.0.17",
+  "version": "2.0.18",
   "description": "JSPF CLI is a command line utility (CLI) relying on the JSPF format to convert and validate playlist files.",
   "keywords": [
     "playlist",

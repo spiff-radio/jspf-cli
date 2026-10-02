@@ -93,11 +93,46 @@ describe('JspfPlaylist track manipulation', () => {
     expect(after.identifier).toBeUndefined();
   });
 
-  it('replaceTrack accepts an instance as well as a plain object, and renumbers', () => {
+  it('replaceTrack accepts an instance as well as a plain object', () => {
     const p = new JspfPlaylist({ title: 'P', track: [{ title: 'A' }, { title: 'B' }] });
     p.replaceTrack(1, new JspfTrack({ title: 'B2' }));
     expect(titles(p)).toBe('A,B2');
-    expect(nums(p)).toBe('1,2');
+    // And numbering is left alone: a playlist that had none does not acquire it because somebody
+    // edited a title. Renumbering follows a reorder, not any write - see `placeTrack`.
+    expect(nums(p)).toBe(',');
+  });
+
+  it('leaves a track where it is when the write does not change its trackNum', () => {
+    // The teleporting-track bug: a selection borrowed from a longer playlist keeps that playlist's
+    // numbers, so every background write (which echoes the fields it was handed) used to be read as
+    // "put me at 1590" and sent the track to the end.
+    const p = new JspfPlaylist({
+      title: 'Radio',
+      track: [{ title: 'A', trackNum: 1590 }, { title: 'B', trackNum: 42 }, { title: 'C', trackNum: 7 }],
+    });
+    const newIndex = p.updateTrack(0, { location: ['a.mp3'] });
+    expect(newIndex).toBe(0);
+    expect(titles(p)).toBe('A,B,C');
+    expect(nums(p)).toBe('1590,42,7');
+    expect(p.track![0].location).toEqual(['a.mp3']);
+  });
+
+  it('replaceTrack leaves non-positional numbering alone too', () => {
+    // Same rule through the other door: an album's numbering survives an edit to one of its tracks.
+    const p = new JspfPlaylist({
+      title: 'Album, side B',
+      track: [{ title: 'A', trackNum: 7 }, { title: 'B', trackNum: 8 }],
+    });
+    p.replaceTrack(0, { title: 'A2', trackNum: 7 });
+    expect(titles(p)).toBe('A2,B');
+    expect(nums(p)).toBe('7,8');
+  });
+
+  it('a track with no number at all is not moved or renumbered by a write', () => {
+    const p = new JspfPlaylist({ title: 'P', track: [{ title: 'A' }, { title: 'B' }] });
+    expect(p.updateTrack(1, { creator: 'X' })).toBe(1);
+    expect(titles(p)).toBe('A,B');
+    expect(nums(p)).toBe(',');
   });
 
   it('replaceTrack repositions the track when the new one asks for another trackNum', () => {
